@@ -39,27 +39,6 @@ export const Login = () => {
             </div>
           </div>
         </div>
-<<<<<<< HEAD
-=======
-      </div>
-      <div className="login-right">
-        <div className="login-form-wrapper">
-          {/* Mobile Branding Header */}
-          <div className="mobile-branding">
-            <div className="mobile-logo-bg">
-              <Truck size={24} className="logo-truck" />
-            </div>
-            <div>
-              <h3>Driver Life</h3>
-              <p>Admin Platform v2.0</p>
-            </div>
-          </div>
-
-          <div className="login-header">
-            <h2>Welcome Back</h2>
-            <p>Sign in to the administration panel to continue.</p>
-          </div>
->>>>>>> 2d211b9c039170f4c2e28daef61b96f1b72e1793
 
         {/* Right Side: Admin Login Form */}
         <div className="login-right">
