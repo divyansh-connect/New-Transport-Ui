@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Switch,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -10,7 +20,7 @@ import { Card } from '../../src/components/common/cards/Card';
 import { SPACING } from '../../src/constants/theme';
 
 export default function RegistrationFormScreen() {
-  const { theme } = useTheme();
+  const { theme, saveUserProfile } = useTheme();
   const router = useRouter();
   const { registrationType = 'Driver' } = useLocalSearchParams();
 
@@ -29,7 +39,22 @@ export default function RegistrationFormScreen() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (!form.name.trim() || !form.mobileNo.trim()) {
+      alert('Please fill in required fields (Name and Mobile Number).');
+      return;
+    }
+
+    await saveUserProfile({
+      name: form.name,
+      lastName: form.lastName,
+      mobileNo: form.mobileNo,
+      carPlateNumber: form.carPlateNumber,
+      email: form.email,
+      role: registrationType,
+      status: 'Pending Approval',
+    });
+
     router.push('/register/payment');
   };
 
@@ -37,72 +62,84 @@ export default function RegistrationFormScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Header title={`${registrationType} Registration`} showBack={true} />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <Card style={styles.card}>
-          <CustomInput
-            label="Name"
-            placeholder="Enter Name"
-            value={form.name}
-            onChangeText={(val) => handleChange('name', val)}
-          />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <Card style={styles.card}>
+              <CustomInput
+                label="Name"
+                placeholder="Enter Name"
+                value={form.name}
+                onChangeText={(val) => handleChange('name', val)}
+              />
 
-          <CustomInput
-            label="Last Name"
-            placeholder="Enter Last Name"
-            value={form.lastName}
-            onChangeText={(val) => handleChange('lastName', val)}
-          />
+              <CustomInput
+                label="Last Name"
+                placeholder="Enter Last Name"
+                value={form.lastName}
+                onChangeText={(val) => handleChange('lastName', val)}
+              />
 
-          <CustomInput
-            label="Mobile NO"
-            placeholder="Enter Mobile Number"
-            keyboardType="phone-pad"
-            value={form.mobileNo}
-            onChangeText={(val) => handleChange('mobileNo', val)}
-          />
+              <CustomInput
+                label="Mobile NO"
+                placeholder="Enter Mobile Number"
+                keyboardType="phone-pad"
+                value={form.mobileNo}
+                onChangeText={(val) => handleChange('mobileNo', val)}
+              />
 
-          {registrationType === 'Driver' && (
-            <CustomInput
-              label="For driver Car plate number"
-              placeholder="Enter Car Plate Number"
-              value={form.carPlateNumber}
-              onChangeText={(val) => handleChange('carPlateNumber', val)}
+              {registrationType === 'Driver' && (
+                <CustomInput
+                  label="For driver Car plate number"
+                  placeholder="Enter Car Plate Number"
+                  value={form.carPlateNumber}
+                  onChangeText={(val) => handleChange('carPlateNumber', val)}
+                />
+              )}
+
+              <CustomInput
+                label="Email Option"
+                placeholder="Enter Email Address"
+                keyboardType="email-address"
+                value={form.email}
+                onChangeText={(val) => handleChange('email', val)}
+              />
+
+              <View style={styles.switchRow}>
+                <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Track Location</Text>
+                <Switch
+                  value={trackLocation}
+                  onValueChange={setTrackLocation}
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                />
+              </View>
+
+              <View style={styles.switchRow}>
+                <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Accept Terms & Condition</Text>
+                <Switch
+                  value={acceptTerms}
+                  onValueChange={setAcceptTerms}
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                />
+              </View>
+            </Card>
+
+            <CustomButton
+              title="Next"
+              onPress={handleNext}
+              style={{ marginTop: SPACING.xs, marginBottom: SPACING.xl }}
             />
-          )}
-
-          <CustomInput
-            label="Email Option"
-            placeholder="Enter Email Address"
-            keyboardType="email-address"
-            value={form.email}
-            onChangeText={(val) => handleChange('email', val)}
-          />
-
-          <View style={styles.switchRow}>
-            <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Track Location</Text>
-            <Switch
-              value={trackLocation}
-              onValueChange={setTrackLocation}
-              trackColor={{ false: theme.border, true: theme.primary }}
-            />
-          </View>
-
-          <View style={styles.switchRow}>
-            <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Accept Terms & Condition</Text>
-            <Switch
-              value={acceptTerms}
-              onValueChange={setAcceptTerms}
-              trackColor={{ false: theme.border, true: theme.primary }}
-            />
-          </View>
-        </Card>
-
-        <CustomButton
-          title="Next"
-          onPress={handleNext}
-          style={{ marginTop: SPACING.md }}
-        />
-      </ScrollView>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -113,6 +150,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: SPACING.md,
+    paddingBottom: 40,
   },
   card: {
     marginBottom: SPACING.md,

@@ -21,7 +21,7 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Top Bar with Settings Icon Button */}
+      {/* Top Header Bar */}
       <View style={[styles.topBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Icon name="truck" size={24} color={theme.primary} />
@@ -29,6 +29,15 @@ export default function MapScreen() {
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {/* Quick Direct Register Button on Top Bar */}
+          <TouchableOpacity
+            style={[styles.quickRegisterBtn, { backgroundColor: theme.primary }]}
+            onPress={() => router.push('/register')}
+          >
+            <Icon name="user" size={14} color="#FFF" />
+            <Text style={styles.quickRegisterText}>Register</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.roleChip, { backgroundColor: theme.surface }]}
             onPress={() => setUserRole(userRole === 'Driver' ? 'Visitor' : 'Driver')}
@@ -36,8 +45,12 @@ export default function MapScreen() {
             <Text style={[styles.roleText, { color: theme.primary }]}>{userRole}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.settingsButton, { backgroundColor: theme.primary }]} onPress={() => router.push('/menu')}>
-            <Icon name="settings" size={20} color="#FFF" />
+          {/* Settings Menu Button */}
+          <TouchableOpacity
+            style={[styles.settingsButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => router.push('/menu')}
+          >
+            <Icon name="settings" size={20} color={theme.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -49,7 +62,7 @@ export default function MapScreen() {
         <View style={[styles.roadVertical, { left: '45%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
         <View style={[styles.roadVertical, { left: '70%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
 
-        {/* Map Markers with Lucide React Native Icons */}
+        {/* Map Markers */}
         {markers
           .filter((m) => userRole === 'Driver' || m.type === 'you')
           .map((m) => (
@@ -123,6 +136,19 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 1,
   },
+  quickRegisterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
+    gap: 4,
+  },
+  quickRegisterText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   roleChip: {
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
@@ -138,6 +164,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
   },
   mapCanvas: {
     flex: 1,
