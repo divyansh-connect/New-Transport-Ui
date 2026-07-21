@@ -6,12 +6,13 @@ import { useTheme } from '../../src/context/ThemeContext';
 import { Header } from '../../src/components/common/headers/Header';
 import { Card } from '../../src/components/common/cards/Card';
 import { CustomButton } from '../../src/components/common/buttons/CustomButton';
+import { Icon } from '../../src/components/common/Icon';
 import { RADIUS, SPACING } from '../../src/constants/theme';
 
 export default function ApprovalPendingScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const [status, setStatus] = useState('Pending'); // 'Pending' or 'Approved'
+  const [isApproved, setIsApproved] = useState(false); // False = Pending, True = Approved
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -19,18 +20,18 @@ export default function ApprovalPendingScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
-          <View style={[styles.statusIcon, { backgroundColor: status === 'Approved' ? theme.success : theme.warning }]}>
-            <Text style={{ fontSize: 32 }}>{status === 'Approved' ? '✅' : '⏳'}</Text>
+          <View style={[styles.statusIcon, { backgroundColor: isApproved ? theme.success : theme.warning }]}>
+            <Icon name={isApproved ? 'checkmark' : 'time'} size={32} color="#FFF" />
           </View>
 
           <Text style={[styles.title, { color: theme.textPrimary }]}>
-            {status === 'Approved' ? 'Account Approved!' : 'Admin Approval Pending'}
+            {isApproved ? 'Account Approved!' : 'Waiting For Admin Approval'}
           </Text>
 
           <Text style={[styles.sub, { color: theme.textSecondary }]}>
-            {status === 'Approved'
-              ? 'Your account has been verified by system administrator. You can now start live tracking.'
-              : 'Your application and payment are under review by the Admin Team. No OTP or login is required.'}
+            {isApproved
+              ? 'Your driver registration has been verified and approved by System Admin. You can now access Live Tracking on Map.'
+              : 'Your payment & registration request has been sent to Admin Dashboard. Your profile is NOT active yet. Please wait for admin approval.'}
           </Text>
 
           <View style={[styles.statusBadge, { backgroundColor: theme.surface }]}>
@@ -38,23 +39,24 @@ export default function ApprovalPendingScreen() {
             <Text
               style={[
                 styles.badgeValue,
-                { color: status === 'Approved' ? theme.success : theme.warning },
+                { color: isApproved ? theme.success : theme.warning },
               ]}
             >
-              {status}
+              {isApproved ? 'Approved (Active)' : 'Approval Pending'}
             </Text>
           </View>
 
-          {/* Toggle demo button for status transition */}
+          {/* Toggle button to simulate Admin Approval from Admin Web Dashboard */}
           <CustomButton
-            title={status === 'Pending' ? 'Simulate Admin Approval' : 'Reset to Pending'}
+            title={isApproved ? 'Reset to Pending' : '⚡ Simulate Admin Dashboard Approval'}
             variant="secondary"
-            onPress={() => setStatus(status === 'Pending' ? 'Approved' : 'Pending')}
+            onPress={() => setIsApproved(!isApproved)}
             style={{ marginBottom: SPACING.sm }}
           />
 
+          {/* Go To Map Button - Unlocks Map upon approval */}
           <CustomButton
-            title="Back to Map"
+            title={isApproved ? 'Go To Map (Start Live Tracking)' : 'Go To Map (Pending Mode)'}
             onPress={() => router.replace('/map')}
           />
         </Card>
@@ -87,6 +89,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginBottom: SPACING.xs,
+    textAlign: 'center',
   },
   sub: {
     fontSize: 14,

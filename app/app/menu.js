@@ -5,41 +5,62 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../src/context/ThemeContext';
 import { Header } from '../src/components/common/headers/Header';
 import { Card } from '../src/components/common/cards/Card';
+import { CustomButton } from '../src/components/common/buttons/CustomButton';
 import { Icon } from '../src/components/common/Icon';
 import { SPACING, RADIUS } from '../src/constants/theme';
 
 export default function MenuScreen() {
-  const { theme } = useTheme();
+  const { theme, isDarkMode, toggleTheme, language, setLanguage } = useTheme();
   const router = useRouter();
 
   const menuItems = [
-    { label: 'Login Screen', icon: 'lock', route: '/login' },
+    { label: 'MAP', icon: 'map', route: '/map' },
     { label: 'Profile', icon: 'user', route: '/profile' },
     { label: 'Opportunity', icon: 'briefcase', route: '/opportunity' },
-    { label: 'Notifications', icon: 'bell', route: '/notification' },
-    { label: 'Contact Support', icon: 'phone', route: '/contact-us' },
-    { label: 'App Settings', icon: 'settings', route: '/settings' },
-    { label: 'Register as Partner/Driver', icon: 'truck', route: '/register' },
+    { label: 'Notification', icon: 'bell', route: '/notification' },
+    { label: 'Contact us', icon: 'phone', route: '/contact-us' },
+    { label: 'Setting', icon: 'settings', route: '/settings' },
   ];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="Menu Navigation" showBack={true} />
+      <Header title="Menu Settings" showBack={true} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} activeOpacity={0.75} onPress={() => router.push(item.route)}>
-            <Card style={styles.menuCard}>
-              <View style={styles.itemRow}>
-                <View style={[styles.iconWrapper, { backgroundColor: theme.surface }]}>
-                  <Icon name={item.icon} size={22} color={theme.primary} />
-                </View>
-                <Text style={[styles.itemLabel, { color: theme.textPrimary }]}>{item.label}</Text>
-                <Icon name="chevronRight" size={18} color={theme.textSecondary} />
-              </View>
-            </Card>
+        <Card style={styles.menuCardContainer}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.75}
+              onPress={() => router.push(item.route)}
+              style={styles.menuItemRow}
+            >
+              <Text style={[styles.itemText, { color: theme.textPrimary }]}>{item.label}</Text>
+              <Icon name="chevronRight" size={18} color={theme.textSecondary} />
+            </TouchableOpacity>
+          ))}
+
+          <TouchableOpacity style={styles.menuItemRow} onPress={toggleTheme}>
+            <Text style={[styles.itemText, { color: theme.textPrimary }]}>Dark-Light Mode</Text>
+            <Text style={{ color: theme.primary, fontWeight: '700' }}>
+              {isDarkMode ? '🌙 Dark' : '☀️ Light'}
+            </Text>
           </TouchableOpacity>
-        ))}
+        </Card>
+
+        {/* Register Button (open Service List) */}
+        <CustomButton
+          title="Register (open Service List)"
+          onPress={() => router.push('/register')}
+          style={{ marginVertical: SPACING.md }}
+        />
+
+        {/* Language Button */}
+        <CustomButton
+          title={`Language: ${language}`}
+          variant="secondary"
+          onPress={() => setLanguage(language === 'English' ? 'Arabic' : 'English')}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -52,25 +73,19 @@ const styles = StyleSheet.create({
   content: {
     padding: SPACING.md,
   },
-  menuCard: {
-    marginBottom: SPACING.sm,
+  menuCardContainer: {
+    paddingVertical: SPACING.sm,
   },
-  itemRow: {
+  menuItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(150, 150, 150, 0.1)',
   },
-  iconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: RADIUS.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
-  },
-  itemLabel: {
-    flex: 1,
+  itemText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
