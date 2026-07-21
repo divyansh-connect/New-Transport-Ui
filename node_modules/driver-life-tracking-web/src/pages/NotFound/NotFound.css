@@ -1,0 +1,67 @@
+.not-found-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: 24px;
+}
+
+.not-found-card {
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-xl);
+  padding: 48px 36px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.not-found-badge-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.compass-icon {
+  animation: spin 12s linear infinite;
+}
+
+.not-found-code {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+  font-family: var(--font-heading);
+  letter-spacing: -0.04em;
+}
+
+.not-found-title {
+  font-size: 1.5rem;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.not-found-description {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.not-found-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
