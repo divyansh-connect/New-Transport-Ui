@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2 } from 'lucide-react';
-import { Modal } from '../../components/common/Modal/Modal';
 import './Opportunity.css';
 
 export const Opportunity = () => {
-  const [validationAlert, setValidationAlert] = useState('');
   const [opportunities, setOpportunities] = useState([
     {
       id: 1,
@@ -55,7 +53,7 @@ export const Opportunity = () => {
   const handlePublish = (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.description.trim()) {
-      setValidationAlert('Please fill out Notice Title and Detailed Description.');
+      alert('Please fill out Notice Title and Detailed Description.');
       return;
     }
 
@@ -249,20 +247,6 @@ export const Opportunity = () => {
           </div>
         </div>
       </div>
-
-      {/* Validation React Modal */}
-      <Modal
-        isOpen={!!validationAlert}
-        onClose={() => setValidationAlert('')}
-        title="Validation Required"
-        subtitle="Please check broadcast notice details."
-        primaryActionLabel="OK"
-        onPrimaryAction={() => setValidationAlert('')}
-      >
-        <p style={{ color: 'var(--color-text-main)', fontSize: '14px', margin: 0 }}>
-          {validationAlert}
-        </p>
-      </Modal>
     </div>
   );
 };

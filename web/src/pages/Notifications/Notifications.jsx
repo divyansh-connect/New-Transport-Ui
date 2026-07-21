@@ -39,12 +39,12 @@ export const Notifications = () => {
             No recent notifications.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {notifications.map((item) => (
               <div 
                 key={item.id} 
                 style={{ 
-                  padding: '12px 16px', 
+                  padding: '16px', 
                   borderRadius: 'var(--radius-md)', 
                   backgroundColor: item.read ? 'var(--color-surface)' : 'rgba(37, 99, 235, 0.08)',
                   borderLeft: item.read ? '3px solid transparent' : '3px solid var(--color-primary)',
@@ -56,12 +56,12 @@ export const Notifications = () => {
               >
                 <div style={{ flex: 1, marginRight: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ fontSize: '14px', color: item.read ? 'var(--color-text-main)' : 'var(--color-primary)' }}>
+                    <strong style={{ color: item.read ? 'var(--color-text-main)' : 'var(--color-primary)' }}>
                       {item.title}
                     </strong>
                     <small style={{ color: 'var(--color-text-muted)' }}>{item.time}</small>
                   </div>
-                  <p style={{ fontSize: '13px', marginTop: '3px', color: 'var(--color-text-muted)' }}>{item.message}</p>
+                  <p style={{ fontSize: '14px', marginTop: '6px', color: 'var(--color-text-muted)' }}>{item.message}</p>
                 </div>
                 {!item.read && (
                   <button

@@ -1,7 +1,6 @@
 .layout-container {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   background-color: var(--color-bg);
   color: var(--color-text-main);
   position: relative;
@@ -11,30 +10,22 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
   min-width: 0; /* Prevents overflow issues in flex children */
 }
 
 .layout-content {
   flex: 1;
-  padding: 24px 28px 48px 28px;
+  padding: 32px 28px;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .layout-content-inner {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  gap: 20px;
+  gap: 24px;
 }
 
 .layout-footer {

@@ -15,7 +15,6 @@ import {
   X
 } from 'lucide-react';
 import { useTheme } from '../../../../context/ThemeContext';
-
 import './Navbar.css';
 
 export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
@@ -238,16 +237,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
                 ))}
               </div>
               <div className="dropdown-footer">
-                <button
-                  className="dropdown-action-link"
-                  onClick={() => {
-                    setShowNotifications(false);
-                    navigate('/notifications');
-                  }}
-                  style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'center' }}
-                >
-                  View All Notifications
-                </button>
+                <button className="dropdown-action-link">View All Notifications</button>
               </div>
             </div>
           )}
@@ -281,14 +271,14 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
                 <p>{profile?.email || 'admin@driverlife.com'}</p>
               </div>
               <div className="user-menu-items">
-                <button className="user-menu-item" onClick={() => { setShowUserMenu(false); navigate('/settings'); }} style={{ background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
+                <a href="#profile" className="user-menu-item">
                   <User size={16} /> Profile Settings
-                </button>
-                <button className="user-menu-item" onClick={() => { setShowUserMenu(false); navigate('/settings'); }} style={{ background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
+                </a>
+                <a href="#settings" className="user-menu-item">
                   <Settings size={16} /> Dashboard Layout Settings
-                </button>
+                </a>
                 <div className="user-menu-divider" />
-                <button className="user-menu-item text-danger" onClick={() => { localStorage.removeItem('isAuthenticated'); navigate('/login'); }} style={{ background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-danger)' }}>
+                <button className="user-menu-item text-danger">
                   <LogOut size={16} /> Sign Out
                 </button>
               </div>
