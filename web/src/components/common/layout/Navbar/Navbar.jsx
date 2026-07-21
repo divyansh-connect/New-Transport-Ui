@@ -15,20 +15,14 @@ import {
   X
 } from 'lucide-react';
 import { useTheme } from '../../../../context/ThemeContext';
-import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
 export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
-<<<<<<< HEAD
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
-=======
   const { theme, toggleTheme, profile } = useTheme();
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
   const searchWrapperRef = useRef(null);
 
->>>>>>> 6a057eb3daace2b0e926e1d1b5c3d0dadc8a5a50
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
