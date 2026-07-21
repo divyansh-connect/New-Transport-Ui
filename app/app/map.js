@@ -10,13 +10,21 @@ import { RADIUS, SPACING } from '../src/constants/theme';
 import { translations } from '../src/constants/translations';
 
 export default function MapScreen() {
-  const { theme, language } = useTheme();
+  const { theme, language, registeredUser } = useTheme();
   const router = useRouter();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
   const [isLiveTracking, setIsLiveTracking] = useState(true);
-  const [userRole, setUserRole] = useState('Driver');
   const [selectedService, setSelectedService] = useState(null);
+
+  // ── Auto-detect role from stored profile ──────────────────────────────────
+  // Visitor  = no registeredUser
+  // Pending  = registeredUser exists but status !== 'Approved'
+  // Driver   = registeredUser exists AND status === 'Approved'
+  const isApprovedDriver = registeredUser?.status === 'Approved';
+  const isPending = registeredUser && !isApprovedDriver;
+  // For Leaflet JS injection we still need a string role
+  const userRole = isApprovedDriver ? 'Driver' : 'Visitor';
   
   // Real GPS Device Location State (Default Riyadh Center fallback until permission granted)
   const [userLocation, setUserLocation] = useState({
@@ -205,22 +213,37 @@ export default function MapScreen() {
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <TouchableOpacity
-            style={[styles.quickRegisterBtn, { backgroundColor: theme.primary }]}
-            onPress={() => router.push('/register')}
-          >
-            <Icon name="user" size={12} color="#FFF" />
-            <Text style={styles.quickRegisterText}>{t.register}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.roleChip, { backgroundColor: theme.surface }]}
-            onPress={() => setUserRole(userRole === 'Driver' ? 'Visitor' : 'Driver')}
-          >
-            <Text style={[styles.roleText, { color: theme.primary }]}>
-              {userRole === 'Driver' ? t.driver : t.visitor}
-            </Text>
-          </TouchableOpacity>
+          {!registeredUser ? (
+            // ── Guest: show Register + Login buttons ──
+            <>
+              <TouchableOpacity
+                style={[styles.quickRegisterBtn, { backgroundColor: theme.primary }]}
+                onPress={() => router.push('/register')}
+              >
+                <Icon name="user" size={12} color="#FFF" />
+                <Text style={styles.quickRegisterText}>{t.register}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.roleChip, { backgroundColor: theme.surface }]}
+                onPress={() => router.push('/login')}
+              >
+                <Text style={[styles.roleText, { color: theme.primary }]}>
+                  {isArabic ? 'دخول' : 'Login'}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            // ── Registered user: show name chip ──
+            <TouchableOpacity
+              style={[styles.roleChip, { backgroundColor: isApprovedDriver ? theme.primary : theme.surface }]}
+              onPress={() => router.push('/profile')}
+            >
+              <Text style={[styles.roleText, { color: isApprovedDriver ? '#FFF' : theme.primary }]}>
+                {registeredUser.name?.charAt(0)}{registeredUser.lastName?.charAt(0)}
+                {' '}{isApprovedDriver ? '✓' : '⏳'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={[styles.settingsButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
@@ -231,12 +254,14 @@ export default function MapScreen() {
         </View>
       </View>
 
-      {/* Notice Banner Below Header */}
+      {/* Notice Banner */}
       <View style={[styles.noticeBanner, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
         <Text style={[styles.noticeText, { color: theme.textPrimary }]}>
-          {userRole === 'Visitor'
-            ? (isArabic ? 'وضع الزائر: مرئي له فقط' : 'Visitor Mode: Visible to himself only')
-            : t.allServicesVisible}
+          {isApprovedDriver
+            ? t.allServicesVisible
+            : isPending
+              ? (isArabic ? 'بانتظار موافقة المدير — الخدمات غير مفعّلة بعد' : 'Pending Admin Approval — Services locked')
+              : (isArabic ? 'وضع الزائر — يرى موقعه فقط' : 'Visitor Mode — Your location only')}
         </Text>
       </View>
 
@@ -256,8 +281,8 @@ export default function MapScreen() {
           }}
         />
 
-        {/* Life Tracking ON/OFF Floating Switch Box */}
-        {userRole === 'Driver' && (
+        {/* Life Tracking Switch — only for Approved Drivers */}
+        {isApprovedDriver && (
           <View style={[styles.lifeTrackingBox, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
             <Text style={[styles.trackingLabel, { color: theme.textPrimary }]}>{t.lifeTracking}</Text>
             <Switch
@@ -270,6 +295,18 @@ export default function MapScreen() {
               {isLiveTracking ? t.on : t.off}
             </Text>
           </View>
+        )}
+
+        {/* Pending Banner — shown while waiting for approval */}
+        {isPending && (
+          <TouchableOpacity
+            style={[styles.pendingBanner, { backgroundColor: '#92400e' }]}
+            onPress={() => router.push('/register/pending')}
+          >
+            <Text style={styles.pendingText}>
+              {isArabic ? '⏳ بانتظار موافقة المدير — اضغط للتحقق' : '⏳ Pending Admin Approval — tap to check'}
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -391,6 +428,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  pendingBanner: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: RADIUS.full,
+    alignItems: 'center',
+    elevation: 8,
+    zIndex: 20,
+  },
+  pendingText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   mapCanvas: {
     flex: 1,

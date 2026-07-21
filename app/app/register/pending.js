@@ -8,55 +8,101 @@ import { Card } from '../../src/components/common/cards/Card';
 import { CustomButton } from '../../src/components/common/buttons/CustomButton';
 import { Icon } from '../../src/components/common/Icon';
 import { RADIUS, SPACING } from '../../src/constants/theme';
+import { translations } from '../../src/constants/translations';
 
 export default function ApprovalPendingScreen() {
-  const { theme } = useTheme();
+  const { theme, language, registeredUser, saveUserProfile } = useTheme();
+  const t = translations[language] || translations.English;
+  const isArabic = language === 'Arabic';
   const router = useRouter();
-  const [isApproved, setIsApproved] = useState(false); // False = Pending, True = Approved
+
+  // Check current approval status from stored user profile
+  const isApproved = registeredUser?.status === 'Approved';
+
+  // ── Simulate Admin Approval (updates actual registeredUser in AsyncStorage) ──
+  const handleSimulateApproval = async () => {
+    if (registeredUser) {
+      const updated = { ...registeredUser, status: 'Approved' };
+      await saveUserProfile(updated);
+    }
+  };
+
+  // ── Simulate Reset to Pending ──
+  const handleResetPending = async () => {
+    if (registeredUser) {
+      const updated = { ...registeredUser, status: 'Pending' };
+      await saveUserProfile(updated);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="Approval Status" showBack={false} />
+      <Header title={isArabic ? 'حالة الموافقة' : 'Approval Status'} showBack={false} />
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
-          <View style={[styles.statusIcon, { backgroundColor: isApproved ? theme.success : theme.warning }]}>
+          {/* Status Icon */}
+          <View style={[
+            styles.statusIcon,
+            { backgroundColor: isApproved ? '#16a34a' : '#d97706' }
+          ]}>
             <Icon name={isApproved ? 'checkmark' : 'time'} size={32} color="#FFF" />
           </View>
 
+          {/* Title */}
           <Text style={[styles.title, { color: theme.textPrimary }]}>
-            {isApproved ? 'Account Approved!' : 'Waiting For Admin Approval'}
+            {isApproved
+              ? (isArabic ? 'تمت الموافقة على الحساب!' : 'Account Approved!')
+              : (isArabic ? 'في انتظار موافقة المدير' : 'Waiting For Admin Approval')}
           </Text>
 
+          {/* Sub text */}
           <Text style={[styles.sub, { color: theme.textSecondary }]}>
             {isApproved
-              ? 'Your driver registration has been verified and approved by System Admin. You can now access Live Tracking on Map.'
-              : 'Your payment & registration request has been sent to Admin Dashboard. Your profile is NOT active yet. Please wait for admin approval.'}
+              ? (isArabic
+                ? 'تم التحقق من تسجيلك والموافقة عليه من قِبل المدير. يمكنك الآن الوصول إلى التتبع المباشر على الخريطة.'
+                : 'Your driver registration has been verified and approved by Admin. You can now access Live Tracking and all Service Locations on Map.')
+              : (isArabic
+                ? 'تم إرسال طلبك إلى لوحة تحكم المدير. ملفك الشخصي غير نشط بعد. يرجى الانتظار حتى تتم الموافقة.'
+                : 'Your payment & registration has been sent to Admin Dashboard. Your profile is NOT active yet. Please wait for admin approval.')}
           </Text>
 
+          {/* Status Badge */}
           <View style={[styles.statusBadge, { backgroundColor: theme.surface }]}>
-            <Text style={[styles.badgeLabel, { color: theme.textSecondary }]}>Current Status:</Text>
-            <Text
-              style={[
-                styles.badgeValue,
-                { color: isApproved ? theme.success : theme.warning },
-              ]}
-            >
-              {isApproved ? 'Approved (Active)' : 'Approval Pending'}
+            <Text style={[styles.badgeLabel, { color: theme.textSecondary }]}>
+              {isArabic ? 'الحالة الحالية:' : 'Current Status:'}
+            </Text>
+            <Text style={[styles.badgeValue, {
+              color: isApproved ? '#16a34a' : '#d97706'
+            }]}>
+              {isApproved
+                ? (isArabic ? 'مُوافَق عليه ✓' : 'Approved ✓')
+                : (isArabic ? 'قيد الانتظار...' : 'Pending...')}
             </Text>
           </View>
 
-          {/* Toggle button to simulate Admin Approval from Admin Web Dashboard */}
-          <CustomButton
-            title={isApproved ? 'Reset to Pending' : '⚡ Simulate Admin Dashboard Approval'}
-            variant="secondary"
-            onPress={() => setIsApproved(!isApproved)}
-            style={{ marginBottom: SPACING.sm }}
-          />
+          {/* ── Simulate Admin Approval Button (Dev/Demo only) ── */}
+          {!isApproved ? (
+            <CustomButton
+              title={isArabic ? '⚡ محاكاة موافقة المدير' : '⚡ Simulate Admin Approval'}
+              variant="secondary"
+              onPress={handleSimulateApproval}
+              style={{ marginBottom: SPACING.sm }}
+            />
+          ) : (
+            <CustomButton
+              title={isArabic ? 'إعادة إلى الانتظار' : 'Reset to Pending (Demo)'}
+              variant="secondary"
+              onPress={handleResetPending}
+              style={{ marginBottom: SPACING.sm }}
+            />
+          )}
 
-          {/* Go To Map Button - Unlocks Map upon approval */}
+          {/* Go to Map */}
           <CustomButton
-            title={isApproved ? 'Go To Map (Start Live Tracking)' : 'Go To Map (Pending Mode)'}
+            title={isApproved
+              ? (isArabic ? 'الذهاب إلى الخريطة (التتبع المباشر)' : 'Go To Map — Start Live Tracking')
+              : (isArabic ? 'الذهاب إلى الخريطة (وضع الانتظار)' : 'Go To Map (Pending Mode)')}
             onPress={() => router.replace('/map')}
           />
         </Card>
@@ -66,35 +112,27 @@ export default function ApprovalPendingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: SPACING.md,
-    justifyContent: 'center',
-  },
-  card: {
-    alignItems: 'center',
-    paddingVertical: SPACING.xl,
-  },
+  container: { flex: 1 },
+  content: { padding: SPACING.md, justifyContent: 'center' },
+  card: { alignItems: 'center', paddingVertical: SPACING.xl },
   statusIcon: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.md,
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '800',
     marginBottom: SPACING.xs,
     textAlign: 'center',
   },
   sub: {
     fontSize: 14,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 21,
     marginBottom: SPACING.lg,
     paddingHorizontal: SPACING.sm,
   },
@@ -105,13 +143,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     borderRadius: RADIUS.full,
     marginBottom: SPACING.lg,
+    gap: 6,
   },
-  badgeLabel: {
-    fontSize: 13,
-    marginRight: 6,
-  },
-  badgeValue: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
+  badgeLabel: { fontSize: 13 },
+  badgeValue: { fontSize: 14, fontWeight: '700' },
 });

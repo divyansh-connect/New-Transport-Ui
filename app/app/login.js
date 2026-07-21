@@ -1,102 +1,169 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../src/context/ThemeContext';
 import { CustomInput } from '../src/components/common/inputs/CustomInput';
 import { CustomButton } from '../src/components/common/buttons/CustomButton';
 import { Card } from '../src/components/common/cards/Card';
 import { Header } from '../src/components/common/headers/Header';
 import { RADIUS, SPACING } from '../src/constants/theme';
+import { translations } from '../src/constants/translations';
 
 export default function LoginScreen() {
-  const { theme, login } = useTheme();
+  const { theme, language, saveUserProfile } = useTheme();
+  const t = translations[language] || translations.English;
+  const isArabic = language === 'Arabic';
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    login({ name: 'John Doe', email: email || 'driver@example.com' });
-    router.replace('/map');
+  // ── Login by Mobile Number ──────────────────────────────────────────────────
+  // Looks up the stored user profile and matches mobile number
+  const handleLogin = async () => {
+    if (!mobile.trim()) {
+      Alert.alert(
+        isArabic ? 'خطأ' : 'Error',
+        isArabic ? 'يرجى إدخال رقم الجوال' : 'Please enter your mobile number'
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const stored = await AsyncStorage.getItem('user_profile');
+      if (stored) {
+        const profile = JSON.parse(stored);
+        // Match mobile number (strip spaces and dashes for comparison)
+        const inputMobile = mobile.replace(/[\s\-]/g, '');
+        const storedMobile = (profile.mobileNo || '').replace(/[\s\-]/g, '');
+
+        if (inputMobile === storedMobile) {
+          // ✅ Found — restore session
+          await saveUserProfile(profile);
+          router.replace('/map');
+        } else {
+          Alert.alert(
+            isArabic ? 'لم يُعثر على حساب' : 'Account Not Found',
+            isArabic
+              ? 'رقم الجوال هذا غير مسجل. يرجى التسجيل أولاً.'
+              : 'This mobile number is not registered. Please register first.'
+          );
+        }
+      } else {
+        Alert.alert(
+          isArabic ? 'لا يوجد حساب' : 'No Account Found',
+          isArabic
+            ? 'لا يوجد حساب مسجل على هذا الجهاز. يرجى التسجيل أولاً.'
+            : 'No registered account found on this device. Please register first.'
+        );
+      }
+    } catch (e) {
+      Alert.alert(isArabic ? 'خطأ' : 'Error', e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="Account Login" showBack={true} />
+      <Header title={isArabic ? 'تسجيل الدخول' : 'Login'} showBack={true} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Brand Header */}
         <View style={styles.brandSection}>
           <View style={[styles.logoCard, { backgroundColor: theme.primary }]}>
             <MaterialCommunityIcons name="truck-fast" size={44} color="#FFF" />
           </View>
-          <Text style={[styles.appTitle, { color: theme.textPrimary }]}>Driver Life System</Text>
+          <Text style={[styles.appTitle, { color: theme.textPrimary }]}>
+            {isArabic ? 'نظام التتبع المباشر' : 'Driver Life Tracking'}
+          </Text>
           <Text style={[styles.appTagline, { color: theme.textSecondary }]}>
-            Enterprise Fleet & Telemetry Network
+            {isArabic ? 'أدخل رقم جوالك للدخول' : 'Enter your mobile number to continue'}
           </Text>
         </View>
 
-        {/* Login Form Card */}
+        {/* Login Card */}
         <Card style={styles.loginCard}>
-          <Text style={[styles.cardHeading, { color: theme.textPrimary }]}>Welcome Back</Text>
-          <Text style={[styles.cardSubheading, { color: theme.textSecondary }]}>
-            Sign in to access live map tracking and partner features
+          <Text style={[styles.cardHeading, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>
+            {isArabic ? 'مرحباً بعودتك' : 'Welcome Back'}
+          </Text>
+          <Text style={[styles.cardSubheading, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+            {isArabic
+              ? 'أدخل رقم جوالك المسجّل للوصول إلى حسابك'
+              : 'Enter your registered mobile number to access your account'}
           </Text>
 
-          <View style={styles.formGroup}>
-            <CustomInput
-              label="Email Address / Username"
-              placeholder="driver@example.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-            />
+          <CustomInput
+            label={isArabic ? 'رقم الجوال' : 'Mobile Number'}
+            placeholder={isArabic ? 'أدخل رقم الجوال المسجّل' : 'Enter registered mobile number'}
+            value={mobile}
+            onChangeText={setMobile}
+            keyboardType="phone-pad"
+          />
 
-            <CustomInput
-              label="Password"
-              placeholder="••••••••"
-              secureTextEntry={true}
-              value={password}
-              onChangeText={setPassword}
-            />
-
-            <TouchableOpacity style={styles.forgotPassLink}>
-              <Text style={[styles.linkText, { color: theme.primary }]}>Forgot Password?</Text>
-            </TouchableOpacity>
-
-            <CustomButton
-              title="Sign In"
-              onPress={handleLogin}
-              style={styles.signInButton}
-            />
-          </View>
+          <CustomButton
+            title={loading
+              ? (isArabic ? 'جاري التحقق...' : 'Verifying...')
+              : (isArabic ? 'دخول' : 'Login')}
+            onPress={handleLogin}
+            style={{ marginTop: SPACING.md }}
+          />
         </Card>
 
-        {/* Footer Registration Action */}
+        {/* Divider */}
+        <View style={styles.dividerRow}>
+          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+          <Text style={[styles.dividerText, { color: theme.textSecondary }]}>
+            {isArabic ? 'أو' : 'OR'}
+          </Text>
+          <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+        </View>
+
+        {/* Register Link */}
         <View style={styles.footerRow}>
-          <Text style={[styles.footerText, { color: theme.textSecondary }]}>New to Driver Life? </Text>
+          <Text style={[styles.footerText, { color: theme.textSecondary }]}>
+            {isArabic ? 'مستخدم جديد؟ ' : 'New user? '}
+          </Text>
           <TouchableOpacity onPress={() => router.push('/register')}>
-            <Text style={[styles.registerText, { color: theme.primary }]}>Register Account</Text>
+            <Text style={[styles.registerText, { color: theme.primary }]}>
+              {isArabic ? 'سجّل الآن' : 'Register Now'}
+            </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Back to Map as Guest */}
+        <TouchableOpacity
+          style={styles.guestLink}
+          onPress={() => router.replace('/map')}
+        >
+          <Text style={[styles.guestText, { color: theme.textSecondary }]}>
+            {isArabic ? 'تصفح كزائر (بدون تسجيل)' : 'Continue as Visitor (no login)'}
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   content: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
-    justifyContent: 'center',
   },
   brandSection: {
     alignItems: 'center',
     marginBottom: SPACING.lg,
+    marginTop: SPACING.md,
   },
   logoCard: {
     width: 80,
@@ -105,24 +172,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.sm,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
     elevation: 6,
   },
   appTitle: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.3,
   },
   appTagline: {
     fontSize: 13,
-    marginTop: 2,
+    marginTop: 4,
     textAlign: 'center',
   },
   loginCard: {
     padding: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   cardHeading: {
     fontSize: 20,
@@ -131,32 +195,40 @@ const styles = StyleSheet.create({
   cardSubheading: {
     fontSize: 13,
     marginTop: 4,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
+    lineHeight: 18,
   },
-  formGroup: {
-    width: '100%',
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: SPACING.sm,
+    gap: 8,
   },
-  forgotPassLink: {
-    alignSelf: 'flex-end',
-    marginVertical: SPACING.xs,
+  dividerLine: {
+    flex: 1,
+    height: 1,
   },
-  linkText: {
-    fontSize: 13,
+  dividerText: {
+    fontSize: 12,
     fontWeight: '600',
-  },
-  signInButton: {
-    marginTop: SPACING.md,
   },
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: SPACING.lg,
+    marginTop: SPACING.xs,
   },
-  footerText: {
-    fontSize: 14,
-  },
+  footerText: { fontSize: 14 },
   registerText: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  guestLink: {
+    alignItems: 'center',
+    marginTop: SPACING.md,
+    paddingVertical: SPACING.sm,
+  },
+  guestText: {
+    fontSize: 13,
+    textDecorationLine: 'underline',
   },
 });
