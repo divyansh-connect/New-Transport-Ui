@@ -6,16 +6,19 @@ import { useTheme } from '../../src/context/ThemeContext';
 import { Header } from '../../src/components/common/headers/Header';
 import { Card } from '../../src/components/common/cards/Card';
 import { SPACING, RADIUS } from '../../src/constants/theme';
+import { translations } from '../../src/constants/translations';
 
 export default function RegisterIndexScreen() {
-  const { theme } = useTheme();
+  const { theme, language } = useTheme();
   const router = useRouter();
+  const t = translations[language] || translations.English;
+  const isArabic = language === 'Arabic';
 
   const services = [
-    { title: 'Driver (Life Tracking)', type: 'Driver' },
-    { title: 'Workshop (Location only)', type: 'Workshop' },
-    { title: 'Oil change (Location only)', type: 'Oil Change' },
-    { title: 'Car Location (Location only)', type: 'Car Location' },
+    { title: t.driverLifeTracking, type: 'Driver' },
+    { title: t.workshopLocation, type: 'Workshop' },
+    { title: t.oilChangeLocation, type: 'Oil Change' },
+    { title: t.carLocationOnly, type: 'Car Location' },
   ];
 
   const handleSelectType = (type) => {
@@ -27,34 +30,34 @@ export default function RegisterIndexScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="Service List Registration" showBack={true} />
+      <Header title={t.serviceListTitle} showBack={true} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.heading, { color: theme.textPrimary }]}>Select Service / Role</Text>
+        <Text style={[styles.heading, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{t.selectServiceRole}</Text>
 
         <Card style={styles.cardContainer}>
           {services.map((item, idx) => (
             <TouchableOpacity
               key={idx}
-              style={styles.serviceRow}
+              style={[styles.serviceRow, isArabic && { flexDirection: 'row-reverse' }]}
               onPress={() => handleSelectType(item.type)}
             >
-              <Text style={[styles.serviceTitle, { color: theme.textPrimary }]}>{item.title}</Text>
+              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{item.title}</Text>
               <View style={[styles.checkbox, { borderColor: theme.primary }]} />
             </TouchableOpacity>
           ))}
         </Card>
 
-        {/* Visitor Option (is upto Admin to be required or no) */}
+        {/* Visitor Option */}
         <Card style={{ marginTop: SPACING.md }}>
           <TouchableOpacity
-            style={styles.serviceRow}
+            style={[styles.serviceRow, isArabic && { flexDirection: 'row-reverse' }]}
             onPress={() => handleSelectType('Visitor')}
           >
-            <View>
-              <Text style={[styles.serviceTitle, { color: theme.textPrimary }]}>Visitor</Text>
-              <Text style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2 }}>
-                (it is upto Admin to be required or no)
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{t.visitorLabel}</Text>
+              <Text style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2, textAlign: isArabic ? 'right' : 'left' }}>
+                {t.visitorAdminNote}
               </Text>
             </View>
             <View style={[styles.checkbox, { borderColor: theme.primary }]} />
