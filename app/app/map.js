@@ -3,26 +3,28 @@ import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../src/context/ThemeContext';
+import { Icon } from '../src/components/common/Icon';
 import { RADIUS, SPACING } from '../src/constants/theme';
 
 export default function MapScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const [isLiveTracking, setIsLiveTracking] = useState(true);
-  const [userRole, setUserRole] = useState('Driver'); // Driver or Visitor
+  const [userRole, setUserRole] = useState('Driver');
 
   const markers = [
-    { id: 1, title: 'Your Location', top: '35%', left: '42%', type: 'you' },
-    { id: 2, title: 'Workshop Hub', top: '55%', left: '65%', type: 'workshop' },
-    { id: 3, title: 'Oil Change Center', top: '68%', left: '25%', type: 'oil' },
-    { id: 4, title: 'Car Location Node', top: '25%', left: '72%', type: 'location' },
+    { id: 1, title: 'Your Location', top: '35%', left: '42%', type: 'you', icon: 'navigation' },
+    { id: 2, title: 'Workshop Hub', top: '55%', left: '65%', type: 'workshop', icon: 'wrench' },
+    { id: 3, title: 'Oil Change Center', top: '68%', left: '25%', type: 'oil', icon: 'fuel' },
+    { id: 4, title: 'Car Location Node', top: '25%', left: '72%', type: 'location', icon: 'car' },
   ];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Top Bar with Settings Icon Button (as in Client Wireframe Page 1) */}
+      {/* Top Bar with Settings Icon Button */}
       <View style={[styles.topBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Icon name="truck" size={24} color={theme.primary} />
           <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>MAP</Text>
         </View>
 
@@ -34,22 +36,20 @@ export default function MapScreen() {
             <Text style={[styles.roleText, { color: theme.primary }]}>{userRole}</Text>
           </TouchableOpacity>
 
-          {/* Settings / Menu Icon (Top Right as in Client Diagram Page 1) */}
           <TouchableOpacity style={[styles.settingsButton, { backgroundColor: theme.primary }]} onPress={() => router.push('/menu')}>
-            <Text style={{ color: '#FFF', fontSize: 18, fontWeight: 'bold' }}>⚙️</Text>
+            <Icon name="settings" size={20} color="#FFF" />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Styled Responsive Vector Map Visual Canvas */}
       <View style={[styles.mapCanvas, { backgroundColor: theme.isDarkMode ? '#0B132B' : '#E2E8F0' }]}>
-        {/* Map Grid Roads */}
         <View style={[styles.roadHorizontal, { top: '40%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
         <View style={[styles.roadHorizontal, { top: '70%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
         <View style={[styles.roadVertical, { left: '45%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
         <View style={[styles.roadVertical, { left: '70%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
 
-        {/* Map Markers */}
+        {/* Map Markers with Lucide React Native Icons */}
         {markers
           .filter((m) => userRole === 'Driver' || m.type === 'you')
           .map((m) => (
@@ -65,19 +65,14 @@ export default function MapScreen() {
                 },
               ]}
             >
-              <Text style={[styles.pinLabel, { color: m.type === 'you' ? '#FFF' : theme.textPrimary }]}>
-                {m.type === 'you'
-                  ? '📍 Own Location'
-                  : m.type === 'workshop'
-                  ? '🛠️ Workshop'
-                  : m.type === 'oil'
-                  ? '🛢️ Oil Change'
-                  : '📍 Car Location'}
+              <Icon name={m.icon} size={14} color={m.type === 'you' ? '#FFF' : theme.primary} />
+              <Text style={[styles.pinLabel, { color: m.type === 'you' ? '#FFF' : theme.textPrimary, marginLeft: 4 }]}>
+                {m.type === 'you' ? 'Own Location' : m.title}
               </Text>
             </View>
           ))}
 
-        {/* Client Wireframe Notice Text on MAP */}
+        {/* Overlay Notice */}
         <View style={[styles.overlayNotice, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <Text style={[styles.noticeText, { color: theme.textPrimary }]}>
             {userRole === 'Visitor'
@@ -86,7 +81,7 @@ export default function MapScreen() {
           </Text>
         </View>
 
-        {/* Live Tracking ON/OFF Switch Pill (Exact Client Wireframe Page 1: "Life Tracking ON/OFF") */}
+        {/* Life Tracking ON/OFF Switch Pill */}
         {userRole === 'Driver' && (
           <View style={[styles.lifeTrackingBox, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
             <Text style={[styles.trackingLabel, { color: theme.textPrimary }]}>Life Tracking</Text>
@@ -167,6 +162,8 @@ const styles = StyleSheet.create({
   },
   mapPin: {
     position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 6,
     borderRadius: RADIUS.md,

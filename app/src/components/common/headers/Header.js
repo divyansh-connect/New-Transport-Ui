@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../../context/ThemeContext';
+import { Icon } from '../Icon';
 import { SPACING } from '../../../constants/theme';
 
 export const Header = ({ title, showBack = true, rightElement }) => {
@@ -13,7 +14,7 @@ export const Header = ({ title, showBack = true, rightElement }) => {
       <View style={styles.leftContainer}>
         {showBack && (
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={{ color: theme.primary, fontSize: 18, fontWeight: 'bold' }}>←</Text>
+            <Icon name="back" size={22} color={theme.primary} />
           </TouchableOpacity>
         )}
         <Text style={[styles.title, { color: theme.textPrimary }]}>{title}</Text>
