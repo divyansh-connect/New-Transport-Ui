@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Sidebar } from '../../components/common/layout/Sidebar/Sidebar';
-import { Navbar } from '../../components/common/layout/Navbar/Navbar';
+import { Sidebar } from './Sidebar/Sidebar';
+import { Navbar } from './Navbar/Navbar';
 import './MainLayout.css';
 
 export const MainLayout = ({ children }) => {
