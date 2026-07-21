@@ -17,6 +17,11 @@
   .opportunity-grid {
     grid-template-columns: 1fr;
   }
+
+  .list-column {
+    max-height: none;
+    overflow-y: visible;
+  }
 }
 
 .opportunity-form {

@@ -82,7 +82,7 @@ export const Opportunity = () => {
         description: ''
       });
       setIsSubmitting(false);
-      setSuccessMessage('Notice successfully published & live broadcasted to Driver App!');
+      setSuccessMessage('Notice live broadcasted successfully!');
 
       setTimeout(() => {
         setSuccessMessage('');
@@ -108,18 +108,18 @@ export const Opportunity = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
+                gap: '8px',
                 backgroundColor: 'rgba(16, 185, 129, 0.15)',
                 border: '1px solid var(--color-success)',
                 color: 'var(--color-success)',
-                padding: '12px 16px',
+                padding: '8px 12px',
                 borderRadius: 'var(--radius-md)',
-                marginBottom: '16px',
-                fontSize: '14px',
+                marginBottom: '12px',
+                fontSize: '13px',
                 fontWeight: '600'
               }}>
-                <CheckCircle2 size={20} />
-                <span>{successMessage}</span>
+                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Notice live broadcasted successfully!</span>
               </div>
             )}
 
@@ -173,7 +173,7 @@ export const Opportunity = () => {
                 <label>Detailed Description</label>
                 <textarea
                   name="description"
-                  rows="3"
+                  rows="2"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Write the full notice content here..."

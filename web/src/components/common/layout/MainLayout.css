@@ -1,6 +1,7 @@
 .layout-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background-color: var(--color-bg);
   color: var(--color-text-main);
   position: relative;
@@ -10,17 +11,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
   min-width: 0; /* Prevents overflow issues in flex children */
 }
 
 .layout-content {
   flex: 1;
-<<<<<<< HEAD
-  padding: 32px 28px;
-  max-width: 1600px;
-  width: 100%;
-  margin: 0 auto;
-=======
   padding: 24px 28px;
   max-width: 1600px;
   width: 100%;
@@ -29,7 +26,6 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
->>>>>>> 7f3fc56541911128c86c216476381ffe0f602211
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -41,26 +37,27 @@
 .layout-content-inner {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  flex: 1;
+  min-height: 0;
+  gap: 20px;
 }
 
 .layout-footer {
-  padding: 20px 28px;
+  padding: 16px 28px;
+  background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
-  background-color: var(--color-card-bg);
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .footer-links {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .footer-links a {
@@ -74,11 +71,12 @@
 
 @media (max-width: 768px) {
   .layout-content {
-    padding: 20px 16px;
+    padding: 16px;
   }
-
+  
   .layout-footer {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 }
