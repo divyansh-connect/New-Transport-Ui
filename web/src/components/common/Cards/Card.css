@@ -26,7 +26,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -50,7 +50,11 @@
 }
 
 .web-card-content {
+<<<<<<< HEAD
   padding: 24px;
+=======
+  padding: 12px 20px;
+>>>>>>> 7f3fc56541911128c86c216476381ffe0f602211
   flex: 1;
 }
 

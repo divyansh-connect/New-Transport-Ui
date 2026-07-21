@@ -15,11 +15,27 @@
 
 .layout-content {
   flex: 1;
+<<<<<<< HEAD
   padding: 32px 28px;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
+=======
+  padding: 24px 28px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+>>>>>>> 7f3fc56541911128c86c216476381ffe0f602211
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.layout-content.page-scrollable {
+  overflow-y: auto;
+  padding-bottom: 48px;
 }
 
 .layout-content-inner {
