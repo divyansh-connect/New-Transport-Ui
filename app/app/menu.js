@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../src/context/ThemeContext';
 import { Header } from '../src/components/common/headers/Header';
 import { Card } from '../src/components/common/cards/Card';
+import { Icon } from '../src/components/common/Icon';
 import { SPACING, RADIUS } from '../src/constants/theme';
 
 export default function MenuScreen() {
@@ -12,12 +13,13 @@ export default function MenuScreen() {
   const router = useRouter();
 
   const menuItems = [
-    { label: 'Profile', icon: '👤', route: '/profile' },
-    { label: 'Opportunity', icon: '💼', route: '/opportunity' },
-    { label: 'Notification', icon: '🔔', route: '/notification' },
-    { label: 'Contact Us', icon: '📞', route: '/contact-us' },
-    { label: 'Settings', icon: '⚙️', route: '/settings' },
-    { label: 'Register as Partner/Driver', icon: '📝', route: '/register' },
+    { label: 'Login Screen', icon: 'lock', route: '/login' },
+    { label: 'Profile', icon: 'user', route: '/profile' },
+    { label: 'Opportunity', icon: 'briefcase', route: '/opportunity' },
+    { label: 'Notifications', icon: 'bell', route: '/notification' },
+    { label: 'Contact Support', icon: 'phone', route: '/contact-us' },
+    { label: 'App Settings', icon: 'settings', route: '/settings' },
+    { label: 'Register as Partner/Driver', icon: 'truck', route: '/register' },
   ];
 
   return (
@@ -26,14 +28,14 @@ export default function MenuScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} activeOpacity={0.7} onPress={() => router.push(item.route)}>
+          <TouchableOpacity key={index} activeOpacity={0.75} onPress={() => router.push(item.route)}>
             <Card style={styles.menuCard}>
               <View style={styles.itemRow}>
                 <View style={[styles.iconWrapper, { backgroundColor: theme.surface }]}>
-                  <Text style={styles.icon}>{item.icon}</Text>
+                  <Icon name={item.icon} size={22} color={theme.primary} />
                 </View>
                 <Text style={[styles.itemLabel, { color: theme.textPrimary }]}>{item.label}</Text>
-                <Text style={{ color: theme.textSecondary, fontSize: 18 }}>›</Text>
+                <Icon name="chevronRight" size={18} color={theme.textSecondary} />
               </View>
             </Card>
           </TouchableOpacity>
@@ -65,9 +67,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
-  },
-  icon: {
-    fontSize: 20,
   },
   itemLabel: {
     flex: 1,

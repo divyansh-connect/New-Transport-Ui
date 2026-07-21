@@ -1,0 +1,8 @@
+# dependencies
+node_modules/
+.expo/
+dist/
+
+# misc
+.DS_Store
+*.pem

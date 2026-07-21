@@ -27,7 +27,7 @@ export const CustomButton = ({ title, onPress, variant = 'primary', style }) => 
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.75}
       onPress={onPress}
       style={[styles.button, buttonStyle, style]}
     >
@@ -38,16 +38,22 @@ export const CustomButton = ({ title, onPress, variant = 'primary', style }) => 
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: SPACING.md,
+    paddingVertical: 14,
     paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: SPACING.xs,
     width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
   },
   text: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
 });
