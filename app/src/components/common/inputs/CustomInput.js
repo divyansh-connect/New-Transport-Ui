@@ -1,69 +1,68 @@
 import React from 'react';
-import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { useTheme } from '../../../context/ThemeContext';
-import { RADIUS, SPACING } from '../../../constants/theme';
+import { SPACING, RADIUS } from '../../../constants/theme';
 
 export const CustomInput = ({
   label,
-  placeholder,
   value,
   onChangeText,
+  placeholder,
   secureTextEntry,
   keyboardType = 'default',
-  leftIcon,
-  style,
+  error,
+  multiline = false,
+  numberOfLines = 1,
 }) => {
   const { theme } = useTheme();
 
   return (
     <View style={styles.container}>
-      {label && <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>}
-      <View style={[styles.inputWrapper, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
-        <TextInput
-          placeholder={placeholder}
-          placeholderTextColor={theme.textSecondary}
-          value={value}
-          onChangeText={onChangeText}
-          secureTextEntry={secureTextEntry}
-          keyboardType={keyboardType}
-          style={[
-            styles.input,
-            {
-              color: theme.textPrimary,
-            },
-            style,
-          ]}
-        />
-      </View>
+      {label && <Text style={[styles.label, { color: theme.textPrimary }]}>{label}</Text>}
+      <TextInput
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.surface,
+            color: theme.textPrimary,
+            borderColor: error ? theme.danger : theme.border,
+          },
+          multiline && { height: 24 * numberOfLines, textAlignVertical: 'top' },
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={theme.textSecondary}
+        secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        multiline={multiline}
+        numberOfLines={numberOfLines}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      {error && <Text style={[styles.errorText, { color: theme.danger }]}>{error}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: SPACING.xs,
-    width: '100%',
+    marginBottom: SPACING.md,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 6,
-  },
-  inputWrapper: {
-    height: 52,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-  },
-  iconContainer: {
-    marginRight: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   input: {
-    flex: 1,
-    height: '100%',
+    height: 48,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: SPACING.md,
+    borderWidth: 1,
     fontSize: 15,
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
   },
 });

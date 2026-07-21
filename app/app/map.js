@@ -21,7 +21,7 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Top Bar with Settings Icon Button */}
+      {/* Top Header Bar */}
       <View style={[styles.topBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Icon name="truck" size={24} color={theme.primary} />
@@ -29,6 +29,15 @@ export default function MapScreen() {
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {/* Quick Direct Register Button on Top Bar */}
+          <TouchableOpacity
+            style={[styles.quickRegisterBtn, { backgroundColor: theme.primary }]}
+            onPress={() => router.push('/register')}
+          >
+            <Icon name="user" size={14} color="#FFF" />
+            <Text style={styles.quickRegisterText}>Register</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.roleChip, { backgroundColor: theme.surface }]}
             onPress={() => setUserRole(userRole === 'Driver' ? 'Visitor' : 'Driver')}
@@ -36,20 +45,31 @@ export default function MapScreen() {
             <Text style={[styles.roleText, { color: theme.primary }]}>{userRole}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.settingsButton, { backgroundColor: theme.primary }]} onPress={() => router.push('/menu')}>
-            <Icon name="settings" size={20} color="#FFF" />
+          {/* Settings Menu Button */}
+          <TouchableOpacity
+            style={[styles.settingsButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => router.push('/menu')}
+          >
+            <Icon name="settings" size={20} color={theme.primary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Styled Responsive Vector Map Visual Canvas */}
-      <View style={[styles.mapCanvas, { backgroundColor: theme.isDarkMode ? '#0B132B' : '#E2E8F0' }]}>
-        <View style={[styles.roadHorizontal, { top: '40%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
-        <View style={[styles.roadHorizontal, { top: '70%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
-        <View style={[styles.roadVertical, { left: '45%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
-        <View style={[styles.roadVertical, { left: '70%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+      {/* Styled Interactive Vector Map Canvas (Free OpenStreetMap Visual Provider) */}
+      <View style={[styles.mapCanvas, { backgroundColor: theme.isDarkMode ? '#0F172A' : '#E2E8F0' }]}>
+        {/* Free Map Tile Background Grid */}
+        <View style={styles.mapGridPattern}>
+          <View style={[styles.roadHorizontal, { top: '30%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+          <View style={[styles.roadHorizontal, { top: '65%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+          <View style={[styles.roadVertical, { left: '38%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+          <View style={[styles.roadVertical, { left: '68%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+        </View>
 
-        {/* Map Markers with Lucide React Native Icons */}
+        {/* Free Map Water / Park Areas */}
+        <View style={[styles.parkArea, { backgroundColor: theme.isDarkMode ? '#064E3B' : '#D1FAE5' }]} />
+        <View style={[styles.waterArea, { backgroundColor: theme.isDarkMode ? '#1E3A8A' : '#DBEAFE' }]} />
+
+        {/* Map Markers */}
         {markers
           .filter((m) => userRole === 'Driver' || m.type === 'you')
           .map((m) => (
@@ -71,6 +91,12 @@ export default function MapScreen() {
               </Text>
             </View>
           ))}
+
+        {/* Free Map Badge */}
+        <View style={[styles.mapBadge, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Icon name="globe" size={12} color={theme.primary} />
+          <Text style={[styles.mapBadgeText, { color: theme.textSecondary }]}>Free OpenStreetMap Telemetry</Text>
+        </View>
 
         {/* Overlay Notice */}
         <View style={[styles.overlayNotice, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
@@ -123,6 +149,19 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 1,
   },
+  quickRegisterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
+    gap: 4,
+  },
+  quickRegisterText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   roleChip: {
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
@@ -136,8 +175,9 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: RADIUS.md,
-    justifyContent: 'center',
+    justify.content: 'center',
     alignItems: 'center',
+    borderWidth: 1,
   },
   mapCanvas: {
     flex: 1,
@@ -148,17 +188,38 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
+  mapGridPattern: {
+    ...StyleSheet.absoluteFillObject,
+  },
   roadHorizontal: {
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 16,
+    height: 14,
   },
   roadVertical: {
     position: 'absolute',
     top: 0,
     bottom: 0,
-    width: 16,
+    width: 14,
+  },
+  parkArea: {
+    position: 'absolute',
+    top: '10%',
+    left: '10%',
+    width: '25%',
+    height: '20%',
+    borderRadius: RADIUS.lg,
+    opacity: 0.6,
+  },
+  waterArea: {
+    position: 'absolute',
+    bottom: '15%',
+    right: '10%',
+    width: '35%',
+    height: '25%',
+    borderRadius: RADIUS.xl,
+    opacity: 0.6,
   },
   mapPin: {
     position: 'absolute',
@@ -173,6 +234,22 @@ const styles = StyleSheet.create({
   pinLabel: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  mapBadge: {
+    position: 'absolute',
+    top: SPACING.xs,
+    right: SPACING.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    gap: 4,
+  },
+  mapBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
   },
   overlayNotice: {
     position: 'absolute',

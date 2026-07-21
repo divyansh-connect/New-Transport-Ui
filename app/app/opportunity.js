@@ -7,40 +7,41 @@ import { Card } from '../src/components/common/cards/Card';
 import { SPACING, RADIUS } from '../src/constants/theme';
 
 export default function OpportunityScreen() {
-  const { theme } = useTheme();
+  const { theme, opportunityNotice } = useTheme();
 
-  const notices = [
-    {
-      title: 'High-Demand Cargo Routes Available',
-      category: 'Logistics Opportunity',
-      date: 'Today, 10:30 AM',
-      description: 'Long-haul freight opportunities open for heavy truck drivers connecting northern ports to regional fulfillment hubs. High competitive payouts.',
-    },
-    {
-      title: 'Partner Workshop Expansion',
-      category: 'Workshop Partner',
-      date: 'Yesterday',
-      description: 'Expand your local garage network. Register your oil change station or workshop to receive automatic dispatch requests.',
-    },
-  ];
+  const notice = opportunityNotice || {
+    title: 'High-Demand Cargo Routes Available',
+    category: 'Logistics Opportunity',
+    date: 'Today, 10:30 AM',
+    description: 'Long-haul freight opportunities open for heavy truck drivers connecting northern ports to regional fulfillment hubs. High competitive payouts.',
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Header title="Opportunity Notice Board" showBack={true} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        {notices.map((notice, idx) => (
-          <Card key={idx} style={styles.card}>
-            <View style={styles.badgeRow}>
-              <Text style={[styles.categoryBadge, { backgroundColor: theme.surface, color: theme.primary }]}>
-                {notice.category}
-              </Text>
-              <Text style={[styles.dateText, { color: theme.textSecondary }]}>{notice.date}</Text>
-            </View>
-            <Text style={[styles.title, { color: theme.textPrimary }]}>{notice.title}</Text>
-            <Text style={[styles.desc, { color: theme.textSecondary }]}>{notice.description}</Text>
-          </Card>
-        ))}
+        <Card style={styles.card}>
+          <View style={styles.badgeRow}>
+            <Text style={[styles.categoryBadge, { backgroundColor: theme.surface, color: theme.primary }]}>
+              {notice.category || 'Admin Announcement'}
+            </Text>
+            <Text style={[styles.dateText, { color: theme.textSecondary }]}>{notice.date || 'Just Now'}</Text>
+          </View>
+
+          <Text style={[styles.title, { color: theme.textPrimary }]}>{notice.title}</Text>
+          <Text style={[styles.desc, { color: theme.textSecondary }]}>
+            {notice.description || notice.body || notice.content}
+          </Text>
+        </Card>
+
+        {/* Client Note Information */}
+        <View style={[styles.noteBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.noteHeader, { color: theme.primary }]}>ℹ️ Notice Board Info</Text>
+          <Text style={[styles.noteText, { color: theme.textSecondary }]}>
+            This section displays static or live notices written directly by System Admin from the Web Admin Dashboard.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -80,5 +81,20 @@ const styles = StyleSheet.create({
   desc: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  noteBox: {
+    padding: SPACING.md,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    marginTop: SPACING.xs,
+  },
+  noteHeader: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  noteText: {
+    fontSize: 12,
+    lineHeight: 18,
   },
 });

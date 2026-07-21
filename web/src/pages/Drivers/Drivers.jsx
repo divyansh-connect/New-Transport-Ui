@@ -52,6 +52,7 @@ export const Drivers = () => {
   // Selected driver for detail drawer
   const [selectedDriver, setSelectedDriver] = useState(null);
   // Rejection modal state
+  const [rejectingDriver, setRejectingDriver] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   // Edit profile state
@@ -132,16 +133,32 @@ export const Drivers = () => {
     }
   };
 
-  const handleRejectClick = () => {
+  const handleRejectClick = (driver) => {
+    setRejectingDriver(driver);
     setRejectReason('');
     setShowRejectModal(true);
   };
 
+  const handleCloseRejectModal = () => {
+    setShowRejectModal(false);
+    setRejectingDriver(null);
+    setRejectReason('');
+  };
+
   const handleConfirmReject = () => {
     if (!rejectReason.trim()) return;
-    rejectDriver(selectedDriver.id, rejectReason);
-    setSelectedDriver((prev) => ({ ...prev, status: 'Rejected', rejectionReason: rejectReason }));
-    setShowRejectModal(false);
+    const target = rejectingDriver || selectedDriver;
+    if (!target) return;
+    const finalReason = rejectReason.trim();
+    rejectDriver(target.id, finalReason);
+    if (selectedDriver && selectedDriver.id === target.id) {
+      setSelectedDriver((prev) => ({
+        ...prev,
+        status: 'Rejected',
+        rejectionReason: finalReason,
+      }));
+    }
+    handleCloseRejectModal();
   };
 
   // Unique lists for filters
@@ -224,18 +241,6 @@ export const Drivers = () => {
           onClick={() => handleTabChange('rejected')}
         >
           Rejected ({countRejected})
-        </button>
-        <button
-          className={`drivers-tab-btn ${activeTab === 'payments' ? 'active' : ''}`}
-          onClick={() => handleTabChange('payments')}
-        >
-          Payment List ({payments.length})
-        </button>
-        <button
-          className={`drivers-tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
-          onClick={() => handleTabChange('notifications')}
-        >
-          Notifications ({notifications.filter((n) => !n.read).length})
         </button>
       </div>
 
@@ -365,10 +370,7 @@ export const Drivers = () => {
                           <button
                             className="btn-table-action reject"
                             title="Reject Driver"
-                            onClick={() => {
-                              setSelectedDriver(row);
-                              handleRejectClick();
-                            }}
+                            onClick={() => handleRejectClick(row)}
                           >
                             <X size={16} />
                           </button>
@@ -756,7 +758,7 @@ export const Drivers = () => {
                         <button
                           className="btn-secondary"
                           style={{ flex: 1, color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
-                          onClick={handleRejectClick}
+                          onClick={() => handleRejectClick(selectedDriver)}
                         >
                           Reject Request
                         </button>
@@ -772,12 +774,21 @@ export const Drivers = () => {
 
       {/* Approval Modal - Rejection Reason Dialog */}
       {showRejectModal && (
-        <div className="dialog-overlay">
-          <div className="dialog-box">
-            <h4 className="dialog-title">Provide Rejection Reason</h4>
+        <div className="dialog-overlay" onClick={handleCloseRejectModal}>
+          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h4 className="dialog-title" style={{ margin: 0 }}>Provide Rejection Reason</h4>
+              <button
+                className="close-icon-btn"
+                onClick={handleCloseRejectModal}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
             <div className="dialog-body">
               <p style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>
-                Please specify the reason why <strong>{selectedDriver?.name}</strong>'s application is rejected.
+                Please specify the reason why <strong>{(rejectingDriver || selectedDriver)?.name}</strong>'s application is rejected.
               </p>
               <textarea
                 placeholder="e.g. Expired CDL License, blurry vehicle photo, mismatching registration plates..."
@@ -786,14 +797,17 @@ export const Drivers = () => {
               />
             </div>
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setShowRejectModal(false)}>
+              <button className="btn-secondary" onClick={handleCloseRejectModal}>
                 Cancel
               </button>
               <button
                 className="btn-danger"
                 onClick={handleConfirmReject}
                 disabled={!rejectReason.trim()}
-                style={{ opacity: rejectReason.trim() ? 1 : 0.6 }}
+                style={{
+                  opacity: rejectReason.trim() ? 1 : 0.5,
+                  cursor: rejectReason.trim() ? 'pointer' : 'not-allowed',
+                }}
               >
                 Confirm Rejection
               </button>

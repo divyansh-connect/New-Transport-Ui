@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/common/Cards/Card';
 import { Button } from '../../components/common/Button/Button';
 import { Input, Select } from '../../components/common/Input/Input';
+import { Modal } from '../../components/common/Modal/Modal';
 import { User, UserPlus, Mail, Phone, MapPin, Truck, CheckSquare } from 'lucide-react';
 import './Registration.css';
 
 export const Registration = () => {
   const navigate = useNavigate();
+  const [alertMessage, setAlertMessage] = useState('');
   const [formData, setFormData] = useState({
     type: 'driver',
     firstName: '',
@@ -21,8 +23,14 @@ export const Registration = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.lastName) return alert('Name is required');
-    if (!formData.termsAccepted) return alert('You must accept the terms and conditions');
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      setAlertMessage('First Name and Last Name are required.');
+      return;
+    }
+    if (!formData.termsAccepted) {
+      setAlertMessage('You must accept the Terms and Conditions to proceed.');
+      return;
+    }
     
     // Read existing
     const saved = localStorage.getItem('registrations');
@@ -158,6 +166,20 @@ export const Registration = () => {
           </form>
         </Card>
       </div>
+
+      {/* Validation React Modal */}
+      <Modal
+        isOpen={!!alertMessage}
+        onClose={() => setAlertMessage('')}
+        title="Validation Required"
+        subtitle="Please check your form inputs."
+        primaryActionLabel="OK"
+        onPrimaryAction={() => setAlertMessage('')}
+      >
+        <p style={{ color: 'var(--color-text-main)', fontSize: '14px', margin: 0 }}>
+          {alertMessage}
+        </p>
+      </Modal>
     </div>
   );
 };

@@ -238,7 +238,16 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
                 ))}
               </div>
               <div className="dropdown-footer">
-                <button className="dropdown-action-link">View All Notifications</button>
+                <button
+                  className="dropdown-action-link"
+                  onClick={() => {
+                    setShowNotifications(false);
+                    navigate('/notifications');
+                  }}
+                  style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'center' }}
+                >
+                  View All Notifications
+                </button>
               </div>
             </div>
           )}
