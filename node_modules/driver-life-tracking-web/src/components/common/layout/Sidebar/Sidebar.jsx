@@ -11,7 +11,8 @@ import {
   Settings,
   Truck,
   HelpCircle,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -109,12 +110,39 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
         </div>
 
         {(!isCollapsed || isMobileOpen) && (
-          <div className="sidebar-footer-card">
-            <HelpCircle size={18} className="help-icon" />
-            <div className="footer-card-text">
-              <strong>Need Assistance?</strong>
-              <p>Check Developer API & Docs</p>
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="sidebar-footer-card">
+              <HelpCircle size={18} className="help-icon" />
+              <div className="footer-card-text">
+                <strong>Need Assistance?</strong>
+                <p>Check Developer API & Docs</p>
+              </div>
             </div>
+            
+            <button 
+              onClick={() => { localStorage.removeItem('isAuthenticated'); window.location.href = '/login'; }} 
+              style={{
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px',
+                width: '100%',
+                padding: '12px',
+                background: 'transparent',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--color-danger)',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '14px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.borderColor = 'var(--color-danger)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+            >
+              <LogOut size={18} />
+              Sign Out
+            </button>
           </div>
         )}
       </aside>
