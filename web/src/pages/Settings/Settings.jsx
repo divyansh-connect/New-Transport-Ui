@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Button } from '../../components/common/Button/Button';
-import { Input, Select } from '../../components/common/Input/Input';
+import { Input } from '../../components/common/Input/Input';
 import { Badge } from '../../components/common/Badge/Badge';
 import { useTheme } from '../../context/ThemeContext';
 import {
@@ -12,7 +12,7 @@ import {
   Bell,
   Palette,
   Save,
-  Globe,
+  CheckCircle2,
   Lock,
   Mail,
   Smartphone
@@ -20,15 +20,16 @@ import {
 import './Settings.css';
 
 export const Settings = () => {
-  const { theme, setTheme, toggleTheme } = useTheme();
+  const { theme, setTheme, profile, updateProfile } = useTheme();
   const [activeTab, setActiveTab] = useState('appearance');
   const [isSaving, setIsSaving] = useState(false);
+  const [successBanner, setSuccessBanner] = useState('');
 
   const [profileData, setProfileData] = useState({
-    name: 'Admin User',
-    email: 'admin@driverlife.com',
-    role: 'System Administrator',
-    phone: '+1 (555) 234-5678',
+    name: profile?.name || 'Admin User',
+    email: profile?.email || 'admin@driverlife.com',
+    role: profile?.role || 'System Administrator',
+    phone: profile?.phone || '+1 (555) 234-5678',
     timezone: 'UTC-05:00 Eastern Time',
   });
 
@@ -42,8 +43,14 @@ export const Settings = () => {
   const handleSave = () => {
     setIsSaving(true);
     setTimeout(() => {
+      updateProfile(profileData);
       setIsSaving(false);
-    }, 800);
+      setSuccessBanner('Profile details saved successfully & live synced to Top Navbar!');
+
+      setTimeout(() => {
+        setSuccessBanner('');
+      }, 4000);
+    }, 500);
   };
 
   return (
@@ -62,6 +69,24 @@ export const Settings = () => {
           Save Changes
         </Button>
       </div>
+
+      {successBanner && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+          border: '1px solid var(--color-success)',
+          color: 'var(--color-success)',
+          padding: '12px 18px',
+          borderRadius: 'var(--radius-lg)',
+          fontSize: '14px',
+          fontWeight: '600'
+        }}>
+          <CheckCircle2 size={20} />
+          <span>{successBanner}</span>
+        </div>
+      )}
 
       <div className="settings-layout-grid">
         {/* Settings Tab Sidebar */}

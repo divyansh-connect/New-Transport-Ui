@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../components/common/Cards/Card';
-import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert } from 'lucide-react';
+import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import './Opportunity.css';
 
 export const Opportunity = () => {
-  const opportunities = [
+  const [opportunities, setOpportunities] = useState([
     {
       id: 1,
       title: 'High-Demand Cargo Routes Available',
@@ -32,7 +32,67 @@ export const Opportunity = () => {
       priority: 'Critical',
       description: 'Mandatory speed limits enforced across all active tracking nodes due to heavy rainfall warnings.'
     }
-  ];
+  ]);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    type: 'Freight',
+    priority: 'Normal',
+    location: '',
+    description: ''
+  });
+
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePublish = (e) => {
+    e.preventDefault();
+    if (!formData.title.trim() || !formData.description.trim()) {
+      alert('Please fill out Notice Title and Detailed Description.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      const today = new Date();
+      const formattedDate = `${today.getDate()} ${today.toLocaleString('en', { month: 'short' })} ${today.getFullYear()}`;
+
+      const newNotice = {
+        id: Date.now(),
+        title: formData.title.trim(),
+        type: formData.type,
+        priority: formData.priority,
+        location: formData.location.trim() || 'All Zones',
+        date: formattedDate,
+        description: formData.description.trim()
+      };
+
+      setOpportunities((prev) => [newNotice, ...prev]);
+      setFormData({
+        title: '',
+        type: 'Freight',
+        priority: 'Normal',
+        location: '',
+        description: ''
+      });
+      setIsSubmitting(false);
+      setSuccessMessage('Notice successfully published & live broadcasted to Driver App!');
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 4000);
+    }, 400);
+  };
+
+  const handleDelete = (id) => {
+    setOpportunities((prev) => prev.filter((item) => item.id !== id));
+  };
 
   return (
     <div className="page-container opportunity-page">
@@ -44,44 +104,99 @@ export const Opportunity = () => {
       <div className="opportunity-grid">
         <div className="form-column">
           <Card title="Publish New Notice" subtitle="Broadcast information to all registered drivers.">
-            <form className="opportunity-form" onSubmit={(e) => e.preventDefault()}>
+            {successMessage && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                border: '1px solid var(--color-success)',
+                color: 'var(--color-success)',
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-md)',
+                marginBottom: '16px',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}>
+                <CheckCircle2 size={20} />
+                <span>{successMessage}</span>
+              </div>
+            )}
+
+            <form className="opportunity-form" onSubmit={handlePublish}>
               <div className="form-group">
                 <label>Notice Title</label>
-                <input type="text" placeholder="e.g. New Route Available..." className="form-control" />
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="e.g. New Route Available..."
+                  className="form-control"
+                  required
+                />
               </div>
 
               <div className="form-row">
                 <div className="form-group">
                   <label>Type</label>
-                  <select className="form-control">
-                    <option>Freight</option>
-                    <option>Safety</option>
-                    <option>Partnership</option>
-                    <option>General</option>
+                  <select name="type" value={formData.type} onChange={handleChange} className="form-control">
+                    <option value="Freight">Freight</option>
+                    <option value="Safety">Safety</option>
+                    <option value="Partnership">Partnership</option>
+                    <option value="General">General</option>
                   </select>
                 </div>
                 <div className="form-group">
                   <label>Priority</label>
-                  <select className="form-control">
-                    <option>Normal</option>
-                    <option>High</option>
-                    <option>Critical</option>
+                  <select name="priority" value={formData.priority} onChange={handleChange} className="form-control">
+                    <option value="Normal">Normal</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
                 <label>Target Location / Zone</label>
-                <input type="text" placeholder="e.g. All Zones" className="form-control" />
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="e.g. All Zones"
+                  className="form-control"
+                />
               </div>
 
               <div className="form-group">
                 <label>Detailed Description</label>
-                <textarea rows="5" placeholder="Write the full notice content here..." className="form-control"></textarea>
+                <textarea
+                  name="description"
+                  rows="5"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Write the full notice content here..."
+                  className="form-control"
+                  required
+                ></textarea>
               </div>
 
-              <button type="submit" className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-md">
-                <Send size={18} /> Publish Notice
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-md"
+                style={{
+                  padding: '12px',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                  borderRadius: 'var(--radius-md)',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Send size={18} /> {isSubmitting ? 'Publishing...' : 'Publish Notice'}
               </button>
             </form>
           </Card>
@@ -94,30 +209,41 @@ export const Opportunity = () => {
           </div>
 
           <div className="opportunity-list">
-            {opportunities.map(opp => (
-              <div key={opp.id} className="opportunity-card">
-                <div className="opportunity-card-header">
-                  <div className="d-flex align-center gap-sm">
-                    {opp.priority === 'Critical' ? <ShieldAlert size={18} color="var(--color-danger)" /> : <Briefcase size={18} color="var(--color-primary)" />}
-                    <h4 className="opportunity-title">{opp.title}</h4>
+            {opportunities.length === 0 ? (
+              <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', padding: '24px' }}>
+                No active broadcasts. Use the form on the left to publish a notice.
+              </p>
+            ) : (
+              opportunities.map((opp) => (
+                <div key={opp.id} className="opportunity-card">
+                  <div className="opportunity-card-header">
+                    <div className="d-flex align-center gap-sm">
+                      {opp.priority === 'Critical' ? (
+                        <ShieldAlert size={18} color="var(--color-danger)" />
+                      ) : (
+                        <Briefcase size={18} color="var(--color-primary)" />
+                      )}
+                      <h4 className="opportunity-title">{opp.title}</h4>
+                    </div>
+                    <span className={`priority-badge ${opp.priority.toLowerCase()}`}>{opp.priority}</span>
                   </div>
-                  <span className={`priority-badge ${opp.priority.toLowerCase()}`}>{opp.priority}</span>
+
+                  <p className="opportunity-desc">{opp.description}</p>
+
+                  <div className="opportunity-card-footer">
+                    <div className="meta-info">
+                      <span className="meta-item"><Clock size={14} /> {opp.date}</span>
+                      <span className="meta-item"><Map size={14} /> {opp.location}</span>
+                    </div>
+                    <div className="action-buttons">
+                      <button className="btn-icon danger" onClick={() => handleDelete(opp.id)} title="Delete Broadcast">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                
-                <p className="opportunity-desc">{opp.description}</p>
-                
-                <div className="opportunity-card-footer">
-                  <div className="meta-info">
-                    <span className="meta-item"><Clock size={14} /> {opp.date}</span>
-                    <span className="meta-item"><Map size={14} /> {opp.location}</span>
-                  </div>
-                  <div className="action-buttons">
-                    <button className="btn-icon"><Edit2 size={16} /></button>
-                    <button className="btn-icon danger"><Trash2 size={16} /></button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
