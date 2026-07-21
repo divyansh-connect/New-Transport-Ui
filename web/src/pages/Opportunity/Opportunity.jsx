@@ -175,7 +175,7 @@ export const Opportunity = () => {
                 <label>Detailed Description</label>
                 <textarea
                   name="description"
-                  rows="5"
+                  rows="3"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Write the full notice content here..."

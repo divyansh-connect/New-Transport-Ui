@@ -18,15 +18,20 @@
 
 .layout-content {
   flex: 1;
-  padding: 24px 28px 48px 28px;
+  padding: 24px 28px;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.layout-content.page-scrollable {
+  overflow-y: auto;
+  padding-bottom: 48px;
 }
 
 .layout-content-inner {
