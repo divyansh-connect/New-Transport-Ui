@@ -22,14 +22,6 @@ export const MainLayout = ({ children }) => {
         <main className="layout-content">
           <div className="layout-content-inner">{children}</div>
         </main>
-        <footer className="layout-footer">
-          <span>© 2026 Driver Life Admin Platform. All rights reserved.</span>
-          <div className="footer-links">
-            <a href="#privacy">Privacy Policy</a>
-            <a href="#terms">Terms of Service</a>
-            <a href="#support">Support</a>
-          </div>
-        </footer>
       </div>
     </div>
   );

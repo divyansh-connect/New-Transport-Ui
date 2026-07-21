@@ -7,6 +7,18 @@
 .services-page .text-muted { color: var(--color-text-muted); }
 .services-page .text-sm { font-size: 13px; }
 
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
 .btn-primary {
   background-color: var(--color-primary);
   color: white;
@@ -14,6 +26,8 @@
   border-radius: var(--radius-sm);
   font-weight: 600;
   transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 .btn-primary:hover {
   background-color: var(--color-primary-hover);
@@ -27,6 +41,7 @@
   border-radius: var(--radius-sm);
   font-weight: 500;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 .btn-outline:hover {
   background-color: var(--color-surface);
@@ -39,6 +54,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 .btn-icon:hover {
   background-color: var(--color-surface);
@@ -50,6 +66,13 @@
   margin-bottom: 24px;
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 2px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.services-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .service-tab {
@@ -61,9 +84,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  border: none;
   border-bottom: 3px solid transparent;
   margin-bottom: -3px;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .service-tab:hover {
@@ -88,12 +114,24 @@
   color: white;
 }
 
+.card-toolbar {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .search-bar {
   background-color: var(--color-surface);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
   width: 300px;
+  transition: border-color 0.2s ease;
 }
+
+.search-bar:focus-within {
+  border-color: var(--color-primary);
+}
+
 .search-input {
   border: none;
   background: transparent;
@@ -101,6 +139,7 @@
   color: var(--color-text-main);
   width: 100%;
   font-family: inherit;
+  font-size: 0.875rem;
 }
 
 .id-badge {
@@ -110,6 +149,7 @@
   font-family: monospace;
   font-size: 13px;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .status-badge {
@@ -118,6 +158,7 @@
   font-size: 12px;
   font-weight: 600;
   display: inline-block;
+  white-space: nowrap;
 }
 .status-badge.active {
   background-color: rgba(16, 185, 129, 0.1);
@@ -130,4 +171,49 @@
 .status-badge.maintenance {
   background-color: rgba(245, 158, 11, 0.1);
   color: var(--color-warning);
+}
+
+/* ==================== RESPONSIVE MEDIA QUERIES ==================== */
+
+@media (max-width: 768px) {
+  .page-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .services-tabs {
+    gap: 8px;
+  }
+
+  .service-tab {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .page-header .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .card-toolbar {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .search-bar {
+    width: 100%;
+  }
+
+  .btn-outline {
+    width: 100%;
+    text-align: center;
+  }
 }

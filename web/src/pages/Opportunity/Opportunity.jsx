@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Modal } from '../../components/common/Modal/Modal';
 import './Opportunity.css';
 
 export const Opportunity = () => {
+  const [validationAlert, setValidationAlert] = useState('');
   const [opportunities, setOpportunities] = useState([
     {
       id: 1,
@@ -53,7 +55,7 @@ export const Opportunity = () => {
   const handlePublish = (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.description.trim()) {
-      alert('Please fill out Notice Title and Detailed Description.');
+      setValidationAlert('Please fill out Notice Title and Detailed Description.');
       return;
     }
 
@@ -82,7 +84,7 @@ export const Opportunity = () => {
         description: ''
       });
       setIsSubmitting(false);
-      setSuccessMessage('Notice live broadcasted successfully!');
+      setSuccessMessage('Notice successfully published & live broadcasted to Driver App!');
 
       setTimeout(() => {
         setSuccessMessage('');
@@ -108,18 +110,18 @@ export const Opportunity = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
                 backgroundColor: 'rgba(16, 185, 129, 0.15)',
                 border: '1px solid var(--color-success)',
                 color: 'var(--color-success)',
-                padding: '8px 12px',
+                padding: '12px 16px',
                 borderRadius: 'var(--radius-md)',
-                marginBottom: '12px',
-                fontSize: '13px',
+                marginBottom: '16px',
+                fontSize: '14px',
                 fontWeight: '600'
               }}>
-                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Notice live broadcasted successfully!</span>
+                <CheckCircle2 size={20} />
+                <span>{successMessage}</span>
               </div>
             )}
 
@@ -173,7 +175,7 @@ export const Opportunity = () => {
                 <label>Detailed Description</label>
                 <textarea
                   name="description"
-                  rows="2"
+                  rows="5"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Write the full notice content here..."
@@ -247,6 +249,20 @@ export const Opportunity = () => {
           </div>
         </div>
       </div>
+
+      {/* Validation React Modal */}
+      <Modal
+        isOpen={!!validationAlert}
+        onClose={() => setValidationAlert('')}
+        title="Validation Required"
+        subtitle="Please check broadcast notice details."
+        primaryActionLabel="OK"
+        onPrimaryAction={() => setValidationAlert('')}
+      >
+        <p style={{ color: 'var(--color-text-main)', fontSize: '14px', margin: 0 }}>
+          {validationAlert}
+        </p>
+      </Modal>
     </div>
   );
 };

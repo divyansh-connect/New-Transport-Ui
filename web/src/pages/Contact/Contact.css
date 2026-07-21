@@ -7,8 +7,8 @@
 
 .contact-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
   margin-bottom: 24px;
 }
 
@@ -16,10 +16,10 @@
   background-color: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 24px;
+  padding: 20px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -29,12 +29,13 @@
 }
 
 .icon-wrapper {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-md);
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .icon-wrapper.primary {
@@ -56,25 +57,28 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .contact-details h3 {
-  font-size: 16px;
+  font-size: 15px;
   margin: 0;
   color: var(--color-text-main);
+  font-weight: 600;
 }
 
 .contact-details p {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-muted);
   margin: 0;
 }
 
 .contact-value {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text-main);
-  margin-top: 4px;
+  margin-top: 2px;
+  word-break: break-all;
 }
 
 .id-badge {
@@ -84,6 +88,7 @@
   font-family: monospace;
   font-size: 13px;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .status-badge {
@@ -92,29 +97,42 @@
   font-size: 12px;
   font-weight: 600;
   display: inline-block;
-}
-.status-badge.open {
-  background-color: rgba(37, 99, 235, 0.1);
-  color: var(--color-primary);
-}
-.status-badge.in-progress {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
-}
-.status-badge.resolved {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
+  white-space: nowrap;
 }
 
-.btn-icon {
-  background-color: transparent;
-  padding: 6px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease;
-}
-.btn-icon:hover {
+.ticket-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   background-color: var(--color-surface);
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+/* ==================== RESPONSIVE MEDIA QUERIES ==================== */
+
+@media (max-width: 768px) {
+  .contact-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .contact-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .icon-wrapper {
+    width: 42px;
+    height: 42px;
+  }
+
+  .ticket-info-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
 }
