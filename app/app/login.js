@@ -69,6 +69,21 @@ export default function LoginScreen() {
     }
   };
 
+  // ── Quick Demo Login for Instant Testing ────────────────────────────────────
+  const handleDemoApprovedDriver = async () => {
+    const dummyDriver = {
+      name: 'Ahmed',
+      lastName: 'Al-Sayed',
+      mobileNo: '+966 50 123 4567',
+      serviceRole: 'Driver',
+      carPlate: 'KSA-9988',
+      status: 'Approved',
+      paymentStatus: 'Paid ($49.99)',
+    };
+    await saveUserProfile(dummyDriver);
+    router.replace('/map');
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Header title={isArabic ? 'تسجيل الدخول' : 'Login'} showBack={true} />
@@ -116,6 +131,14 @@ export default function LoginScreen() {
               : (isArabic ? 'دخول' : 'Login')}
             onPress={handleLogin}
             style={{ marginTop: SPACING.md }}
+          />
+
+          {/* ⚡ Quick Demo Button for testing Approved Driver State */}
+          <CustomButton
+            title={isArabic ? '⚡ دخول فوري سائق معتمد (تجريبي)' : '⚡ Demo Login: Approved Driver'}
+            variant="secondary"
+            onPress={handleDemoApprovedDriver}
+            style={{ marginTop: SPACING.sm }}
           />
         </Card>
 

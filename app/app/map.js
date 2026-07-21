@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity, Modal, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
@@ -76,14 +76,25 @@ export default function MapScreen() {
     },
     {
       id: 4,
-      title: 'Car Location Node',
-      description: 'Fleet Parking, Recovery & Terminal Depot',
+      title: 'Active Heavy Truck (Volvo FH16)',
+      description: 'Available for Goods & Freight Transport. Capacity: 25 Tons.',
       lat: userLocation.latitude + 0.020,
       lng: userLocation.longitude - 0.010,
       type: 'location',
-      icon: 'car',
+      icon: 'truck',
       contact: '+966 51 654 3210',
-      address: 'Northern Ring Road Hub 8',
+      address: 'Northern Ring Road Freight Hub',
+    },
+    {
+      id: 5,
+      title: 'Active Recovery Truck (Flatbed)',
+      description: 'Vehicle Towing & Roadside Recovery Service.',
+      lat: userLocation.latitude - 0.015,
+      lng: userLocation.longitude + 0.018,
+      type: 'location',
+      icon: 'car',
+      contact: '+966 50 888 9999',
+      address: 'King Fahd Road Service Hub',
     },
   ];
 
@@ -175,17 +186,18 @@ export default function MapScreen() {
           }));
         });
 
-        // 2. Service Hubs - dark navy pill style matching reference UI
+        // 2. Service Hubs & Active Drivers
         var isDriver = '${userRole}' === 'Driver';
-        if (isDriver) {
-          var services = ${JSON.stringify(serviceNodes)};
-          var pinConfig = {
-            workshop:  { icon: '🔧',  label: 'Workshop Hub' },
-            oil:       { icon: '🛢️', label: 'Oil Change Center' },
-            location:  { icon: '🚗', label: 'Car Location Node' }
-          };
-          services.forEach(function(s) {
-            var cfg = pinConfig[s.type] || { icon: '&#128205;', label: s.title };
+        var services = ${JSON.stringify(serviceNodes)};
+        var pinConfig = {
+          workshop:  { icon: '🔧',  label: 'Workshop Hub' },
+          oil:       { icon: '🛢️', label: 'Oil Change Center' },
+          location:  { icon: '🚗', label: 'Active Driver' }
+        };
+        services.forEach(function(s) {
+          // Visitors see Active Drivers (type === 'location'). Approved Drivers see everything (workshops, oil, location).
+          if (s.type === 'location' || isDriver) {
+            var cfg = pinConfig[s.type] || { icon: '📍', label: s.title };
             var sIcon = L.divIcon({
               className: '',
               html: '<div class="service-pin"><span class="pin-icon">' + cfg.icon + '</span> ' + cfg.label + '</div>',
@@ -196,8 +208,8 @@ export default function MapScreen() {
             sMarker.on('click', function() {
               window.ReactNativeWebView.postMessage(JSON.stringify(s));
             });
-          });
-        }
+          }
+        });
       </script>
     </body>
     </html>
@@ -261,7 +273,7 @@ export default function MapScreen() {
             ? t.allServicesVisible
             : isPending
               ? (isArabic ? 'بانتظار موافقة المدير — الخدمات غير مفعّلة بعد' : 'Pending Admin Approval — Services locked')
-              : (isArabic ? 'وضع الزائر — يرى موقعه فقط' : 'Visitor Mode — Your location only')}
+              : (isArabic ? 'وضع الزائر — عرض السائقين المتاحين' : 'Visitor Mode — Viewing Active Drivers')}
         </Text>
       </View>
 
@@ -348,13 +360,63 @@ export default function MapScreen() {
                 <Icon name="phone" size={16} color={theme.primary} />
                 <Text style={[styles.infoText, { color: theme.textPrimary }]}>{selectedService?.contact}</Text>
               </View>
+
+              {/* Booking & Action Buttons for Customer/Visitor */}
+              <View style={{ gap: 8, marginTop: 12 }}>
+                <TouchableOpacity
+                  style={[styles.modalActionBtn, { backgroundColor: '#16a34a', flexDirection: 'row', justifyContent: 'center', gap: 6 }]}
+                  onPress={() => {
+                    const phone = (selectedService?.contact || '').replace(/[^0-9+]/g, '');
+                    Linking.openURL(`tel:${phone || '+966501234567'}`);
+                  }}
+                >
+                  <Icon name="phone" size={16} color="#FFF" />
+                  <Text style={styles.modalActionText}>
+                    {isArabic ? 'الاتصال بالسائق / الخدمة' : 'Call Driver / Service'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalActionBtn, { backgroundColor: '#25D366', flexDirection: 'row', justifyContent: 'center', gap: 6 }]}
+                  onPress={() => {
+                    const phone = (selectedService?.contact || '').replace(/[^0-9+]/g, '');
+                    const text = encodeURIComponent('Hello, I want to book transport / hire vehicle service.');
+                    Linking.openURL(`https://wa.me/${phone.replace('+', '') || '966501234567'}?text=${text}`);
+                  }}
+                >
+                  <Icon name="chat" size={16} color="#FFF" />
+                  <Text style={styles.modalActionText}>
+                    {isArabic ? 'واتساب - حجز السائق' : 'WhatsApp - Book Driver'}
+                  </Text>
+                </TouchableOpacity>
+
+                {selectedService?.type === 'location' && (
+                  <TouchableOpacity
+                    style={[styles.modalActionBtn, { backgroundColor: theme.primary, flexDirection: 'row', justifyContent: 'center', gap: 6 }]}
+                    onPress={() => {
+                      Alert.alert(
+                        isArabic ? 'طلب حجز الرحلة' : 'Transport Booking Sent',
+                        isArabic
+                          ? 'تم إرسال طلب الحجز إلى السائق. سيتم التواصل معك فوراً.'
+                          : `Booking request sent to ${selectedService?.title}. Driver will contact you shortly!`,
+                        [{ text: isArabic ? 'موافق' : 'OK', onPress: () => setSelectedService(null) }]
+                      );
+                    }}
+                  >
+                    <Icon name="truck" size={16} color="#FFF" />
+                    <Text style={styles.modalActionText}>
+                      {isArabic ? 'تأكيد طلب الشاحنة / الحجز' : 'Request Truck / Hire Now'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             <TouchableOpacity
-              style={[styles.modalActionBtn, { backgroundColor: theme.primary }]}
+              style={[styles.modalActionBtn, { backgroundColor: theme.surface, marginTop: 10, borderWidth: 1, borderColor: theme.border }]}
               onPress={() => setSelectedService(null)}
             >
-              <Text style={styles.modalActionText}>{isArabic ? 'إغلاق' : 'Close Details'}</Text>
+              <Text style={[styles.modalActionText, { color: theme.textSecondary }]}>{isArabic ? 'إغلاق' : 'Close'}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,3 +1,7 @@
+# native
+android/
+ios/
+
 # dependencies
 node_modules/
 .expo/
