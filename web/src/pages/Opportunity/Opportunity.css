@@ -105,12 +105,12 @@
   background-color: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 16px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  padding: 10px 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .opportunity-card:hover {
-  border-color: rgba(37, 99, 235, 0.4);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -118,20 +118,20 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .opportunity-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-text-main);
   margin: 0;
 }
 
 .priority-badge {
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -150,10 +150,10 @@
 }
 
 .opportunity-desc {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text-muted);
-  line-height: 1.5;
-  margin-bottom: 16px;
+  line-height: 1.4;
+  margin-bottom: 8px;
 }
 
 .opportunity-card-footer {
@@ -161,7 +161,7 @@
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid var(--color-border);
-  padding-top: 12px;
+  padding-top: 6px;
 }
 
 .meta-info {

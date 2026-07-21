@@ -175,7 +175,7 @@ export const Opportunity = () => {
                 <label>Detailed Description</label>
                 <textarea
                   name="description"
-                  rows="5"
+                  rows="2"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Write the full notice content here..."
@@ -187,15 +187,16 @@ export const Opportunity = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-md"
+                className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-sm"
                 style={{
-                  padding: '12px',
+                  padding: '9px 12px',
                   backgroundColor: 'var(--color-primary)',
                   color: 'white',
                   borderRadius: 'var(--radius-md)',
                   fontWeight: '600',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.7 : 1
                 }}
               >
                 <Send size={18} /> {isSubmitting ? 'Publishing...' : 'Publish Notice'}
