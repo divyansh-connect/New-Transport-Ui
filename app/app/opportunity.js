@@ -5,9 +5,12 @@ import { useTheme } from '../src/context/ThemeContext';
 import { Header } from '../src/components/common/headers/Header';
 import { Card } from '../src/components/common/cards/Card';
 import { SPACING, RADIUS } from '../src/constants/theme';
+import { translations } from '../src/constants/translations';
 
 export default function OpportunityScreen() {
-  const { theme, opportunityNotice } = useTheme();
+  const { theme, opportunityNotice, language } = useTheme();
+  const t = translations[language] || translations.English;
+  const isArabic = language === 'Arabic';
 
   const notice = opportunityNotice || {
     title: 'High-Demand Cargo Routes Available',
@@ -18,28 +21,25 @@ export default function OpportunityScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="Opportunity Notice Board" showBack={true} />
-
+      <Header title={t.opportunityTitle} showBack={true} />
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
-          <View style={styles.badgeRow}>
+          <View style={[styles.badgeRow, isArabic && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.categoryBadge, { backgroundColor: theme.surface, color: theme.primary }]}>
               {notice.category || 'Admin Announcement'}
             </Text>
             <Text style={[styles.dateText, { color: theme.textSecondary }]}>{notice.date || 'Just Now'}</Text>
           </View>
-
-          <Text style={[styles.title, { color: theme.textPrimary }]}>{notice.title}</Text>
-          <Text style={[styles.desc, { color: theme.textSecondary }]}>
+          <Text style={[styles.title, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{notice.title}</Text>
+          <Text style={[styles.desc, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
             {notice.description || notice.body || notice.content}
           </Text>
         </Card>
 
-        {/* Client Note Information */}
         <View style={[styles.noteBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.noteHeader, { color: theme.primary }]}>ℹ️ Notice Board Info</Text>
-          <Text style={[styles.noteText, { color: theme.textSecondary }]}>
-            This section displays static or live notices written directly by System Admin from the Web Admin Dashboard.
+          <Text style={[styles.noteHeader, { color: theme.primary, textAlign: isArabic ? 'right' : 'left' }]}>{t.noticeInfo}</Text>
+          <Text style={[styles.noteText, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+            {t.noticeDesc}
           </Text>
         </View>
       </ScrollView>
