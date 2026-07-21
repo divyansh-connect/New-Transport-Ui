@@ -17,23 +17,6 @@ import './index.css';
 export function App() {
   return (
     <ThemeProvider>
-<<<<<<< HEAD
-      <BrowserRouter>
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/drivers" element={<Drivers />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/opportunity" element={<Opportunity />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </MainLayout>
-      </BrowserRouter>
-=======
       <DriverProvider>
         <BrowserRouter>
           <MainLayout>
@@ -46,14 +29,13 @@ export function App() {
               <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </MainLayout>
         </BrowserRouter>
       </DriverProvider>
->>>>>>> ffff98a3d8fb31d5a6da9946db77ef5cd78da7ad
     </ThemeProvider>
   );
 }
 
 export default App;
-
