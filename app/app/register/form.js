@@ -15,10 +15,10 @@ export default function RegistrationFormScreen() {
   const { registrationType = 'Driver' } = useLocalSearchParams();
 
   const [form, setForm] = useState({
-    firstName: '',
+    name: '',
     lastName: '',
-    mobileNumber: '',
-    plateNumber: '',
+    mobileNo: '',
+    carPlateNumber: '',
     email: '',
   });
 
@@ -39,52 +39,47 @@ export default function RegistrationFormScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
-          <Text style={[styles.sectionTitle, { color: theme.primary }]}>Personal & Vehicle Details</Text>
-
           <CustomInput
-            label="First Name"
-            placeholder="John"
-            value={form.firstName}
-            onChangeText={(val) => handleChange('firstName', val)}
+            label="Name"
+            placeholder="Enter Name"
+            value={form.name}
+            onChangeText={(val) => handleChange('name', val)}
           />
 
           <CustomInput
             label="Last Name"
-            placeholder="Doe"
+            placeholder="Enter Last Name"
             value={form.lastName}
             onChangeText={(val) => handleChange('lastName', val)}
           />
 
           <CustomInput
-            label="Mobile Number"
-            placeholder="+1 987 654 3210"
+            label="Mobile NO"
+            placeholder="Enter Mobile Number"
             keyboardType="phone-pad"
-            value={form.mobileNumber}
-            onChangeText={(val) => handleChange('mobileNumber', val)}
+            value={form.mobileNo}
+            onChangeText={(val) => handleChange('mobileNo', val)}
           />
 
-          <CustomInput
-            label="Plate Number"
-            placeholder="ABC-9876"
-            value={form.plateNumber}
-            onChangeText={(val) => handleChange('plateNumber', val)}
-          />
+          {registrationType === 'Driver' && (
+            <CustomInput
+              label="For driver Car plate number"
+              placeholder="Enter Car Plate Number"
+              value={form.carPlateNumber}
+              onChangeText={(val) => handleChange('carPlateNumber', val)}
+            />
+          )}
 
           <CustomInput
-            label="Email Address"
-            placeholder="john.doe@example.com"
+            label="Email Option"
+            placeholder="Enter Email Address"
             keyboardType="email-address"
             value={form.email}
             onChangeText={(val) => handleChange('email', val)}
           />
 
           <View style={styles.switchRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Track Location</Text>
-              <Text style={[styles.switchSub, { color: theme.textSecondary }]}>
-                Allow real-time GPS tracking on map
-              </Text>
-            </View>
+            <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Track Location</Text>
             <Switch
               value={trackLocation}
               onValueChange={setTrackLocation}
@@ -93,12 +88,7 @@ export default function RegistrationFormScreen() {
           </View>
 
           <View style={styles.switchRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Accept Terms & Conditions</Text>
-              <Text style={[styles.switchSub, { color: theme.textSecondary }]}>
-                I agree to the Driver Life system policy
-              </Text>
-            </View>
+            <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Accept Terms & Condition</Text>
             <Switch
               value={acceptTerms}
               onValueChange={setAcceptTerms}
@@ -108,9 +98,9 @@ export default function RegistrationFormScreen() {
         </Card>
 
         <CustomButton
-          title="Next to Payment"
+          title="Next"
           onPress={handleNext}
-          style={{ marginTop: SPACING.sm }}
+          style={{ marginTop: SPACING.md }}
         />
       </ScrollView>
     </SafeAreaView>
@@ -127,11 +117,6 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: SPACING.md,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: SPACING.md,
-  },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,8 +126,5 @@ const styles = StyleSheet.create({
   switchTitle: {
     fontSize: 14,
     fontWeight: '600',
-  },
-  switchSub: {
-    fontSize: 12,
   },
 });

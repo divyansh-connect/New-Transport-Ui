@@ -1,74 +1,102 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../src/context/ThemeContext';
-import { Card } from '../src/components/common/cards/Card';
+import { Icon } from '../src/components/common/Icon';
 import { RADIUS, SPACING } from '../src/constants/theme';
 
 export default function MapScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const [isLiveTracking, setIsLiveTracking] = useState(true);
-  const [userRole, setUserRole] = useState('Driver'); // Driver or Visitor
+  const [userRole, setUserRole] = useState('Driver');
+
+  const markers = [
+    { id: 1, title: 'Your Location', top: '35%', left: '42%', type: 'you', icon: 'navigation' },
+    { id: 2, title: 'Workshop Hub', top: '55%', left: '65%', type: 'workshop', icon: 'wrench' },
+    { id: 3, title: 'Oil Change Center', top: '68%', left: '25%', type: 'oil', icon: 'fuel' },
+    { id: 4, title: 'Car Location Node', top: '25%', left: '72%', type: 'location', icon: 'car' },
+  ];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Top Floating Control Bar */}
+      {/* Top Bar with Settings Icon Button */}
       <View style={[styles.topBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <TouchableOpacity style={styles.menuButton} onPress={() => router.push('/menu')}>
-          <Text style={{ color: theme.textPrimary, fontSize: 22 }}>☰</Text>
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Live Map</Text>
-        <TouchableOpacity
-          style={[styles.roleChip, { backgroundColor: theme.surface }]}
-          onPress={() => setUserRole(userRole === 'Driver' ? 'Visitor' : 'Driver')}
-        >
-          <Text style={[styles.roleText, { color: theme.primary }]}>{userRole}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Simulated Map View */}
-      <View style={[styles.mapContainer, { backgroundColor: theme.surface }]}>
-        {/* Mock Map Grid & Pins */}
-        <View style={styles.mapGrid}>
-          <View style={[styles.pin, { top: '30%', left: '40%', backgroundColor: theme.primary }]}>
-            <Text style={styles.pinIcon}>📍 You</Text>
-          </View>
-          {userRole === 'Driver' && (
-            <>
-              <View style={[styles.pin, { top: '50%', left: '70%', backgroundColor: theme.success }]}>
-                <Text style={styles.pinIcon}>🛠️ Workshop</Text>
-              </View>
-              <View style={[styles.pin, { top: '65%', left: '25%', backgroundColor: theme.warning }]}>
-                <Text style={styles.pinIcon}>🛢️ Oil Station</Text>
-              </View>
-            </>
-          )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Icon name="truck" size={24} color={theme.primary} />
+          <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>MAP</Text>
         </View>
-        <Text style={[styles.mapNotice, { color: theme.textSecondary }]}>
-          {userRole === 'Visitor'
-            ? 'Visitor Mode: Showing only your current location.'
-            : 'Driver Mode: Services & Nearby Hubs Visible.'}
-        </Text>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity
+            style={[styles.roleChip, { backgroundColor: theme.surface }]}
+            onPress={() => setUserRole(userRole === 'Driver' ? 'Visitor' : 'Driver')}
+          >
+            <Text style={[styles.roleText, { color: theme.primary }]}>{userRole}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.settingsButton, { backgroundColor: theme.primary }]} onPress={() => router.push('/menu')}>
+            <Icon name="settings" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Bottom Tracking Switch Panel */}
-      <Card style={styles.bottomCard}>
-        <View style={styles.switchRow}>
-          <View>
-            <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>Live Location Tracking</Text>
-            <Text style={[styles.switchSubtitle, { color: theme.textSecondary }]}>
-              {isLiveTracking ? 'Broadcasting live location to network' : 'Tracking disabled'}
+      {/* Styled Responsive Vector Map Visual Canvas */}
+      <View style={[styles.mapCanvas, { backgroundColor: theme.isDarkMode ? '#0B132B' : '#E2E8F0' }]}>
+        <View style={[styles.roadHorizontal, { top: '40%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+        <View style={[styles.roadHorizontal, { top: '70%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+        <View style={[styles.roadVertical, { left: '45%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+        <View style={[styles.roadVertical, { left: '70%', backgroundColor: theme.isDarkMode ? '#1E293B' : '#CBD5E1' }]} />
+
+        {/* Map Markers with Lucide React Native Icons */}
+        {markers
+          .filter((m) => userRole === 'Driver' || m.type === 'you')
+          .map((m) => (
+            <View
+              key={m.id}
+              style={[
+                styles.mapPin,
+                {
+                  top: m.top,
+                  left: m.left,
+                  backgroundColor: m.type === 'you' ? theme.primary : theme.cardBackground,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <Icon name={m.icon} size={14} color={m.type === 'you' ? '#FFF' : theme.primary} />
+              <Text style={[styles.pinLabel, { color: m.type === 'you' ? '#FFF' : theme.textPrimary, marginLeft: 4 }]}>
+                {m.type === 'you' ? 'Own Location' : m.title}
+              </Text>
+            </View>
+          ))}
+
+        {/* Overlay Notice */}
+        <View style={[styles.overlayNotice, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          <Text style={[styles.noticeText, { color: theme.textPrimary }]}>
+            {userRole === 'Visitor'
+              ? 'Visitor Visible to himself only'
+              : 'All Services are Visible to everyone'}
+          </Text>
+        </View>
+
+        {/* Life Tracking ON/OFF Switch Pill */}
+        {userRole === 'Driver' && (
+          <View style={[styles.lifeTrackingBox, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+            <Text style={[styles.trackingLabel, { color: theme.textPrimary }]}>Life Tracking</Text>
+            <Switch
+              value={isLiveTracking}
+              onValueChange={setIsLiveTracking}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              style={{ transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }] }}
+            />
+            <Text style={[styles.statusText, { color: isLiveTracking ? theme.primary : theme.textSecondary }]}>
+              {isLiveTracking ? 'ON' : 'OFF'}
             </Text>
           </View>
-          <Switch
-            value={isLiveTracking}
-            onValueChange={setIsLiveTracking}
-            trackColor={{ false: theme.border, true: theme.primary }}
-          />
-        </View>
-      </Card>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -90,12 +118,10 @@ const styles = StyleSheet.create({
     elevation: 4,
     zIndex: 10,
   },
-  menuButton: {
-    padding: SPACING.xs,
-  },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 1,
   },
   roleChip: {
     paddingHorizontal: SPACING.sm,
@@ -106,54 +132,82 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  mapContainer: {
-    flex: 1,
-    margin: SPACING.md,
-    borderRadius: RADIUS.xl,
-    overflow: 'hidden',
+  settingsButton: {
+    width: 38,
+    height: 38,
+    borderRadius: RADIUS.md,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  mapCanvas: {
+    flex: 1,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.xs,
+    marginBottom: SPACING.md,
+    borderRadius: RADIUS.xl,
+    overflow: 'hidden',
     position: 'relative',
   },
-  mapGrid: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  pin: {
+  roadHorizontal: {
     position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 16,
+  },
+  roadVertical: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 16,
+  },
+  mapPin: {
+    position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+    paddingVertical: 6,
     borderRadius: RADIUS.md,
+    borderWidth: 1,
+    elevation: 4,
+  },
+  pinLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  overlayNotice: {
+    position: 'absolute',
+    top: SPACING.md,
+    left: SPACING.md,
+    right: SPACING.md,
+    padding: SPACING.sm,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
     elevation: 3,
   },
-  pinIcon: {
-    color: '#FFF',
-    fontWeight: '600',
+  noticeText: {
     fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
-  mapNotice: {
+  lifeTrackingBox: {
     position: 'absolute',
     bottom: SPACING.md,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.full,
-    fontSize: 12,
-  },
-  bottomCard: {
-    marginHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
-  },
-  switchRow: {
+    alignSelf: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    elevation: 6,
+    gap: 8,
   },
-  switchTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  trackingLabel: {
+    fontSize: 13,
+    fontWeight: '700',
   },
-  switchSubtitle: {
+  statusText: {
     fontSize: 12,
-    marginTop: 2,
+    fontWeight: '800',
   },
 });

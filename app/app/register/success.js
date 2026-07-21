@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -12,29 +12,49 @@ export default function PaymentSuccessScreen() {
   const { theme } = useTheme();
   const router = useRouter();
 
+  const handleWhatsApp = () => {
+    Linking.openURL('https://wa.me/966000000000');
+  };
+
+  const handleCall = () => {
+    Linking.openURL('tel:+966000000000');
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="Payment Confirmation" showBack={false} />
+      <Header title="For Approval Contact Us" showBack={false} />
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
           <View style={[styles.iconCircle, { backgroundColor: theme.success }]}>
             <Text style={styles.checkMark}>✓</Text>
           </View>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Payment Successful!</Text>
-          <Text style={[styles.sub, { color: theme.textSecondary }]}>
-            Transaction Reference: #TXN-98402948
-          </Text>
 
-          <View style={[styles.noticeBox, { backgroundColor: theme.surface }]}>
-            <Text style={[styles.noticeTitle, { color: theme.primary }]}>Please Contact Admin</Text>
-            <Text style={[styles.noticeBody, { color: theme.textPrimary }]}>
-              Your registration application has been submitted successfully. Please contact system admin for account activation & verification.
+          <Text style={[styles.title, { color: theme.textPrimary }]}>Payment Gateway Success</Text>
+
+          <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Text style={[styles.noticeTitle, { color: theme.primary }]}>For Approval Contact Us</Text>
+            <Text style={[styles.phoneNum, { color: theme.textPrimary }]}>+966000000000</Text>
+            <Text style={[styles.subNote, { color: theme.textSecondary }]}>
+              Contact admin via WhatsApp or Phone call for account activation & dashboard notification review.
             </Text>
           </View>
 
           <CustomButton
-            title="Proceed to Admin Approval Status"
+            title="💬 Contact via WhatsApp"
+            onPress={handleWhatsApp}
+            style={{ backgroundColor: '#25D366', marginVertical: SPACING.xs }}
+          />
+
+          <CustomButton
+            title="📞 Call Admin Direct (+966000000000)"
+            variant="secondary"
+            onPress={handleCall}
+            style={{ marginVertical: SPACING.xs }}
+          />
+
+          <CustomButton
+            title="Proceed to Approval Status"
             onPress={() => router.push('/register/pending')}
             style={{ marginTop: SPACING.md }}
           />
@@ -57,40 +77,42 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xl,
   },
   iconCircle: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.md,
   },
   checkMark: {
     color: '#FFF',
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
-    marginBottom: 4,
-  },
-  sub: {
-    fontSize: 13,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   noticeBox: {
     width: '100%',
     padding: SPACING.md,
     borderRadius: RADIUS.md,
+    borderWidth: 1,
     marginBottom: SPACING.md,
+    alignItems: 'center',
   },
   noticeTitle: {
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 4,
   },
-  noticeBody: {
-    fontSize: 14,
-    lineHeight: 20,
+  phoneNum: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginVertical: SPACING.xs,
+  },
+  subNote: {
+    fontSize: 12,
+    textAlign: 'center',
   },
 });

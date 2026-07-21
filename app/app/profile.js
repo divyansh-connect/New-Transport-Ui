@@ -5,7 +5,7 @@ import { useTheme } from '../src/context/ThemeContext';
 import { Header } from '../src/components/common/headers/Header';
 import { Card } from '../src/components/common/cards/Card';
 import { CustomButton } from '../src/components/common/buttons/CustomButton';
-import { SPACING, RADIUS } from '../src/constants/theme';
+import { SPACING } from '../src/constants/theme';
 import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {

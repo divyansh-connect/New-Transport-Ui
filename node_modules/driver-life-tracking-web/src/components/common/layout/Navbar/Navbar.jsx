@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Menu,
   Sun,
@@ -6,20 +7,97 @@ import {
   Bell,
   Search,
   User,
-  CheckCircle2,
   Settings,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  ArrowRight,
+  Sparkles,
+  X
 } from 'lucide-react';
 import { useTheme } from '../../../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
 export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
+<<<<<<< HEAD
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+=======
+  const { theme, toggleTheme, profile } = useTheme();
+  const navigate = useNavigate();
+  const searchInputRef = useRef(null);
+  const searchWrapperRef = useRef(null);
+
+>>>>>>> 6a057eb3daace2b0e926e1d1b5c3d0dadc8a5a50
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const searchableItems = [
+    { title: 'Dashboard Overview', category: 'Page Navigation', path: '/' },
+    { title: 'Driver Requests & Approvals', category: 'Page Navigation', path: '/drivers' },
+    { title: 'Payments & Revenue History', category: 'Page Navigation', path: '/payments' },
+    { title: 'Services & Workshop Hubs', category: 'Page Navigation', path: '/services' },
+    { title: 'Notifications & System Alerts', category: 'Page Navigation', path: '/notifications' },
+    { title: 'Opportunity & Broadcast Notices', category: 'Page Navigation', path: '/opportunity' },
+    { title: 'Support & Contact Hub', category: 'Page Navigation', path: '/contact' },
+    { title: 'Admin Settings & Appearance', category: 'Page Navigation', path: '/settings' },
+    { title: 'John Doe (Commercial Driver REG-101)', category: 'Driver Record', path: '/drivers' },
+    { title: 'Metro Workshop Hub (Station REG-102)', category: 'Service Partner', path: '/services' },
+    { title: 'Payout Receipt #TRP-8821 ($62,400)', category: 'Payment Record', path: '/payments' },
+  ];
+
+  const filteredSearchItems = searchableItems.filter((item) =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl + K or Cmd + K toggles search focus
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => {
+          if (!prev && searchInputRef.current) {
+            searchInputRef.current.focus();
+          }
+          return !prev;
+        });
+      }
+
+      // Escape key closes search pop-up
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setShowNotifications(false);
+        setShowUserMenu(false);
+      }
+    };
+
+    const handleClickOutside = (e) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target)) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleSelectSearchItem = (path) => {
+    navigate(path);
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
 
   const notificationsList = [
     { id: 1, title: 'New Driver Registration', time: '5 mins ago', read: false },
@@ -46,14 +124,75 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
           <Menu size={20} />
         </button>
 
-        <div className="navbar-search">
-          <Search size={18} className="navbar-search-icon" />
-          <input
-            type="text"
-            placeholder="Search dashboard, drivers, payments..."
-            className="navbar-search-input"
-          />
-          <kbd className="search-kbd">⌘K</kbd>
+        {/* Global Search Bar with Live Results, Auto-Close & ESC support */}
+        <div className="navbar-popover-wrapper" ref={searchWrapperRef}>
+          <div className="navbar-search">
+            <Search size={18} className="navbar-search-icon" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search dashboard, drivers, payments..."
+              className="navbar-search-input"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsSearchOpen(true);
+              }}
+              onFocus={() => setIsSearchOpen(true)}
+            />
+            {isSearchOpen ? (
+              <button className="search-close-btn" onClick={handleClearSearch} title="Close search (ESC)">
+                <X size={14} />
+              </button>
+            ) : (
+              <kbd className="search-kbd">⌘K</kbd>
+            )}
+          </div>
+
+          {isSearchOpen && (
+            <div className="navbar-dropdown search-results-dropdown">
+              <div className="dropdown-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={14} color="var(--color-primary)" />
+                  <span style={{ fontSize: '13px', fontWeight: '700' }}>
+                    {searchQuery.trim() ? 'Search Results' : 'Quick Navigation Items'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="badge-count">{filteredSearchItems.length} Found</span>
+                  <button className="dropdown-close-icon" onClick={() => setIsSearchOpen(false)} title="Close pop-up">
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="dropdown-body search-dropdown-body">
+                {filteredSearchItems.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                    No results found for "{searchQuery}"
+                  </div>
+                ) : (
+                  filteredSearchItems.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="search-result-item"
+                      onClick={() => handleSelectSearchItem(item.path)}
+                    >
+                      <div className="search-item-info">
+                        <span className="search-item-title">{item.title}</span>
+                        <span className="search-item-category">{item.category}</span>
+                      </div>
+                      <ArrowRight size={14} className="search-item-arrow" />
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="dropdown-footer" style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                Press <kbd className="search-kbd">⌘K</kbd> or <kbd className="search-kbd">ESC</kbd> or click outside to close
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -78,6 +217,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
             onClick={() => {
               setShowNotifications(!showNotifications);
               setShowUserMenu(false);
+              setIsSearchOpen(false);
             }}
             title="Notifications"
           >
@@ -116,6 +256,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
             onClick={() => {
               setShowUserMenu(!showUserMenu);
               setShowNotifications(false);
+              setIsSearchOpen(false);
             }}
           >
             <div className="avatar-wrapper">
@@ -123,8 +264,8 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
               <span className="status-dot" />
             </div>
             <div className="user-details">
-              <span className="user-name">Admin User</span>
-              <span className="user-role">System Administrator</span>
+              <span className="user-name">{profile?.name || 'Admin User'}</span>
+              <span className="user-role">{profile?.role || 'System Administrator'}</span>
             </div>
             <ChevronDown size={14} className="dropdown-arrow" />
           </div>
@@ -132,8 +273,8 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
           {showUserMenu && (
             <div className="navbar-dropdown user-menu-dropdown">
               <div className="user-menu-header">
-                <strong>Admin User</strong>
-                <p>admin@driverlife.com</p>
+                <strong>{profile?.name || 'Admin User'}</strong>
+                <p>{profile?.email || 'admin@driverlife.com'}</p>
               </div>
               <div className="user-menu-items">
                 <button className="user-menu-item" onClick={() => { setShowUserMenu(false); navigate('/settings'); }} style={{ background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>

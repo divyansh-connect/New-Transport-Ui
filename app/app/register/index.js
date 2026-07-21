@@ -11,12 +11,11 @@ export default function RegisterIndexScreen() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const registrationTypes = [
-    { title: 'Driver', subtitle: 'Heavy & Commercial Vehicle Operator', icon: '🚛', type: 'Driver' },
-    { title: 'Workshop', subtitle: 'Automotive Repair & Maintenance Hub', icon: '🛠️', type: 'Workshop' },
-    { title: 'Oil Change', subtitle: 'Lubricant & Service Provider', icon: '🛢️', type: 'Oil Change' },
-    { title: 'Car Location', subtitle: 'Fleet & Parking Location Node', icon: '📍', type: 'Car Location' },
-    { title: 'Visitor', subtitle: 'General Access & Location Viewer', icon: '👤', type: 'Visitor' },
+  const services = [
+    { title: 'Driver (Life Tracking)', type: 'Driver' },
+    { title: 'Workshop (Location only)', type: 'Workshop' },
+    { title: 'Oil change (Location only)', type: 'Oil Change' },
+    { title: 'Car Location (Location only)', type: 'Car Location' },
   ];
 
   const handleSelectType = (type) => {
@@ -28,34 +27,39 @@ export default function RegisterIndexScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="Registration Type" showBack={true} />
+      <Header title="Service List Registration" showBack={true} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: theme.textPrimary }]}>Choose Account Type</Text>
-        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Select your role to proceed with registration details.
-        </Text>
+        <Text style={[styles.heading, { color: theme.textPrimary }]}>Select Service / Role</Text>
 
-        {registrationTypes.map((item) => (
+        <Card style={styles.cardContainer}>
+          {services.map((item, idx) => (
+            <TouchableOpacity
+              key={idx}
+              style={styles.serviceRow}
+              onPress={() => handleSelectType(item.type)}
+            >
+              <Text style={[styles.serviceTitle, { color: theme.textPrimary }]}>{item.title}</Text>
+              <View style={[styles.checkbox, { borderColor: theme.primary }]} />
+            </TouchableOpacity>
+          ))}
+        </Card>
+
+        {/* Visitor Option (is upto Admin to be required or no) */}
+        <Card style={{ marginTop: SPACING.md }}>
           <TouchableOpacity
-            key={item.type}
-            activeOpacity={0.8}
-            onPress={() => handleSelectType(item.type)}
+            style={styles.serviceRow}
+            onPress={() => handleSelectType('Visitor')}
           >
-            <Card style={styles.card}>
-              <View style={styles.cardContent}>
-                <View style={[styles.iconBox, { backgroundColor: theme.surface }]}>
-                  <Text style={{ fontSize: 24 }}>{item.icon}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>{item.title}</Text>
-                  <Text style={[styles.cardSub, { color: theme.textSecondary }]}>{item.subtitle}</Text>
-                </View>
-                <Text style={{ color: theme.primary, fontSize: 20 }}>›</Text>
-              </View>
-            </Card>
+            <View>
+              <Text style={[styles.serviceTitle, { color: theme.textPrimary }]}>Visitor</Text>
+              <Text style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2 }}>
+                (it is upto Admin to be required or no)
+              </Text>
+            </View>
+            <View style={[styles.checkbox, { borderColor: theme.primary }]} />
           </TouchableOpacity>
-        ))}
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
@@ -68,36 +72,30 @@ const styles = StyleSheet.create({
   content: {
     padding: SPACING.md,
   },
-  title: {
-    fontSize: 20,
+  heading: {
+    fontSize: 18,
     fontWeight: '700',
-    marginTop: SPACING.xs,
-  },
-  subtitle: {
-    fontSize: 14,
     marginBottom: SPACING.md,
   },
-  card: {
-    marginBottom: SPACING.sm,
+  cardContainer: {
+    paddingVertical: SPACING.xs,
   },
-  cardContent: {
+  serviceRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(150, 150, 150, 0.1)',
   },
-  iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
+  serviceTitle: {
+    fontSize: 15,
+    fontWeight: '600',
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  cardSub: {
-    fontSize: 12,
-    marginTop: 2,
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
   },
 });
