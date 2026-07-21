@@ -39,10 +39,10 @@ export const Payments = () => {
     setIsModalOpen(true);
   };
 
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this payment?')) {
-      deletePayment(id);
-    }
+    setDeleteTargetId(id);
   };
 
   const handleSaveEdit = () => {
@@ -148,6 +148,24 @@ export const Payments = () => {
             />
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation React Modal */}
+      <Modal
+        isOpen={!!deleteTargetId}
+        onClose={() => setDeleteTargetId(null)}
+        title="Confirm Delete Payment"
+        subtitle="Are you sure you want to delete this payment record? This action cannot be undone."
+        primaryActionLabel="Confirm Delete"
+        onPrimaryAction={() => {
+          deletePayment(deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+        secondaryActionLabel="Cancel"
+      >
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', margin: 0 }}>
+          Deleting transaction ID: <code style={{ color: 'var(--color-primary)' }}>{deleteTargetId}</code>
+        </p>
       </Modal>
     </div>
   );

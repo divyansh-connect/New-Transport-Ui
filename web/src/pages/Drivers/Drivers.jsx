@@ -146,9 +146,10 @@ export const Drivers = () => {
   };
 
   const handleConfirmReject = () => {
+    if (!rejectReason.trim()) return;
     const target = rejectingDriver || selectedDriver;
     if (!target) return;
-    const finalReason = rejectReason.trim() || 'Application rejected by administrator.';
+    const finalReason = rejectReason.trim();
     rejectDriver(target.id, finalReason);
     if (selectedDriver && selectedDriver.id === target.id) {
       setSelectedDriver((prev) => ({
@@ -240,18 +241,6 @@ export const Drivers = () => {
           onClick={() => handleTabChange('rejected')}
         >
           Rejected ({countRejected})
-        </button>
-        <button
-          className={`drivers-tab-btn ${activeTab === 'payments' ? 'active' : ''}`}
-          onClick={() => handleTabChange('payments')}
-        >
-          Payment List ({payments.length})
-        </button>
-        <button
-          className={`drivers-tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
-          onClick={() => handleTabChange('notifications')}
-        >
-          Notifications ({notifications.filter((n) => !n.read).length})
         </button>
       </div>
 
@@ -814,6 +803,11 @@ export const Drivers = () => {
               <button
                 className="btn-danger"
                 onClick={handleConfirmReject}
+                disabled={!rejectReason.trim()}
+                style={{
+                  opacity: rejectReason.trim() ? 1 : 0.5,
+                  cursor: rejectReason.trim() ? 'pointer' : 'not-allowed',
+                }}
               >
                 Confirm Rejection
               </button>

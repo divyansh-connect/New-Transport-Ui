@@ -135,7 +135,8 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color var(--transition-normal), color var(--transition-normal);
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -143,6 +144,32 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   color: var(--color-text-main);
   letter-spacing: -0.02em;
+}
+
+/* Global Page Layout & Header Styles */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 36px;
+}
+
+.page-header {
+  margin-bottom: 12px;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.page-header p,
+.page-subtitle {
+  font-size: 0.8125rem; /* 13px - slightly smaller subheading */
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 h1 { font-size: 1.875rem; line-height: 2.25rem; }

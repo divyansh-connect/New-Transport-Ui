@@ -83,14 +83,19 @@ export const Services = () => {
     setIsModalOpen(true);
   };
 
+  const [deleteServiceId, setDeleteServiceId] = useState(null);
+
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this service?')) {
-      saveToStorage(allServices.filter(s => s.id !== id));
-    }
+    setDeleteServiceId(id);
   };
 
+  const [validationAlert, setValidationAlert] = useState('');
+
   const handleSaveModal = () => {
-    if (!formData.name) return alert('Name is required');
+    if (!formData.name.trim()) {
+      setValidationAlert('Service Name is required.');
+      return;
+    }
     if (modalMode === 'add') {
       const prefix = tabs.find(t => t.id === activeTab)?.prefix || 'SRV';
       const newId = `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
@@ -229,6 +234,38 @@ export const Services = () => {
             <Input label="Status" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} />
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation React Modal */}
+      <Modal
+        isOpen={!!deleteServiceId}
+        onClose={() => setDeleteServiceId(null)}
+        title="Confirm Delete Service"
+        subtitle="Are you sure you want to delete this registered service? This action cannot be undone."
+        primaryActionLabel="Confirm Delete"
+        onPrimaryAction={() => {
+          saveToStorage(allServices.filter(s => s.id !== deleteServiceId));
+          setDeleteServiceId(null);
+        }}
+        secondaryActionLabel="Cancel"
+      >
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', margin: 0 }}>
+          Deleting service node ID: <code style={{ color: 'var(--color-primary)' }}>{deleteServiceId}</code>
+        </p>
+      </Modal>
+
+      {/* Validation React Modal */}
+      <Modal
+        isOpen={!!validationAlert}
+        onClose={() => setValidationAlert('')}
+        title="Validation Required"
+        subtitle="Please check service details."
+        primaryActionLabel="OK"
+        onPrimaryAction={() => setValidationAlert('')}
+      >
+        <p style={{ color: 'var(--color-text-main)', fontSize: '14px', margin: 0 }}>
+          {validationAlert}
+        </p>
       </Modal>
     </div>
   );

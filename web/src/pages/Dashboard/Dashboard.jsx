@@ -58,12 +58,10 @@ export const Dashboard = () => {
     setIsModalOpen(true);
   };
 
+  const [deleteRegId, setDeleteRegId] = useState(null);
+
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this registration?')) {
-      const updated = registrations.filter(r => r.id !== id);
-      setRegistrations(updated);
-      localStorage.setItem('registrations', JSON.stringify(updated));
-    }
+    setDeleteRegId(id);
   };
 
   const handleSaveEdit = () => {
@@ -287,6 +285,26 @@ export const Dashboard = () => {
             />
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation React Modal */}
+      <Modal
+        isOpen={!!deleteRegId}
+        onClose={() => setDeleteRegId(null)}
+        title="Confirm Delete Registration"
+        subtitle="Are you sure you want to delete this registration record? This action cannot be undone."
+        primaryActionLabel="Confirm Delete"
+        onPrimaryAction={() => {
+          const updated = registrations.filter(r => r.id !== deleteRegId);
+          setRegistrations(updated);
+          localStorage.setItem('registrations', JSON.stringify(updated));
+          setDeleteRegId(null);
+        }}
+        secondaryActionLabel="Cancel"
+      >
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', margin: 0 }}>
+          Deleting registration ID: <code style={{ color: 'var(--color-primary)' }}>{deleteRegId}</code>
+        </p>
       </Modal>
     </div>
   );
