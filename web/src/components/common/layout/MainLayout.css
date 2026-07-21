@@ -67,11 +67,14 @@
 
 @media (max-width: 768px) {
   .layout-content {
-    padding: 20px 16px;
+    padding: 16px 12px;
   }
 
   .layout-footer {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 14px 16px;
   }
 }
