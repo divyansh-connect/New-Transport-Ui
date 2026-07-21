@@ -1,0 +1,49 @@
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.web-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.web-table th {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.web-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--color-text-main);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.web-table tr:hover td {
+  background-color: var(--color-surface);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.approved {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
+}
+
+.status-badge.pending {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--color-warning);
+}

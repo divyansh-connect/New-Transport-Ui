@@ -1,0 +1,14 @@
+{
+  "name": "driver-life-tracking-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:app": "cd app && npm run start",
+    "dev:web": "cd web && npm run dev",
+    "build:web": "cd web && npm run build"
+  },
+  "workspaces": [
+    "app",
+    "web"
+  ]
+}
