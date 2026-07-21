@@ -11,6 +11,7 @@ import { Notifications } from './pages/Notifications/Notifications';
 import { Opportunity } from './pages/Opportunity/Opportunity';
 import { Contact } from './pages/Contact/Contact';
 import { Settings } from './pages/Settings/Settings';
+import { NotFound } from './pages/NotFound/NotFound';
 import './index.css';
 
 export function App() {
@@ -28,6 +29,7 @@ export function App() {
               <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </MainLayout>
         </BrowserRouter>
@@ -37,4 +39,3 @@ export function App() {
 }
 
 export default App;
-
