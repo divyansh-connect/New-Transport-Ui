@@ -243,6 +243,27 @@ export const DriverProvider = ({ children }) => {
     }
   };
 
+  const setDriverStatus = (id, newStatus) => {
+    setDrivers((prev) =>
+      prev.map((d) => {
+        if (d.id === id) {
+          const updatedDocs = { ...d.documents };
+          if (newStatus === 'Approved') {
+            Object.keys(updatedDocs).forEach(key => {
+              updatedDocs[key].status = 'Verified';
+            });
+          } else if (newStatus === 'Pending') {
+            Object.keys(updatedDocs).forEach(key => {
+              updatedDocs[key].status = 'Pending Verification';
+            });
+          }
+          return { ...d, status: newStatus, documents: updatedDocs, rejectionReason: '' };
+        }
+        return d;
+      })
+    );
+  };
+
   const updateDriverProfile = (id, updatedProfile) => {
     setDrivers((prev) =>
       prev.map((d) => (d.id === id ? { ...d, ...updatedProfile } : d))
@@ -285,6 +306,7 @@ export const DriverProvider = ({ children }) => {
         notifications,
         approveDriver,
         rejectDriver,
+        setDriverStatus,
         updateDriverProfile,
         markNotificationAsRead,
         clearAllNotifications,

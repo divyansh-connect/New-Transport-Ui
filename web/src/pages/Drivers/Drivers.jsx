@@ -31,6 +31,7 @@ export const Drivers = () => {
     notifications,
     approveDriver,
     rejectDriver,
+    setDriverStatus,
     updateDriverProfile,
     markNotificationAsRead,
     clearAllNotifications,
@@ -373,6 +374,64 @@ export const Drivers = () => {
                             onClick={() => handleRejectClick(row)}
                           >
                             <X size={16} />
+                          </button>
+                        </>
+                      )}
+                      {row.status === 'Rejected' && (
+                        <>
+                          <button
+                            className="btn-table-action approve"
+                            title="Re-Approve Account"
+                            onClick={() => {
+                              setDriverStatus(row.id, 'Approved');
+                              if (selectedDriver && selectedDriver.id === row.id) {
+                                setSelectedDriver(prev => ({ ...prev, status: 'Approved' }));
+                              }
+                            }}
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            className="btn-table-action"
+                            style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+                            title="Set to Pending"
+                            onClick={() => {
+                              setDriverStatus(row.id, 'Pending');
+                              if (selectedDriver && selectedDriver.id === row.id) {
+                                setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
+                              }
+                            }}
+                          >
+                            <Clock size={16} />
+                          </button>
+                        </>
+                      )}
+                      {row.status === 'Approved' && (
+                        <>
+                          <button
+                            className="btn-table-action reject"
+                            title="Reject / Block"
+                            onClick={() => {
+                              setDriverStatus(row.id, 'Rejected');
+                              if (selectedDriver && selectedDriver.id === row.id) {
+                                setSelectedDriver(prev => ({ ...prev, status: 'Rejected' }));
+                              }
+                            }}
+                          >
+                            <X size={16} />
+                          </button>
+                          <button
+                            className="btn-table-action"
+                            style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+                            title="Move to Pending"
+                            onClick={() => {
+                              setDriverStatus(row.id, 'Pending');
+                              if (selectedDriver && selectedDriver.id === row.id) {
+                                setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
+                              }
+                            }}
+                          >
+                            <Clock size={16} />
                           </button>
                         </>
                       )}
@@ -720,7 +779,7 @@ export const Drivers = () => {
                     </div>
                   )}
 
-                  {/* Driver Approval Action Panel */}
+                  {/* Driver Approval Action Panel for Pending */}
                   {selectedDriver.status === 'Pending' && (
                     <div
                       style={{
@@ -761,6 +820,104 @@ export const Drivers = () => {
                           onClick={() => handleRejectClick(selectedDriver)}
                         >
                           Reject Request
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Driver Action Panel for Rejected Drivers */}
+                  {selectedDriver.status === 'Rejected' && (
+                    <div
+                      style={{
+                        padding: '16px',
+                        backgroundColor: 'rgba(239, 68, 68, 0.04)',
+                        border: '1px dashed var(--color-danger)',
+                        borderRadius: 'var(--radius-md)',
+                        marginTop: '12px',
+                      }}
+                    >
+                      <h4
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          color: 'var(--color-danger)',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        Modify Blocked/Rejected Status
+                      </h4>
+                      <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                        You can re-approve this driver or revert status to pending to request documentation updates.
+                      </p>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                          className="btn-primary"
+                          style={{ flex: 1, backgroundColor: 'var(--color-success)' }}
+                          onClick={() => {
+                            setDriverStatus(selectedDriver.id, 'Approved');
+                            setSelectedDriver(prev => ({ ...prev, status: 'Approved' }));
+                          }}
+                        >
+                          Approve Account
+                        </button>
+                        <button
+                          className="btn-secondary"
+                          style={{ flex: 1, color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+                          onClick={() => {
+                            setDriverStatus(selectedDriver.id, 'Pending');
+                            setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
+                          }}
+                        >
+                          Set to Pending
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Driver Action Panel for Approved Drivers (Optional status change helper) */}
+                  {selectedDriver.status === 'Approved' && (
+                    <div
+                      style={{
+                        padding: '16px',
+                        backgroundColor: 'rgba(16, 185, 129, 0.04)',
+                        border: '1px dashed var(--color-success)',
+                        borderRadius: 'var(--radius-md)',
+                        marginTop: '12px',
+                      }}
+                    >
+                      <h4
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          color: 'var(--color-success)',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        Revoke or Suspend Access
+                      </h4>
+                      <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                        If this driver breaks terms, you can block/reject them or change their status back to pending.
+                      </p>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                          className="btn-secondary"
+                          style={{ flex: 1, color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
+                          onClick={() => {
+                            setDriverStatus(selectedDriver.id, 'Rejected');
+                            setSelectedDriver(prev => ({ ...prev, status: 'Rejected' }));
+                          }}
+                        >
+                          Reject / Block
+                        </button>
+                        <button
+                          className="btn-secondary"
+                          style={{ flex: 1, color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+                          onClick={() => {
+                            setDriverStatus(selectedDriver.id, 'Pending');
+                            setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
+                          }}
+                        >
+                          Move to Pending
                         </button>
                       </div>
                     </div>
