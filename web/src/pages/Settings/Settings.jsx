@@ -35,6 +35,9 @@ export const Settings = () => {
     adminsList,
     addNewAdmin,
     deleteAdmin,
+    subscriptionPlans,
+    addSubscriptionPlan,
+    deleteSubscriptionPlan,
     subscriptionConfig,
     updateSubscriptionConfig
   } = useTheme();
@@ -56,16 +59,21 @@ export const Settings = () => {
     name: '',
     email: '',
     phone: '',
-    role: 'System Admin'
+    role: 'System Admin',
+    password: ''
   });
 
-  // Local Subscription inputs
-  const [fees, setFees] = useState({
-    fee1Month: subscriptionConfig.fee1Month,
-    fee6Months: subscriptionConfig.fee6Months,
-    fee1Year: subscriptionConfig.fee1Year,
+  // Local Access Config toggles
+  const [accessToggles, setAccessToggles] = useState({
     activeForEveryone: subscriptionConfig.activeForEveryone,
     showVisitorServices: subscriptionConfig.showVisitorServices
+  });
+
+  // Local Plan Add form state
+  const [newPlanForm, setNewPlanForm] = useState({
+    name: '',
+    duration: '',
+    price: ''
   });
 
   const handleSaveProfile = () => {
@@ -78,23 +86,40 @@ export const Settings = () => {
     }, 500);
   };
 
-  const handleSaveSubscription = () => {
+  const handleSaveAccessConfig = () => {
     setIsSaving(true);
     setTimeout(() => {
-      updateSubscriptionConfig(fees);
+      updateSubscriptionConfig(accessToggles);
       setIsSaving(false);
-      setSuccessBanner('Pricing & access settings saved successfully!');
+      setSuccessBanner('Access & visibility config saved successfully!');
       setTimeout(() => setSuccessBanner(''), 3000);
     }, 500);
   };
 
   const handleAddAdminSubmit = (e) => {
     e.preventDefault();
-    if (!newAdminForm.name || !newAdminForm.email) return;
-    addNewAdmin(newAdminForm);
-    setNewAdminForm({ name: '', email: '', phone: '', role: 'System Admin' });
-    setSuccessBanner('New administrator added successfully!');
-    setTimeout(() => setSuccessBanner(''), 3000);
+    if (!newAdminForm.name || !newAdminForm.email || !newAdminForm.password) return;
+    setIsSaving(true);
+    setTimeout(() => {
+      addNewAdmin(newAdminForm);
+      setNewAdminForm({ name: '', email: '', phone: '', role: 'System Admin', password: '' });
+      setIsSaving(false);
+      setSuccessBanner('New administrator added successfully!');
+      setTimeout(() => setSuccessBanner(''), 3000);
+    }, 800);
+  };
+
+  const handleAddPlanSubmit = (e) => {
+    e.preventDefault();
+    if (!newPlanForm.name || !newPlanForm.duration || !newPlanForm.price) return;
+    setIsSaving(true);
+    setTimeout(() => {
+      addSubscriptionPlan(newPlanForm);
+      setNewPlanForm({ name: '', duration: '', price: '' });
+      setIsSaving(false);
+      setSuccessBanner('New subscription plan added successfully!');
+      setTimeout(() => setSuccessBanner(''), 3000);
+    }, 800);
   };
 
   return (
@@ -108,16 +133,21 @@ export const Settings = () => {
 
       {successBanner && (
         <div style={{
+          position: 'fixed',
+          top: '24px',
+          right: '24px',
+          zIndex: 9999,
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          backgroundColor: 'rgba(16, 185, 129, 0.15)',
-          border: '1px solid var(--color-success)',
-          color: 'var(--color-success)',
-          padding: '12px 18px',
-          borderRadius: 'var(--radius-lg)',
+          backgroundColor: '#10b981',
+          color: '#ffffff',
+          padding: '12px 20px',
+          borderRadius: 'var(--radius-md)',
           fontSize: '14px',
-          fontWeight: '600'
+          fontWeight: '600',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15)',
+          borderLeft: '4px solid #047857'
         }}>
           <CheckCircle2 size={20} />
           <span>{successBanner}</span>
@@ -154,6 +184,13 @@ export const Settings = () => {
           >
             <DollarSign size={18} />
             <span>Subscription Settings</span>
+          </button>
+          <button
+            className={`settings-tab-btn ${activeTab === 'config' ? 'active' : ''}`}
+            onClick={() => setActiveTab('config')}
+          >
+            <Settings2 size={18} />
+            <span>Access Configuration</span>
           </button>
         </div>
 
@@ -230,7 +267,7 @@ export const Settings = () => {
                     onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   />
                 </div>
-                <Button variant="primary" leftIcon={Save} onClick={handleSaveProfile}>Save Profile</Button>
+                <Button variant="primary" leftIcon={Save} isLoading={isSaving} disabled={isSaving} onClick={handleSaveProfile}>Save Profile</Button>
               </Card>
             </div>
           )}
@@ -241,55 +278,74 @@ export const Settings = () => {
                 title="Manage Dashboard Administrators"
                 subtitle="Add, configure roles, or revoke access for platform system admins."
               >
-                <form onSubmit={handleAddAdminSubmit} className="profile-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto', gap: '12px', alignItems: 'end', marginBottom: '20px' }}>
-                  <Input
-                    label="Name"
-                    value={newAdminForm.name}
-                    onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Email"
-                    type="email"
-                    value={newAdminForm.email}
-                    onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Phone"
-                    value={newAdminForm.phone}
-                    onChange={(e) => setNewAdminForm({ ...newAdminForm, phone: e.target.value })}
-                  />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Role</label>
-                    <select
-                      value={newAdminForm.role}
-                      onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
-                      style={{
-                        padding: '10px 14px',
-                        borderRadius: 'var(--radius-md)',
-                        backgroundColor: 'var(--color-surface)',
-                        border: '1px solid var(--color-card-border)',
-                        color: 'var(--color-text-main)'
-                      }}
-                    >
-                      <option value="Super Admin">Super Admin</option>
-                      <option value="System Admin">System Admin</option>
-                      <option value="Billing Admin">Billing Admin</option>
-                    </select>
+                <form onSubmit={handleAddAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+                  {/* Row 1: Name and Email */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <Input
+                      label="Name"
+                      value={newAdminForm.name}
+                      onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
+                      required
+                    />
+                    <Input
+                      label="Email"
+                      type="email"
+                      value={newAdminForm.email}
+                      onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
+                      required
+                    />
                   </div>
-                  <Button type="submit" variant="primary" leftIcon={Plus}>Add Admin</Button>
+
+                  {/* Row 2: Phone and Role */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <Input
+                      label="Phone"
+                      value={newAdminForm.phone}
+                      onChange={(e) => setNewAdminForm({ ...newAdminForm, phone: e.target.value })}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Role</label>
+                      <select
+                        value={newAdminForm.role}
+                        onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'var(--color-surface)',
+                          border: '1px solid var(--color-card-border)',
+                          color: 'var(--color-text-main)',
+                          height: '42px'
+                        }}
+                      >
+                        {/* <option value="Super Admin">Super Admin</option> */}
+                        <option value="System Admin">System Admin</option>
+                        {/* <option value="Billing Admin">Billing Admin</option> */}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Row 3: Password and Add Admin Button */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'end' }}>
+                    <Input
+                      label="Password"
+                      type="password"
+                      value={newAdminForm.password}
+                      onChange={(e) => setNewAdminForm({ ...newAdminForm, password: e.target.value })}
+                      required
+                    />
+                    <Button type="submit" variant="primary" leftIcon={Plus} isLoading={isSaving} disabled={isSaving} style={{ height: '42px', width: '100%', justifyContent: 'center' }}>Add Admin</Button>
+                  </div>
                 </form>
 
-                <div style={{ overflowX: 'auto', marginTop: '16px' }}>
+                <div style={{ overflowX: 'auto', maxHeight: '250px', overflowY: 'auto', marginTop: '16px' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
-                        <th style={{ padding: '12px' }}>ID</th>
-                        <th style={{ padding: '12px' }}>Name</th>
-                        <th style={{ padding: '12px' }}>Email</th>
-                        <th style={{ padding: '12px' }}>Role</th>
-                        <th style={{ padding: '12px' }}>Actions</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>ID</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Name</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Email</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Role</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -320,66 +376,120 @@ export const Settings = () => {
           {activeTab === 'subscriptions' && (
             <div className="settings-tab-content">
               <Card
-                title="Global Subscription & Paywall Config"
-                subtitle="Determine subscription rates for Driver tracking and toggle paywall rules for Visitors."
+                title="Create Subscription Plan"
+                subtitle="Define a new driver tracking access plan rate and duration."
               >
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                  <Input
-                    label="1 Month Fee ($)"
-                    type="number"
-                    value={fees.fee1Month}
-                    onChange={(e) => setFees({ ...fees, fee1Month: e.target.value })}
-                  />
-                  <Input
-                    label="6 Months Fee ($)"
-                    type="number"
-                    value={fees.fee6Months}
-                    onChange={(e) => setFees({ ...fees, fee6Months: e.target.value })}
-                  />
-                  <Input
-                    label="1 Year Fee ($)"
-                    type="number"
-                    value={fees.fee1Year}
-                    onChange={(e) => setFees({ ...fees, fee1Year: e.target.value })}
-                  />
+                <form onSubmit={handleAddPlanSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <Input
+                      label="Plan Name"
+                      placeholder="e.g. Monthly Standard"
+                      value={newPlanForm.name}
+                      onChange={(e) => setNewPlanForm({ ...newPlanForm, name: e.target.value })}
+                      required
+                    />
+                    <Input
+                      label="Duration"
+                      placeholder="e.g. 1 Month"
+                      value={newPlanForm.duration}
+                      onChange={(e) => setNewPlanForm({ ...newPlanForm, duration: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'end' }}>
+                    <Input
+                      label="Price ($)"
+                      type="number"
+                      placeholder="e.g. 49.99"
+                      value={newPlanForm.price}
+                      onChange={(e) => setNewPlanForm({ ...newPlanForm, price: e.target.value })}
+                      required
+                    />
+                    <Button type="submit" variant="primary" leftIcon={Plus} isLoading={isSaving} disabled={isSaving} style={{ height: '42px', width: '100%', justifyContent: 'center' }}>Add Plan</Button>
+                  </div>
+                </form>
+              </Card>
+
+              <Card
+                title="Active Subscription Plans"
+                subtitle="Review and manage existing pricing models."
+              >
+                <div style={{ overflowX: 'auto', maxHeight: '200px', overflowY: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Plan ID</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Plan Name</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Duration</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Price</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subscriptionPlans.map((plan) => (
+                        <tr key={plan.id} style={{ borderBottom: '1px solid var(--color-card-border)', fontSize: '14px', color: 'var(--color-text-main)' }}>
+                          <td style={{ padding: '12px' }}><code>{plan.id}</code></td>
+                          <td style={{ padding: '12px', fontWeight: '600' }}>{plan.name}</td>
+                          <td style={{ padding: '12px' }}>{plan.duration}</td>
+                          <td style={{ padding: '12px', color: 'var(--color-primary)', fontWeight: '700' }}>${plan.price}</td>
+                          <td style={{ padding: '12px' }}>
+                            <button
+                              onClick={() => deleteSubscriptionPlan(plan.id)}
+                              style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                              title="Delete Plan"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'config' && (
+            <div className="settings-tab-content">
+              <Card
+                title="Visibility & Access Control Toggles"
+                subtitle="Control map capabilities and platform paywall policies for different user roles."
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-main)' }}>Enable Paywall for Drivers</strong>
+                      <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>If enabled, Drivers must pay the active subscription rate to go Live.</span>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={accessToggles.activeForEveryone}
+                        onChange={(e) => setAccessToggles({ ...accessToggles, activeForEveryone: e.target.checked })}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-main)' }}>Allow Visitors to View Service Hubs</strong>
+                      <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>If enabled, visitors see themselves and all static service points (Workshops/Oil centers). Visitors remain completely private.</span>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={accessToggles.showVisitorServices}
+                        onChange={(e) => setAccessToggles({ ...accessToggles, showVisitorServices: e.target.checked })}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
                 </div>
 
-                <Card title="Visibility & Access Control Toggles" subtitle="Control map capabilities for different user levels.">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-main)' }}>Enable Paywall for Drivers</strong>
-                        <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>If enabled, Drivers must pay the active subscription rate to go Live.</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={fees.activeForEveryone}
-                          onChange={(e) => setFees({ ...fees, activeForEveryone: e.target.checked })}
-                        />
-                        <span className="toggle-slider" />
-                      </label>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-main)' }}>Allow Visitors to View Service Hubs</strong>
-                        <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>If enabled, visitors see themselves and all static service points (Workshops/Oil centers). Visitors remain completely private.</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={fees.showVisitorServices}
-                          onChange={(e) => setFees({ ...fees, showVisitorServices: e.target.checked })}
-                        />
-                        <span className="toggle-slider" />
-                      </label>
-                    </div>
-                  </div>
-                </Card>
-
                 <div style={{ marginTop: '20px' }}>
-                  <Button variant="primary" leftIcon={Save} onClick={handleSaveSubscription}>Save Pricing Config</Button>
+                  <Button variant="primary" leftIcon={Save} isLoading={isSaving} disabled={isSaving} onClick={handleSaveAccessConfig}>Save Access Config</Button>
                 </div>
               </Card>
             </div>

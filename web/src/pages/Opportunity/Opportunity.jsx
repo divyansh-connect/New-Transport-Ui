@@ -89,7 +89,7 @@ export const Opportunity = () => {
       setTimeout(() => {
         setSuccessMessage('');
       }, 4000);
-    }, 400);
+    }, 800);
   };
 
   const handleDelete = (id) => {
@@ -98,6 +98,29 @@ export const Opportunity = () => {
 
   return (
     <div className="page-container opportunity-page">
+      {successMessage && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          right: '24px',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          backgroundColor: '#10b981',
+          color: '#ffffff',
+          padding: '12px 20px',
+          borderRadius: 'var(--radius-md)',
+          fontSize: '14px',
+          fontWeight: '600',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15)',
+          borderLeft: '4px solid #047857'
+        }}>
+          <CheckCircle2 size={20} />
+          <span>{successMessage}</span>
+        </div>
+      )}
+
       <div className="page-header">
         <h1>Opportunity & Notices</h1>
         <p>Post announcements & notices displayed directly in the Driver Mobile App.</p>
@@ -106,25 +129,6 @@ export const Opportunity = () => {
       <div className="opportunity-grid">
         <div className="form-column">
           <Card title="Publish New Notice" subtitle="Broadcast information to all registered drivers.">
-            {successMessage && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                border: '1px solid var(--color-success)',
-                color: 'var(--color-success)',
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-md)',
-                marginBottom: '16px',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}>
-                <CheckCircle2 size={20} />
-                <span>{successMessage}</span>
-              </div>
-            )}
-
             <form className="opportunity-form" onSubmit={handlePublish}>
               <div className="form-group">
                 <label>Notice Title</label>
@@ -175,7 +179,7 @@ export const Opportunity = () => {
                 <label>Detailed Description</label>
                 <textarea
                   name="description"
-                  rows="2"
+                  rows="6"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Write the full notice content here..."

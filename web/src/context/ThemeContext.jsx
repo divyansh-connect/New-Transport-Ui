@@ -30,14 +30,28 @@ export const ThemeProvider = ({ children }) => {
     ];
   });
 
+  // Dynamic Subscription Plans state
+  const [subscriptionPlans, setSubscriptionPlans] = useState(() => {
+    const savedPlans = localStorage.getItem('subscription_plans');
+    if (savedPlans) return JSON.parse(savedPlans);
+    return [
+      { id: 'SUB-01', name: '1 Month Standard', duration: '1 Month', price: '49.99' },
+      { id: 'SUB-02', name: '6 Months Saver', duration: '6 Months', price: '199.99' },
+      { id: 'SUB-03', name: '1 Year Premium', duration: '1 Year', price: '349.99' }
+    ];
+  });
+
   // Subscription and Pay Configuration
   const [subscriptionConfig, setSubscriptionConfig] = useState(() => {
     const savedConfig = localStorage.getItem('subscription_config');
-    if (savedConfig) return JSON.parse(savedConfig);
+    if (savedConfig) {
+      const parsed = JSON.parse(savedConfig);
+      delete parsed.fee1Month;
+      delete parsed.fee6Months;
+      delete parsed.fee1Year;
+      return parsed;
+    }
     return {
-      fee1Month: '49.99',
-      fee6Months: '199.99',
-      fee1Year: '349.99',
       activeForEveryone: true, // If false, payment is bypassed or only for select roles
       showVisitorServices: true // If true, visitors see available services as well, but are invisible themselves
     };
@@ -51,6 +65,10 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('admins_list', JSON.stringify(adminsList));
   }, [adminsList]);
+
+  useEffect(() => {
+    localStorage.setItem('subscription_plans', JSON.stringify(subscriptionPlans));
+  }, [subscriptionPlans]);
 
   useEffect(() => {
     localStorage.setItem('subscription_config', JSON.stringify(subscriptionConfig));
@@ -77,6 +95,14 @@ export const ThemeProvider = ({ children }) => {
     setAdminsList((prev) => prev.filter(admin => admin.id !== id));
   };
 
+  const addSubscriptionPlan = (newPlan) => {
+    setSubscriptionPlans((prev) => [...prev, { id: `SUB-${Math.floor(10 + Math.random() * 90)}`, ...newPlan }]);
+  };
+
+  const deleteSubscriptionPlan = (id) => {
+    setSubscriptionPlans((prev) => prev.filter(plan => plan.id !== id));
+  };
+
   const updateSubscriptionConfig = (newConfig) => {
     setSubscriptionConfig((prev) => ({ ...prev, ...newConfig }));
   };
@@ -91,6 +117,9 @@ export const ThemeProvider = ({ children }) => {
       adminsList,
       addNewAdmin,
       deleteAdmin,
+      subscriptionPlans,
+      addSubscriptionPlan,
+      deleteSubscriptionPlan,
       subscriptionConfig,
       updateSubscriptionConfig
     }}>

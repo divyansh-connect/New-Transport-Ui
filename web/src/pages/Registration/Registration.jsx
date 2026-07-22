@@ -5,10 +5,12 @@ import { Button } from '../../components/common/Button/Button';
 import { Input, Select } from '../../components/common/Input/Input';
 import { Modal } from '../../components/common/Modal/Modal';
 import { User, UserPlus, Mail, Phone, MapPin, Truck, CheckSquare } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import './Registration.css';
 
 export const Registration = () => {
   const navigate = useNavigate();
+  const { subscriptionPlans } = useTheme();
   const [alertMessage, setAlertMessage] = useState('');
   const [formData, setFormData] = useState({
     type: 'driver',
@@ -18,7 +20,8 @@ export const Registration = () => {
     phone: '',
     plateNumber: '',
     trackingEnabled: true,
-    termsAccepted: false
+    termsAccepted: false,
+    selectedPlanId: subscriptionPlans?.[0]?.id || ''
   });
 
   const handleSubmit = (e) => {
@@ -39,6 +42,10 @@ export const Registration = () => {
       registrations = JSON.parse(saved);
     }
     
+    // Find active plan price
+    const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
+    const planPrice = selectedPlan ? `$${selectedPlan.price}` : '$49.99';
+    
     // Create new record
     const newRecord = {
       id: `REG-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -46,7 +53,7 @@ export const Registration = () => {
       type: formData.type === 'driver' ? 'Commercial Driver' : formData.type === 'workshop' ? 'Repair Station' : 'Oil Change Center',
       status: 'Pending',
       date: new Date().toISOString().split('T')[0],
-      amount: '$49.99'
+      amount: formData.type === 'driver' ? planPrice : '-'
     };
     
     // Save and redirect
@@ -73,8 +80,11 @@ export const Registration = () => {
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   options={[
                     { label: 'Commercial Driver', value: 'driver' },
+                    /*
+                    { label: 'System Admin', value: 'admin' },
                     { label: 'Repair Workshop', value: 'workshop' },
                     { label: 'Oil Change Center', value: 'oil' }
+                    */
                   ]}
                 />
               </div>
@@ -145,6 +155,22 @@ export const Registration = () => {
                   />
                   Tracking location always on for driver
                 </label>
+              </div>
+            )}
+
+            {formData.type === 'driver' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Subscription Plan</label>
+                  <Select
+                    value={formData.selectedPlanId || (subscriptionPlans?.[0]?.id || '')}
+                    onChange={(e) => setFormData({...formData, selectedPlanId: e.target.value})}
+                    options={subscriptionPlans.map(plan => ({
+                      label: `${plan.name} (${plan.duration}) - $${plan.price}`,
+                      value: plan.id
+                    }))}
+                  />
+                </div>
               </div>
             )}
 

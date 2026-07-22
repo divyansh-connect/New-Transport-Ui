@@ -114,3 +114,9 @@
     justify-content: space-between;
   }
 }
+
+/* Scrollable table utility */
+.table-scrollable .table-responsive {
+  max-height: 380px;
+  overflow-y: auto;
+}

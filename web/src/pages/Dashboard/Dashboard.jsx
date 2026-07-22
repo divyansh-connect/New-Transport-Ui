@@ -171,6 +171,7 @@ export const Dashboard = () => {
         }
       >
         <Table
+          className="table-scrollable"
           headers={['Registration ID', 'Name / Entity', 'Category', 'Status', 'Date', 'Amount', 'Actions']}
           data={filteredRegistrations}
           emptyTitle="No Registrations Found"

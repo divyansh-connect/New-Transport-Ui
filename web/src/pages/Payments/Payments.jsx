@@ -64,6 +64,7 @@ export const Payments = () => {
 
       <Card title="Payment List">
         <Table
+          className="table-scrollable"
           headers={['Transaction ID', 'Driver ID', 'Payer Name', 'Amount', 'Payment Gateway', 'Status', 'Date', 'Actions']}
           data={payments}
           renderRow={(row) => (
