@@ -3,6 +3,7 @@ import { Card } from '../../components/common/Cards/Card';
 import { Button } from '../../components/common/Button/Button';
 import { Input } from '../../components/common/Input/Input';
 import { Badge } from '../../components/common/Badge/Badge';
+import { Table } from '../../components/common/Tables/Table';
 import { useTheme } from '../../context/ThemeContext';
 import {
   Sun,
@@ -15,59 +16,94 @@ import {
   CheckCircle2,
   Lock,
   Mail,
-  Smartphone
+  Smartphone,
+  Plus,
+  Trash2,
+  DollarSign,
+  Layers,
+  Settings2,
+  UserPlus
 } from 'lucide-react';
 import './Settings.css';
 
 export const Settings = () => {
-  const { theme, setTheme, profile, updateProfile } = useTheme();
+  const {
+    theme,
+    setTheme,
+    profile,
+    updateProfile,
+    adminsList,
+    addNewAdmin,
+    deleteAdmin,
+    subscriptionConfig,
+    updateSubscriptionConfig
+  } = useTheme();
+
   const [activeTab, setActiveTab] = useState('appearance');
   const [isSaving, setIsSaving] = useState(false);
   const [successBanner, setSuccessBanner] = useState('');
 
+  // Local Profile data
   const [profileData, setProfileData] = useState({
     name: profile?.name || 'Admin User',
     email: profile?.email || 'admin@driverlife.com',
     role: profile?.role || 'System Administrator',
     phone: profile?.phone || '+1 (555) 234-5678',
-    timezone: 'UTC-05:00 Eastern Time',
   });
 
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailAlerts: true,
-    newDriverPush: true,
-    serviceHubAlerts: true,
-    weeklyReport: false,
+  // Local Admin Add form state
+  const [newAdminForm, setNewAdminForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'System Admin'
   });
 
-  const handleSave = () => {
+  // Local Subscription inputs
+  const [fees, setFees] = useState({
+    fee1Month: subscriptionConfig.fee1Month,
+    fee6Months: subscriptionConfig.fee6Months,
+    fee1Year: subscriptionConfig.fee1Year,
+    activeForEveryone: subscriptionConfig.activeForEveryone,
+    showVisitorServices: subscriptionConfig.showVisitorServices
+  });
+
+  const handleSaveProfile = () => {
     setIsSaving(true);
     setTimeout(() => {
       updateProfile(profileData);
       setIsSaving(false);
-      setSuccessBanner('Profile details saved successfully & live synced to Top Navbar!');
-
-      setTimeout(() => {
-        setSuccessBanner('');
-      }, 4000);
+      setSuccessBanner('Profile details saved successfully!');
+      setTimeout(() => setSuccessBanner(''), 3000);
     }, 500);
+  };
+
+  const handleSaveSubscription = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      updateSubscriptionConfig(fees);
+      setIsSaving(false);
+      setSuccessBanner('Pricing & access settings saved successfully!');
+      setTimeout(() => setSuccessBanner(''), 3000);
+    }, 500);
+  };
+
+  const handleAddAdminSubmit = (e) => {
+    e.preventDefault();
+    if (!newAdminForm.name || !newAdminForm.email) return;
+    addNewAdmin(newAdminForm);
+    setNewAdminForm({ name: '', email: '', phone: '', role: 'System Admin' });
+    setSuccessBanner('New administrator added successfully!');
+    setTimeout(() => setSuccessBanner(''), 3000);
   };
 
   return (
     <div className="settings-container">
       <div className="settings-page-header">
         <div>
-          <h1 className="page-title">Admin Dashboard Settings</h1>
-          <p className="page-subtitle">Configure layout theme, user profile, security preferences, and system notifications.</p>
+          <h1 className="page-title">Admin Settings Panel</h1>
+          <p className="page-subtitle">Configure pricing plans, permissions, layouts, and manage system administrators.</p>
         </div>
-        <Button
-          variant="primary"
-          leftIcon={Save}
-          isLoading={isSaving}
-          onClick={handleSave}
-        >
-          Save Changes
-        </Button>
       </div>
 
       {successBanner && (
@@ -96,28 +132,28 @@ export const Settings = () => {
             onClick={() => setActiveTab('appearance')}
           >
             <Palette size={18} />
-            <span>Theme & Appearance</span>
+            <span>Theme & Layout</span>
           </button>
           <button
             className={`settings-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
             <User size={18} />
-            <span>Profile Details</span>
+            <span>My Profile</span>
           </button>
           <button
-            className={`settings-tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
-            onClick={() => setActiveTab('notifications')}
+            className={`settings-tab-btn ${activeTab === 'admins' ? 'active' : ''}`}
+            onClick={() => setActiveTab('admins')}
           >
-            <Bell size={18} />
-            <span>Notifications</span>
+            <UserPlus size={18} />
+            <span>Manage Admins</span>
           </button>
           <button
-            className={`settings-tab-btn ${activeTab === 'security' ? 'active' : ''}`}
-            onClick={() => setActiveTab('security')}
+            className={`settings-tab-btn ${activeTab === 'subscriptions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('subscriptions')}
           >
-            <Shield size={18} />
-            <span>Security & Auth</span>
+            <DollarSign size={18} />
+            <span>Subscription Settings</span>
           </button>
         </div>
 
@@ -130,18 +166,11 @@ export const Settings = () => {
                 subtitle="Select your preferred admin interface theme color mode."
               >
                 <div className="theme-options-grid">
-                  {/* Dark Mode Card */}
                   <div
                     className={`theme-option-card dark-option ${theme === 'dark' ? 'selected' : ''}`}
                     onClick={() => setTheme('dark')}
                   >
-                    <div className="theme-card-preview dark-preview">
-                      <div className="preview-navbar" />
-                      <div className="preview-content">
-                        <div className="preview-block" />
-                        <div className="preview-block short" />
-                      </div>
-                    </div>
+                    <div className="theme-card-preview dark-preview" />
                     <div className="theme-option-footer">
                       <div className="theme-option-title">
                         <Moon size={18} className="text-primary" />
@@ -151,18 +180,11 @@ export const Settings = () => {
                     </div>
                   </div>
 
-                  {/* Light Mode Card */}
                   <div
                     className={`theme-option-card light-option ${theme === 'light' ? 'selected' : ''}`}
                     onClick={() => setTheme('light')}
                   >
-                    <div className="theme-card-preview light-preview">
-                      <div className="preview-navbar" />
-                      <div className="preview-content">
-                        <div className="preview-block" />
-                        <div className="preview-block short" />
-                      </div>
-                    </div>
+                    <div className="theme-card-preview light-preview" />
                     <div className="theme-option-footer">
                       <div className="theme-option-title">
                         <Sun size={18} className="text-warning" />
@@ -171,32 +193,6 @@ export const Settings = () => {
                       {theme === 'light' && <Badge variant="primary">Active</Badge>}
                     </div>
                   </div>
-                </div>
-              </Card>
-
-              <Card
-                title="Layout Display Preferences"
-                subtitle="Customize UI spacing, sidebar default state, and animations."
-              >
-                <div className="setting-toggle-row">
-                  <div>
-                    <strong>Compact Layout Spacing</strong>
-                    <p className="setting-desc">Reduce layout margins for higher density dashboards.</p>
-                  </div>
-                  <label className="toggle-switch">
-                    <input type="checkbox" defaultChecked={false} />
-                    <span className="toggle-slider" />
-                  </label>
-                </div>
-                <div className="setting-toggle-row">
-                  <div>
-                    <strong>Enable Micro-Animations</strong>
-                    <p className="setting-desc">Smooth UI transitions and interactive hover effects.</p>
-                  </div>
-                  <label className="toggle-switch">
-                    <input type="checkbox" defaultChecked={true} />
-                    <span className="toggle-slider" />
-                  </label>
                 </div>
               </Card>
             </div>
@@ -208,7 +204,7 @@ export const Settings = () => {
                 title="Admin Profile Information"
                 subtitle="Update your contact details and system administrator role information."
               >
-                <div className="profile-form-grid">
+                <div className="profile-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                   <Input
                     label="Full Name"
                     leftIcon={User}
@@ -234,62 +230,156 @@ export const Settings = () => {
                     onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   />
                 </div>
+                <Button variant="primary" leftIcon={Save} onClick={handleSaveProfile}>Save Profile</Button>
               </Card>
             </div>
           )}
 
-          {activeTab === 'notifications' && (
+          {activeTab === 'admins' && (
             <div className="settings-tab-content">
               <Card
-                title="Alert & Notification Subscriptions"
-                subtitle="Control when and how you receive admin platform alerts."
+                title="Manage Dashboard Administrators"
+                subtitle="Add, configure roles, or revoke access for platform system admins."
               >
-                <div className="setting-toggle-row">
-                  <div>
-                    <strong>New Driver Approvals Alert</strong>
-                    <p className="setting-desc">Instant notification when a new driver registers.</p>
+                <form onSubmit={handleAddAdminSubmit} className="profile-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto', gap: '12px', alignItems: 'end', marginBottom: '20px' }}>
+                  <Input
+                    label="Name"
+                    value={newAdminForm.name}
+                    onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={newAdminForm.email}
+                    onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Phone"
+                    value={newAdminForm.phone}
+                    onChange={(e) => setNewAdminForm({ ...newAdminForm, phone: e.target.value })}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Role</label>
+                    <select
+                      value={newAdminForm.role}
+                      onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'var(--color-surface)',
+                        border: '1px solid var(--color-card-border)',
+                        color: 'var(--color-text-main)'
+                      }}
+                    >
+                      <option value="Super Admin">Super Admin</option>
+                      <option value="System Admin">System Admin</option>
+                      <option value="Billing Admin">Billing Admin</option>
+                    </select>
                   </div>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.newDriverPush}
-                      onChange={(e) =>
-                        setNotificationSettings({ ...notificationSettings, newDriverPush: e.target.checked })
-                      }
-                    />
-                    <span className="toggle-slider" />
-                  </label>
-                </div>
+                  <Button type="submit" variant="primary" leftIcon={Plus}>Add Admin</Button>
+                </form>
 
-                <div className="setting-toggle-row">
-                  <div>
-                    <strong>Service Hub Verification Notifications</strong>
-                    <p className="setting-desc">Alerts when oil change centers or workshops register.</p>
-                  </div>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.serviceHubAlerts}
-                      onChange={(e) =>
-                        setNotificationSettings({ ...notificationSettings, serviceHubAlerts: e.target.checked })
-                      }
-                    />
-                    <span className="toggle-slider" />
-                  </label>
+                <div style={{ overflowX: 'auto', marginTop: '16px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                        <th style={{ padding: '12px' }}>ID</th>
+                        <th style={{ padding: '12px' }}>Name</th>
+                        <th style={{ padding: '12px' }}>Email</th>
+                        <th style={{ padding: '12px' }}>Role</th>
+                        <th style={{ padding: '12px' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminsList.map((adm) => (
+                        <tr key={adm.id} style={{ borderBottom: '1px solid var(--color-card-border)', fontSize: '14px', color: 'var(--color-text-main)' }}>
+                          <td style={{ padding: '12px' }}><code>{adm.id}</code></td>
+                          <td style={{ padding: '12px', fontWeight: '600' }}>{adm.name}</td>
+                          <td style={{ padding: '12px' }}>{adm.email}</td>
+                          <td style={{ padding: '12px' }}><Badge variant="primary">{adm.role}</Badge></td>
+                          <td style={{ padding: '12px' }}>
+                            <button
+                              onClick={() => deleteAdmin(adm.id)}
+                              style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                              title="Revoke Admin Access"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </Card>
             </div>
           )}
 
-          {activeTab === 'security' && (
+          {activeTab === 'subscriptions' && (
             <div className="settings-tab-content">
               <Card
-                title="Security & Password"
-                subtitle="Manage authentication options and change admin account credentials."
+                title="Global Subscription & Paywall Config"
+                subtitle="Determine subscription rates for Driver tracking and toggle paywall rules for Visitors."
               >
-                <div className="profile-form-grid">
-                  <Input label="Current Password" type="password" leftIcon={Lock} placeholder="••••••••" />
-                  <Input label="New Password" type="password" leftIcon={Lock} placeholder="••••••••" />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                  <Input
+                    label="1 Month Fee ($)"
+                    type="number"
+                    value={fees.fee1Month}
+                    onChange={(e) => setFees({ ...fees, fee1Month: e.target.value })}
+                  />
+                  <Input
+                    label="6 Months Fee ($)"
+                    type="number"
+                    value={fees.fee6Months}
+                    onChange={(e) => setFees({ ...fees, fee6Months: e.target.value })}
+                  />
+                  <Input
+                    label="1 Year Fee ($)"
+                    type="number"
+                    value={fees.fee1Year}
+                    onChange={(e) => setFees({ ...fees, fee1Year: e.target.value })}
+                  />
+                </div>
+
+                <Card title="Visibility & Access Control Toggles" subtitle="Control map capabilities for different user levels.">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-main)' }}>Enable Paywall for Drivers</strong>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>If enabled, Drivers must pay the active subscription rate to go Live.</span>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={fees.activeForEveryone}
+                          onChange={(e) => setFees({ ...fees, activeForEveryone: e.target.checked })}
+                        />
+                        <span className="toggle-slider" />
+                      </label>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-main)' }}>Allow Visitors to View Service Hubs</strong>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>If enabled, visitors see themselves and all static service points (Workshops/Oil centers). Visitors remain completely private.</span>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={fees.showVisitorServices}
+                          onChange={(e) => setFees({ ...fees, showVisitorServices: e.target.checked })}
+                        />
+                        <span className="toggle-slider" />
+                      </label>
+                    </div>
+                  </div>
+                </Card>
+
+                <div style={{ marginTop: '20px' }}>
+                  <Button variant="primary" leftIcon={Save} onClick={handleSaveSubscription}>Save Pricing Config</Button>
                 </div>
               </Card>
             </div>

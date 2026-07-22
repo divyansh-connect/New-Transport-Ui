@@ -20,10 +20,41 @@ export const ThemeProvider = ({ children }) => {
     };
   });
 
+  // Admin Management state loaded from localStorage or default
+  const [adminsList, setAdminsList] = useState(() => {
+    const savedAdmins = localStorage.getItem('admins_list');
+    if (savedAdmins) return JSON.parse(savedAdmins);
+    return [
+      { id: 'ADM-01', name: 'Yash Ji', email: 'yash_ji@driverlife.com', role: 'Super Admin', phone: '+966 50 123 4567' },
+      { id: 'ADM-02', name: 'Nalini Dev', email: 'nalini.dev@driverlife.com', role: 'System Admin', phone: '+966 50 987 6543' }
+    ];
+  });
+
+  // Subscription and Pay Configuration
+  const [subscriptionConfig, setSubscriptionConfig] = useState(() => {
+    const savedConfig = localStorage.getItem('subscription_config');
+    if (savedConfig) return JSON.parse(savedConfig);
+    return {
+      fee1Month: '49.99',
+      fee6Months: '199.99',
+      fee1Year: '349.99',
+      activeForEveryone: true, // If false, payment is bypassed or only for select roles
+      showVisitorServices: true // If true, visitors see available services as well, but are invisible themselves
+    };
+  });
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('admins_list', JSON.stringify(adminsList));
+  }, [adminsList]);
+
+  useEffect(() => {
+    localStorage.setItem('subscription_config', JSON.stringify(subscriptionConfig));
+  }, [subscriptionConfig]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
@@ -38,8 +69,31 @@ export const ThemeProvider = ({ children }) => {
     });
   };
 
+  const addNewAdmin = (newAdmin) => {
+    setAdminsList((prev) => [...prev, { id: `ADM-${Math.floor(10 + Math.random() * 90)}`, ...newAdmin }]);
+  };
+
+  const deleteAdmin = (id) => {
+    setAdminsList((prev) => prev.filter(admin => admin.id !== id));
+  };
+
+  const updateSubscriptionConfig = (newConfig) => {
+    setSubscriptionConfig((prev) => ({ ...prev, ...newConfig }));
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, profile, updateProfile }}>
+    <ThemeContext.Provider value={{
+      theme,
+      setTheme,
+      toggleTheme,
+      profile,
+      updateProfile,
+      adminsList,
+      addNewAdmin,
+      deleteAdmin,
+      subscriptionConfig,
+      updateSubscriptionConfig
+    }}>
       {children}
     </ThemeContext.Provider>
   );
