@@ -7,7 +7,7 @@ import { Phone, MessageSquare, Mail, ExternalLink, Clock, User, CheckCircle2, Se
 import './Contact.css';
 
 export const Contact = () => {
-  const [inquiries, setInquiries] = useState([
+  const initialInquiries = [
     {
       id: 'TKT-101',
       user: 'Rajesh Kumar',
@@ -38,7 +38,19 @@ export const Contact = () => {
       time: '3 hrs ago',
       details: 'App shuts down immediately after entering OTP on Android 14. Issue fixed after cache clearing.'
     }
-  ]);
+  ];
+
+  const [inquiries, setInquiries] = React.useState([]);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem('support_inquiries');
+    if (saved) {
+      setInquiries(JSON.parse(saved));
+    } else {
+      setInquiries(initialInquiries);
+      localStorage.setItem('support_inquiries', JSON.stringify(initialInquiries));
+    }
+  }, []);
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,11 +69,11 @@ export const Contact = () => {
   const handleUpdateTicket = () => {
     if (!selectedTicket) return;
 
-    setInquiries((prev) =>
-      prev.map((item) =>
-        item.id === selectedTicket.id ? { ...item, status: ticketStatus } : item
-      )
+    const updated = inquiries.map((item) =>
+      item.id === selectedTicket.id ? { ...item, status: ticketStatus } : item
     );
+    setInquiries(updated);
+    localStorage.setItem('support_inquiries', JSON.stringify(updated));
 
     setSuccessToast(`Ticket ${selectedTicket.id} updated & response sent to ${selectedTicket.user}!`);
 

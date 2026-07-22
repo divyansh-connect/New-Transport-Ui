@@ -6,8 +6,8 @@ import { useTheme } from '../src/context/ThemeContext';
 const { width, height } = Dimensions.get('window');
 
 // Import locally copied premium generated assets
-const localSplashBg = require('../assets/splash_bg.png');
-const localLogo = require('../assets/logo.png');
+const localSplashBg = require('../assets/splash_bg.jpg');
+const localLogo = require('../assets/logo.jpg');
 
 export default function SplashScreen() {
   const { theme } = useTheme();
