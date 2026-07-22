@@ -170,6 +170,7 @@ export const Services = () => {
         </div>
 
         <Table
+          className="table-scrollable"
           headers={['Service ID', 'Name & Location', 'GPS Coordinates', 'Contact', 'Rating', 'Status', 'Actions']}
           data={filteredServices}
           renderRow={(row) => (

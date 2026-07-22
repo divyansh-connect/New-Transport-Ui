@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -12,11 +12,25 @@ import {
   Truck,
   HelpCircle,
   X,
-  LogOut
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
+import { useTheme } from '../../../../context/ThemeContext';
 import './Sidebar.css';
 
 export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
+  const { activeSettingsTab, setActiveSettingsTab } = useTheme();
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const mainNavItems = [
     { title: 'Dashboard', path: '/', icon: LayoutDashboard },
     { title: 'Driver Requests', path: '/drivers', icon: Users, badge: '18' },
@@ -88,6 +102,46 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
             {(!isCollapsed || isMobileOpen) && <span className="section-label">SYSTEM & HELP</span>}
             {secondaryNavItems.map((item) => {
               const Icon = item.icon;
+              if (item.title === 'Settings' && isMobile) {
+                return (
+                  <div key={item.path}>
+                    <button
+                      onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
+                      className={`sidebar-item ${window.location.pathname === '/settings' ? 'active' : ''}`}
+                      style={{ background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      title={isCollapsed && !isMobileOpen ? item.title : ''}
+                    >
+                      <Icon size={20} className="sidebar-icon" />
+                      {(!isCollapsed || isMobileOpen) && (
+                        <>
+                          <span className="sidebar-label" style={{ flex: 1 }}>{item.title}</span>
+                          <ChevronDown size={14} style={{ transform: isSettingsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: 'var(--color-text-muted)' }} />
+                        </>
+                      )}
+                    </button>
+                    {isSettingsExpanded && (!isCollapsed || isMobileOpen) && (
+                      <div className="sidebar-submenu" style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+                        <NavLink to="/settings" onClick={() => { setActiveSettingsTab('appearance'); onCloseMobile(); }} className={`sidebar-submenu-item ${activeSettingsTab === 'appearance' && window.location.pathname === '/settings' ? 'active' : ''}`}>
+                          Theme & Layout
+                        </NavLink>
+                        <NavLink to="/settings" onClick={() => { setActiveSettingsTab('profile'); onCloseMobile(); }} className={`sidebar-submenu-item ${activeSettingsTab === 'profile' && window.location.pathname === '/settings' ? 'active' : ''}`}>
+                          My Profile
+                        </NavLink>
+                        <NavLink to="/settings" onClick={() => { setActiveSettingsTab('admins'); onCloseMobile(); }} className={`sidebar-submenu-item ${activeSettingsTab === 'admins' && window.location.pathname === '/settings' ? 'active' : ''}`}>
+                          Manage Admins
+                        </NavLink>
+                        <NavLink to="/settings" onClick={() => { setActiveSettingsTab('subscriptions'); onCloseMobile(); }} className={`sidebar-submenu-item ${activeSettingsTab === 'subscriptions' && window.location.pathname === '/settings' ? 'active' : ''}`}>
+                          Subscription Settings
+                        </NavLink>
+                        <NavLink to="/settings" onClick={() => { setActiveSettingsTab('config'); onCloseMobile(); }} className={`sidebar-submenu-item ${activeSettingsTab === 'config' && window.location.pathname === '/settings' ? 'active' : ''}`}>
+                          Access Configuration
+                        </NavLink>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <NavLink
                   key={item.path}

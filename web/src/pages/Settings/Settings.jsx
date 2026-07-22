@@ -39,10 +39,11 @@ export const Settings = () => {
     addSubscriptionPlan,
     deleteSubscriptionPlan,
     subscriptionConfig,
-    updateSubscriptionConfig
+    updateSubscriptionConfig,
+    activeSettingsTab: activeTab,
+    setActiveSettingsTab: setActiveTab
   } = useTheme();
 
-  const [activeTab, setActiveTab] = useState('appearance');
   const [isSaving, setIsSaving] = useState(false);
   const [successBanner, setSuccessBanner] = useState('');
 
@@ -241,7 +242,7 @@ export const Settings = () => {
                 title="Admin Profile Information"
                 subtitle="Update your contact details and system administrator role information."
               >
-                <div className="profile-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                <div className="profile-form-grid">
                   <Input
                     label="Full Name"
                     leftIcon={User}
@@ -280,7 +281,7 @@ export const Settings = () => {
               >
                 <form onSubmit={handleAddAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
                   {/* Row 1: Name and Email */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="admin-form-row">
                     <Input
                       label="Name"
                       value={newAdminForm.name}
@@ -297,7 +298,7 @@ export const Settings = () => {
                   </div>
 
                   {/* Row 2: Phone and Role */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="admin-form-row">
                     <Input
                       label="Phone"
                       value={newAdminForm.phone}
@@ -325,7 +326,7 @@ export const Settings = () => {
                   </div>
 
                   {/* Row 3: Password and Add Admin Button */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'end' }}>
+                  <div className="admin-form-row align-end">
                     <Input
                       label="Password"
                       type="password"
@@ -338,7 +339,7 @@ export const Settings = () => {
                 </form>
 
                 <div style={{ overflowX: 'auto', maxHeight: '250px', overflowY: 'auto', marginTop: '16px' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <table className="desktop-view-only" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
                         <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>ID</th>
@@ -368,6 +369,38 @@ export const Settings = () => {
                       ))}
                     </tbody>
                   </table>
+
+                  <div className="mobile-view-only">
+                    {adminsList.map((adm) => (
+                      <div key={adm.id} style={{
+                        backgroundColor: 'var(--color-surface)',
+                        border: '1px solid var(--color-card-border)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: '700', color: 'var(--color-text-main)' }}>{adm.name}</span>
+                          <button
+                            onClick={() => deleteAdmin(adm.id)}
+                            style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                            title="Revoke Admin Access"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                          <span style={{ color: 'var(--color-text-muted)' }}>ID: <code>{adm.id}</code></span>
+                          <Badge variant="primary">{adm.role}</Badge>
+                        </div>
+                        <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                          {adm.email}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </Card>
             </div>
@@ -380,7 +413,7 @@ export const Settings = () => {
                 subtitle="Define a new driver tracking access plan rate and duration."
               >
                 <form onSubmit={handleAddPlanSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="admin-form-row">
                     <Input
                       label="Plan Name"
                       placeholder="e.g. Monthly Standard"
@@ -396,7 +429,7 @@ export const Settings = () => {
                       required
                     />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'end' }}>
+                  <div className="admin-form-row align-end">
                     <Input
                       label="Price ($)"
                       type="number"
@@ -415,7 +448,7 @@ export const Settings = () => {
                 subtitle="Review and manage existing pricing models."
               >
                 <div style={{ overflowX: 'auto', maxHeight: '200px', overflowY: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <table className="desktop-view-only" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
                         <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Plan ID</th>
@@ -445,6 +478,38 @@ export const Settings = () => {
                       ))}
                     </tbody>
                   </table>
+
+                  <div className="mobile-view-only">
+                    {subscriptionPlans.map((plan) => (
+                      <div key={plan.id} style={{
+                        backgroundColor: 'var(--color-surface)',
+                        border: '1px solid var(--color-card-border)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: '700', color: 'var(--color-text-main)' }}>{plan.name}</span>
+                          <button
+                            onClick={() => deleteSubscriptionPlan(plan.id)}
+                            style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                            title="Delete Plan"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                          <span style={{ color: 'var(--color-text-muted)' }}>ID: <code>{plan.id}</code></span>
+                          <span style={{ color: 'var(--color-primary)', fontWeight: '700', fontSize: '14px' }}>${plan.price}</span>
+                        </div>
+                        <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                          Duration: {plan.duration}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </Card>
             </div>

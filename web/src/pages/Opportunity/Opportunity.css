@@ -198,9 +198,11 @@
     height: auto;
   }
 
+  /* 
   .opportunity-list {
     max-height: none;
     overflow-y: visible;
     padding-right: 0;
   }
+  */
 }

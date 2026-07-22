@@ -206,3 +206,35 @@
     transform: translateX(0);
   }
 }
+
+/* Sidebar sub-menu items styling */
+.sidebar-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  padding-left: 24px;
+}
+
+.sidebar-submenu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-submenu-item:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-main);
+}
+
+.sidebar-submenu-item.active {
+  color: var(--color-primary);
+  background-color: var(--color-primary-subtle);
+  font-weight: 600;
+}

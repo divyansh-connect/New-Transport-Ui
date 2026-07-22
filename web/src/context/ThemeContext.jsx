@@ -107,6 +107,9 @@ export const ThemeProvider = ({ children }) => {
     setSubscriptionConfig((prev) => ({ ...prev, ...newConfig }));
   };
 
+  // Active Settings Tab state
+  const [activeSettingsTab, setActiveSettingsTab] = useState('appearance');
+
   return (
     <ThemeContext.Provider value={{
       theme,
@@ -121,7 +124,9 @@ export const ThemeProvider = ({ children }) => {
       addSubscriptionPlan,
       deleteSubscriptionPlan,
       subscriptionConfig,
-      updateSubscriptionConfig
+      updateSubscriptionConfig,
+      activeSettingsTab,
+      setActiveSettingsTab
     }}>
       {children}
     </ThemeContext.Provider>
