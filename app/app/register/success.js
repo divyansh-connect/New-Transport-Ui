@@ -9,20 +9,29 @@ import { CustomButton } from '../../src/components/common/buttons/CustomButton';
 import { RADIUS, SPACING } from '../../src/constants/theme';
 
 export default function PaymentSuccessScreen() {
-  const { theme } = useTheme();
+  const { theme, language, registeredUser } = useTheme();
   const router = useRouter();
+  const isArabic = language === 'Arabic';
+
+  // Check if user selected Bank Wire payment method
+  const isBankWire = registeredUser?.paymentMethod === 'Direct Bank Wire';
 
   const handleWhatsApp = () => {
-    Linking.openURL('https://wa.me/966000000000');
+    // Dynamically format confirmation message for WhatsApp admin
+    const paymentType = isBankWire ? 'Direct Bank Wire (حوالة بنكية)' : 'Credit Card / Apple Pay';
+    const message = encodeURIComponent(
+      `Hello Admin, I registered my driver profile. \nName: ${registeredUser?.name} ${registeredUser?.lastName} \nPlate No: ${registeredUser?.carPlateNumber || 'N/A'} \nPayment Mode: ${paymentType}. \nPlease approve my account.`
+    );
+    Linking.openURL(`https://wa.me/966501234567?text=${message}`);
   };
 
   const handleCall = () => {
-    Linking.openURL('tel:+966000000000');
+    Linking.openURL('tel:+966501234567');
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title="For Approval Contact Us" showBack={false} />
+      <Header title={isArabic ? 'تأكيد عملية الدفع' : 'Payment Confirmation'} showBack={false} />
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
@@ -30,33 +39,73 @@ export default function PaymentSuccessScreen() {
             <Text style={styles.checkMark}>✓</Text>
           </View>
 
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Payment Gateway Success</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>
+            {isArabic ? 'تم تأكيد طلب الدفع بنجاح' : 'Payment Success / Confirmed'}
+          </Text>
 
+          {isBankWire ? (
+            /* Show Direct Bank Account details for Direct Bank Wire */
+            <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Text style={[styles.noticeTitle, { color: theme.primary }]}>
+                {isArabic ? 'تفاصيل التحويل البنكي (الحوالة)' : 'Direct Bank Wire Details'}
+              </Text>
+              <View style={styles.bankDetailRow}>
+                <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Bank Name:</Text>
+                <Text style={[styles.bankValue, { color: theme.textPrimary }]}>Saudi National Bank (SNB / AlAhli)</Text>
+              </View>
+              <View style={styles.bankDetailRow}>
+                <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>IBAN:</Text>
+                <Text style={[styles.bankValue, { color: theme.textPrimary }]}>SA80 1000 0000 1234 5678 9012</Text>
+              </View>
+              <View style={styles.bankDetailRow}>
+                <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Account Holder Name:</Text>
+                <Text style={[styles.bankValue, { color: theme.textPrimary }]}>Driver Life Logistics LLC</Text>
+              </View>
+              <Text style={[styles.bankAlert, { color: theme.warning }]}>
+                {isArabic 
+                  ? 'يرجى إرسال إيصال التحويل إلى المدير عبر الواتساب لتفعيل حسابك.' 
+                  : 'Please send your payment transfer receipt copy to Admin via WhatsApp to get fast activation.'}
+              </Text>
+            </View>
+          ) : (
+            /* Show normal credit card message */
+            <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Text style={[styles.noticeTitle, { color: theme.primary }]}>
+                {isArabic ? 'بوابة الدفع التلقائي' : 'Instant Gateway Payment'}
+              </Text>
+              <Text style={[styles.subNote, { color: theme.textSecondary }]}>
+                {isArabic 
+                  ? 'تم استلام الدفعة تلقائياً. يرجى مراجعة المسؤول لتسريع مراجعة وتفعيل الملف الشخصي.'
+                  : 'Transaction processed instantly. Contact admin dashboard services for fast profile verification.'}
+              </Text>
+            </View>
+          )}
+
+          {/* Admin contact section */}
           <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <Text style={[styles.noticeTitle, { color: theme.primary }]}>For Approval Contact Us</Text>
-            <Text style={[styles.phoneNum, { color: theme.textPrimary }]}>+966000000000</Text>
-            <Text style={[styles.subNote, { color: theme.textSecondary }]}>
-              Contact admin via WhatsApp or Phone call for account activation & dashboard notification review.
+            <Text style={[styles.noticeTitle, { color: theme.primary }]}>
+              {isArabic ? 'للتواصل مع الإدارة والتفعيل' : 'For Admin Approval Contact'}
             </Text>
+            <Text style={[styles.phoneNum, { color: theme.textPrimary }]}>+966 50 123 4567</Text>
           </View>
 
           <CustomButton
-            title="💬 Contact via WhatsApp"
+            title={isArabic ? '💬 أرسل إيصال الدفع (واتساب)' : '💬 Send Payment Copy (WhatsApp)'}
             onPress={handleWhatsApp}
-            style={{ backgroundColor: '#25D366', marginVertical: SPACING.xs }}
+            style={{ backgroundColor: '#25D366', marginVertical: SPACING.xs, width: '100%' }}
           />
 
           <CustomButton
-            title="📞 Call Admin Direct (+966000000000)"
+            title={isArabic ? '📞 اتصل بالمسؤول مباشرة' : '📞 Call Admin Directly'}
             variant="secondary"
             onPress={handleCall}
-            style={{ marginVertical: SPACING.xs }}
+            style={{ marginVertical: SPACING.xs, width: '100%' }}
           />
 
           <CustomButton
-            title="Proceed to Approval Status"
+            title={isArabic ? 'الذهاب إلى حالة الموافقة' : 'Proceed to Approval Status'}
             onPress={() => router.push('/register/pending')}
-            style={{ marginTop: SPACING.md }}
+            style={{ marginTop: SPACING.md, width: '100%' }}
           />
         </Card>
       </ScrollView>
@@ -93,6 +142,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginBottom: SPACING.md,
+    textAlign: 'center',
   },
   noticeBox: {
     width: '100%',
@@ -103,8 +153,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noticeTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
   },
   phoneNum: {
     fontSize: 20,
@@ -114,5 +166,27 @@ const styles = StyleSheet.create({
   subNote: {
     fontSize: 12,
     textAlign: 'center',
+    lineHeight: 18,
   },
+  bankDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginVertical: 4,
+  },
+  bankLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  bankValue: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  bankAlert: {
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 16,
+  }
 });
