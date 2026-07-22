@@ -269,6 +269,14 @@ export const DriverProvider = ({ children }) => {
     setNotifications([]);
   };
 
+  const deletePayment = (id) => {
+    setPayments((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const updatePayment = (id, updatedData) => {
+    setPayments((prev) => prev.map((p) => (p.id === id ? { ...p, ...updatedData } : p)));
+  };
+
   return (
     <DriverContext.Provider
       value={{
@@ -279,7 +287,9 @@ export const DriverProvider = ({ children }) => {
         rejectDriver,
         updateDriverProfile,
         markNotificationAsRead,
-        clearAllNotifications
+        clearAllNotifications,
+        deletePayment,
+        updatePayment
       }}
     >
       {children}

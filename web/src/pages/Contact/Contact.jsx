@@ -133,8 +133,8 @@ export const Contact = () => {
                     row.status === 'Resolved'
                       ? 'success'
                       : row.status === 'In Progress'
-                      ? 'info'
-                      : 'warning'
+                        ? 'info'
+                        : 'warning'
                   }
                 >
                   {row.status}
@@ -196,15 +196,7 @@ export const Contact = () => {
               </div>
             )}
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '12px',
-              backgroundColor: 'var(--color-surface)',
-              padding: '14px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)'
-            }}>
+            <div className="ticket-info-grid">
               <div>
                 <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>User Name</span>
                 <p style={{ fontWeight: '600', marginTop: '2px' }}>{selectedTicket.user} ({selectedTicket.role})</p>

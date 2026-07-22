@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Modal } from '../../components/common/Modal/Modal';
 import './Opportunity.css';
 
 export const Opportunity = () => {
+  const [validationAlert, setValidationAlert] = useState('');
   const [opportunities, setOpportunities] = useState([
     {
       id: 1,
@@ -53,7 +55,7 @@ export const Opportunity = () => {
   const handlePublish = (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.description.trim()) {
-      alert('Please fill out Notice Title and Detailed Description.');
+      setValidationAlert('Please fill out Notice Title and Detailed Description.');
       return;
     }
 
@@ -173,7 +175,7 @@ export const Opportunity = () => {
                 <label>Detailed Description</label>
                 <textarea
                   name="description"
-                  rows="3"
+                  rows="2"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Write the full notice content here..."
@@ -185,15 +187,16 @@ export const Opportunity = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-md"
+                className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-sm"
                 style={{
-                  padding: '12px',
+                  padding: '9px 12px',
                   backgroundColor: 'var(--color-primary)',
                   color: 'white',
                   borderRadius: 'var(--radius-md)',
                   fontWeight: '600',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.7 : 1
                 }}
               >
                 <Send size={18} /> {isSubmitting ? 'Publishing...' : 'Publish Notice'}
@@ -247,6 +250,20 @@ export const Opportunity = () => {
           </div>
         </div>
       </div>
+
+      {/* Validation React Modal */}
+      <Modal
+        isOpen={!!validationAlert}
+        onClose={() => setValidationAlert('')}
+        title="Validation Required"
+        subtitle="Please check broadcast notice details."
+        primaryActionLabel="OK"
+        onPrimaryAction={() => setValidationAlert('')}
+      >
+        <p style={{ color: 'var(--color-text-main)', fontSize: '14px', margin: 0 }}>
+          {validationAlert}
+        </p>
+      </Modal>
     </div>
   );
 };

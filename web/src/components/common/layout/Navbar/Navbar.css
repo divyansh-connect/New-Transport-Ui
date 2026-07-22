@@ -402,4 +402,21 @@
   .desktop-toggle { display: none; }
   .navbar-search { display: none; }
   .user-details { display: none; }
+
+  .navbar {
+    padding: 0 16px;
+    height: 60px;
+  }
+
+  .notifications-dropdown {
+    width: calc(100vw - 32px);
+    max-width: 310px;
+    right: -52px;
+  }
+
+  .user-menu-dropdown {
+    width: calc(100vw - 32px);
+    max-width: 250px;
+    right: 0;
+  }
 }
