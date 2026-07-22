@@ -13,14 +13,9 @@ export default function PaymentSuccessScreen() {
   const router = useRouter();
   const isArabic = language === 'Arabic';
 
-  // Check if user selected Bank Wire payment method
-  const isBankWire = registeredUser?.paymentMethod === 'Direct Bank Wire';
-
   const handleWhatsApp = () => {
-    // Dynamically format confirmation message for WhatsApp admin
-    const paymentType = isBankWire ? 'Direct Bank Wire (حوالة بنكية)' : 'Credit Card / Apple Pay';
     const message = encodeURIComponent(
-      `Hello Admin, I registered my driver profile. \nName: ${registeredUser?.name} ${registeredUser?.lastName} \nPlate No: ${registeredUser?.carPlateNumber || 'N/A'} \nPayment Mode: ${paymentType}. \nPlease approve my account.`
+      `Hello Admin, I completed my driver payment registration. \nName: ${registeredUser?.name} ${registeredUser?.lastName} \nPlate No: ${registeredUser?.carPlateNumber || 'N/A'} \nPlan: ${registeredUser?.subscriptionDuration || '1 Month'} (${registeredUser?.amountPaid || '$49.99'}). \nPlease review and activate my account.`
     );
     Linking.openURL(`https://wa.me/966501234567?text=${message}`);
   };
@@ -43,54 +38,44 @@ export default function PaymentSuccessScreen() {
             {isArabic ? 'تم تأكيد طلب الدفع بنجاح' : 'Payment Success / Confirmed'}
           </Text>
 
-          {isBankWire ? (
-            /* Show Direct Bank Account details for Direct Bank Wire */
-            <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={[styles.noticeTitle, { color: theme.primary }]}>
-                {isArabic ? 'تفاصيل التحويل البنكي (الحوالة)' : 'Direct Bank Wire Details'}
-              </Text>
-              <View style={styles.bankDetailRow}>
-                <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Bank Name:</Text>
-                <Text style={[styles.bankValue, { color: theme.textPrimary }]}>Saudi National Bank (SNB / AlAhli)</Text>
-              </View>
-              <View style={styles.bankDetailRow}>
-                <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>IBAN:</Text>
-                <Text style={[styles.bankValue, { color: theme.textPrimary }]}>SA80 1000 0000 1234 5678 9012</Text>
-              </View>
-              <View style={styles.bankDetailRow}>
-                <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Account Holder Name:</Text>
-                <Text style={[styles.bankValue, { color: theme.textPrimary }]}>Driver Life Logistics LLC</Text>
-              </View>
-              <Text style={[styles.bankAlert, { color: theme.warning }]}>
-                {isArabic 
-                  ? 'يرجى إرسال إيصال التحويل إلى المدير عبر الواتساب لتفعيل حسابك.' 
-                  : 'Please send your payment transfer receipt copy to Admin via WhatsApp to get fast activation.'}
-              </Text>
-            </View>
-          ) : (
-            /* Show normal credit card message */
-            <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={[styles.noticeTitle, { color: theme.primary }]}>
-                {isArabic ? 'بوابة الدفع التلقائي' : 'Instant Gateway Payment'}
-              </Text>
-              <Text style={[styles.subNote, { color: theme.textSecondary }]}>
-                {isArabic 
-                  ? 'تم استلام الدفعة تلقائياً. يرجى مراجعة المسؤول لتسريع مراجعة وتفعيل الملف الشخصي.'
-                  : 'Transaction processed instantly. Contact admin dashboard services for fast profile verification.'}
-              </Text>
-            </View>
-          )}
-
-          {/* Admin contact section */}
+          {/* Unified payment receipt details */}
           <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Text style={[styles.noticeTitle, { color: theme.primary }]}>
-              {isArabic ? 'للتواصل مع الإدارة والتفعيل' : 'For Admin Approval Contact'}
+              {isArabic ? 'تفاصيل فاتورة الاشتراك' : 'Subscription Invoice Details'}
+            </Text>
+            <View style={styles.bankDetailRow}>
+              <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Subscriber Name:</Text>
+              <Text style={[styles.bankValue, { color: theme.textPrimary }]}>{registeredUser?.name} {registeredUser?.lastName}</Text>
+            </View>
+            <View style={styles.bankDetailRow}>
+              <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Selected Plan:</Text>
+              <Text style={[styles.bankValue, { color: theme.textPrimary }]}>{registeredUser?.subscriptionDuration || '1 Month'}</Text>
+            </View>
+            <View style={styles.bankDetailRow}>
+              <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Amount Paid:</Text>
+              <Text style={[styles.bankValue, { color: theme.textPrimary }]}>{registeredUser?.amountPaid || '$49.99'}</Text>
+            </View>
+            <View style={styles.bankDetailRow}>
+              <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Payment Gateway:</Text>
+              <Text style={[styles.bankValue, { color: theme.textPrimary }]}>Saudi Checkout API</Text>
+            </View>
+          </View>
+
+          {/* Contact Admin */}
+          <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Text style={[styles.noticeTitle, { color: theme.primary }]}>
+              {isArabic ? 'للتواصل مع المسؤول للتفعيل' : 'For Admin Approval Contact'}
             </Text>
             <Text style={[styles.phoneNum, { color: theme.textPrimary }]}>+966 50 123 4567</Text>
+            <Text style={[styles.subNote, { color: theme.textSecondary }]}>
+              {isArabic 
+                ? 'يرجى إرسال رسالة للمسؤول عبر الواتساب لتفعيل حسابك فوراً.'
+                : 'Share payment confirmation details with Admin on WhatsApp to get instant activation.'}
+            </Text>
           </View>
 
           <CustomButton
-            title={isArabic ? '💬 أرسل إيصال الدفع (واتساب)' : '💬 Send Payment Copy (WhatsApp)'}
+            title={isArabic ? '💬 أرسل تأكيد الدفع (واتساب)' : '💬 Send Payment Copy (WhatsApp)'}
             onPress={handleWhatsApp}
             style={{ backgroundColor: '#25D366', marginVertical: SPACING.xs, width: '100%' }}
           />
@@ -181,12 +166,5 @@ const styles = StyleSheet.create({
   bankValue: {
     fontSize: 12,
     fontWeight: '700',
-  },
-  bankAlert: {
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginTop: 10,
-    lineHeight: 16,
   }
 });

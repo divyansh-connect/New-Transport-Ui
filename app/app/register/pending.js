@@ -19,22 +19,6 @@ export default function ApprovalPendingScreen() {
   // Check current approval status from stored user profile
   const isApproved = registeredUser?.status === 'Approved';
 
-  // ── Simulate Admin Approval (updates actual registeredUser in AsyncStorage) ──
-  const handleSimulateApproval = async () => {
-    if (registeredUser) {
-      const updated = { ...registeredUser, status: 'Approved' };
-      await saveUserProfile(updated);
-    }
-  };
-
-  // ── Simulate Reset to Pending ──
-  const handleResetPending = async () => {
-    if (registeredUser) {
-      const updated = { ...registeredUser, status: 'Pending' };
-      await saveUserProfile(updated);
-    }
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Header title={isArabic ? 'حالة الموافقة' : 'Approval Status'} showBack={false} />
@@ -81,20 +65,12 @@ export default function ApprovalPendingScreen() {
             </Text>
           </View>
 
-          {/* ── Simulate Admin Approval Button (Dev/Demo only) ── */}
-          {!isApproved ? (
+          {/* If the driver has NOT paid yet, show 'Pay Now' button to complete payment */}
+          {(!registeredUser?.paymentStatus || registeredUser?.paymentStatus.includes('Unpaid') || registeredUser?.paymentStatus === '') && (
             <CustomButton
-              title={isArabic ? '⚡ محاكاة موافقة المدير' : '⚡ Simulate Admin Approval'}
-              variant="secondary"
-              onPress={handleSimulateApproval}
-              style={{ marginBottom: SPACING.sm }}
-            />
-          ) : (
-            <CustomButton
-              title={isArabic ? 'إعادة إلى الانتظار' : 'Reset to Pending (Demo)'}
-              variant="secondary"
-              onPress={handleResetPending}
-              style={{ marginBottom: SPACING.sm }}
+              title={isArabic ? '💳 أكمل عملية الدفع الآن' : '💳 Complete Payment (Pay Now)'}
+              onPress={() => router.push('/register/payment')}
+              style={{ backgroundColor: '#2563eb', marginBottom: SPACING.md, width: '100%' }}
             />
           )}
 
