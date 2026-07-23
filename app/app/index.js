@@ -7,7 +7,7 @@ const { width, height } = Dimensions.get('window');
 
 // Import locally copied premium generated assets
 const localSplashBg = require('../assets/splash_bg.jpg');
-const localLogo = require('../assets/logo.jpg');
+const localLogo = require('../assets/logo_car.png');
 
 export default function SplashScreen() {
   const { theme } = useTheme();
@@ -94,7 +94,7 @@ export default function SplashScreen() {
           }
         ]} />
         
-        {/* Generated Premium Logo Image instead of Icon wrapper */}
+        {/* Generated Premium Car Logo Image */}
         <View style={[styles.logoCircle, { shadowColor: theme.primary }]}>
           <Image source={localLogo} style={styles.logoImage} resizeMode="contain" />
         </View>

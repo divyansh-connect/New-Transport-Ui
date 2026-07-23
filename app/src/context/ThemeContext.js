@@ -60,6 +60,16 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
+  const [alertConfig, setAlertConfig] = useState(null);
+
+  const showAlert = (title, message, buttons = []) => {
+    setAlertConfig({ title, message, buttons });
+  };
+
+  const hideAlert = () => {
+    setAlertConfig(null);
+  };
+
   const toggleTheme = () => {
     setIsDarkMode((prev) => !prev);
   };
@@ -78,6 +88,9 @@ export const ThemeProvider = ({ children }) => {
         saveUserProfile,
         opportunityNotice,
         saveOpportunityNotice,
+        alertConfig,
+        showAlert,
+        hideAlert,
       }}
     >
       {children}
@@ -98,6 +111,9 @@ export const useTheme = () => {
       saveUserProfile: () => {},
       opportunityNotice: defaultNotice,
       saveOpportunityNotice: () => {},
+      alertConfig: null,
+      showAlert: () => {},
+      hideAlert: () => {},
     };
   }
   return context;

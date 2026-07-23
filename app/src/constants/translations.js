@@ -205,4 +205,105 @@ export const translations = {
     simulateApproval: '⚡ محاكاة موافقة لوحة التحكم',
     goToMap: 'الذهاب إلى الخريطة',
   },
+  Urdu: {
+    // Map Screen
+    mapTitle: 'نقشہ',
+    register: 'رجسٹریشن',
+    driver: 'ڈرائیور',
+    visitor: 'وزیٹر',
+    lifeTracking: 'لائیو ٹریکنگ',
+    on: 'آن',
+    off: 'آف',
+    allServicesVisible: 'تمام سروسز ہر ایک کے لیے دستیاب ہیں',
+    visitorVisible: '(وزیٹر صرف اپنے آپ کو دیکھ سکتا ہے)',
+    ownLocation: 'میرا مقام',
+    ownLocationDesc: 'آپ کے آلے کی لائیو GPS لوکیشن',
+    deviceGPS: 'ڈیوائس لائیو GPS ٹیلی میٹری',
+    activeSession: 'فعال ڈیوائس سیشن',
+
+    // Menu Screen
+    menuTitle: 'مینو کی ترتیبات',
+    menuMap: 'نقشہ',
+    menuProfile: 'پروفائل',
+    menuOpportunity: 'مواقع',
+    menuNotification: 'اطلاعات',
+    menuContactUs: 'ہم سے رابطہ کریں',
+    menuSetting: 'سیٹنگز',
+    menuDarkLight: 'ڈارک / لائٹ موڈ',
+    menuDark: '🌙 ڈارک',
+    menuLight: '☀️ لائٹ',
+    registerOpenService: 'رجسٹریشن (سروس کی فہرست کھولیں)',
+    languageBtn: 'زبان: اردو',
+
+    // Register Service List
+    serviceListTitle: 'سروس لسٹ رجسٹریشن',
+    selectServiceRole: 'سروس / کردار منتخب کریں',
+    driverLifeTracking: 'ڈرائیور (لائیو ٹریکنگ)',
+    workshopLocation: 'ورکشاپ (صرف مقام)',
+    oilChangeLocation: 'آئل چینج (صرف مقام)',
+    carLocationOnly: 'کار کا مقام (صرف مقام)',
+    visitorLabel: 'وزیٹر',
+    visitorAdminNote: '(یہ ایڈمن پر منحصر ہے کہ ضرورت ہے یا نہیں)',
+
+    // Registration Form
+    formTitle: 'ڈرائیور رجسٹریشن',
+    namePlaceholder: 'نام درج کریں',
+    lastNamePlaceholder: 'خاندان کا نام درج کریں',
+    mobilePlaceholder: 'موبائل نمبر درج کریں',
+    carPlatePlaceholder: 'گاڑی کی نمبر پلیٹ درج کریں',
+    emailPlaceholder: 'ای میل ایڈریس درج کریں',
+    nameLabel: 'نام',
+    lastNameLabel: 'خاندان کا نام',
+    mobileLabel: 'موبائل نمبر',
+    carPlateLabel: 'ڈرائیور گاڑی کی نمبر پلیٹ کے لیے',
+    emailLabel: 'ای میل (اختیاری)',
+    trackLocation: 'لوکیشن ٹریک کریں',
+    acceptTerms: 'شرائط و ضوابط قبول کریں',
+    nextBtn: 'اگلا',
+
+    // Profile Screen
+    profileTitle: 'پروفائل',
+    unregisteredVisitor: 'غیر رجسٹرڈ وزیٹر',
+    noProfileInfo: 'پروفائل کی معلومات دستیاب نہیں ہے',
+    notRegistered: 'رجسٹرڈ نہیں ہے',
+    registrationRequired: 'رجسٹریشن لازمی ہے',
+    registerPrompt: 'آپ نے ابھی تک ڈرائیور رجسٹریشن مکمل نہیں کی ہے۔ براہ کرم اپنی مکمل پروفائل دیکھنے اور نقشے پر لائیو GPS ٹریکنگ شروع کرنے کے لیے اپنا اکاؤنٹ رجسٹر کریں۔',
+    registerNow: 'ابھی رجسٹر کریں (سروس لسٹ)',
+    backToMap: 'نقشے پر واپس جائیں',
+    profileInfo: 'پروفائل کی معلومات',
+    activeMember: 'سرگرم رکن',
+    commercialDriver: 'کمرشل ٹرانسپورٹ ڈرائیور',
+    nameFld: 'نام',
+    lastNameFld: 'خاندان کا نام',
+    mobileFld: 'موبائل نمبر',
+    carPlateFld: 'کار پلیٹ نمبر',
+    emailFld: 'ای میل',
+
+    // Opportunity Screen
+    opportunityTitle: 'مواقع کا نوٹس بورڈ',
+    noticeInfo: 'ℹ️ نوٹس بورڈ کی معلومات',
+    noticeDesc: 'یہ سیکشن ایڈمن ڈیش بورڈ سے براہ راست لکھے گئے نوٹسز کو دکھاتا ہے۔',
+
+    // Contact Us
+    contactTitle: 'ہم سے رابطہ کریں',
+
+    // Notification
+    notificationTitle: 'اطلاعات',
+
+    // Settings
+    settingsTitle: 'سیٹنگز',
+
+    // Payment/Success/Pending
+    paymentTitle: 'ادائیگی کا گیٹ وے',
+    paymentSuccess: 'ادائیگی کامیاب رہی',
+    forApproval: 'منظوری کے لیے ہم سے رابطہ کریں',
+    contactWhatsApp: '💬 واٹس ایپ کے ذریعے رابطہ کریں',
+    callAdmin: '📞 ایڈمن کو براہ راست کال کریں (+966000000000)',
+    proceedApproval: 'منظوری کی حیثیت پر جائیں',
+    approvalTitle: 'منظوری کی حیثیت',
+    waitingApproval: 'ایڈمن کی منظوری کا انتظار ہے',
+    approvalPending: 'منظوری التواء میں ہے',
+    simulateApproval: '⚡ ایڈمن ڈیش بورڈ کی منظوری کی نقل کریں',
+    goToMap: 'نقشے پر جائیں',
+  },
 };

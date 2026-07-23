@@ -36,6 +36,7 @@ export const Icon = ({ name, size = 22, color }) => {
     logout: <Ionicons name="log-out-outline" size={size} color={activeColor} />,
     trash: <Ionicons name="trash-outline" size={size} color={activeColor} />,
     eye: <Ionicons name="eye-outline" size={size} color={activeColor} />,
+    pencil: <Ionicons name="pencil-outline" size={size} color={activeColor} />,
   };
 
   return iconMap[name] || <Ionicons name="location-outline" size={size} color={activeColor} />;

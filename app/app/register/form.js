@@ -21,10 +21,12 @@ import { Card } from '../../src/components/common/cards/Card';
 import { SPACING, RADIUS } from '../../src/constants/theme';
 
 export default function RegistrationFormScreen() {
-  const { theme, language, saveUserProfile } = useTheme();
+  const { theme, language, saveUserProfile, showAlert } = useTheme();
   const router = useRouter();
   const { registrationType = 'Driver' } = useLocalSearchParams();
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
 
   const [form, setForm] = useState({
     name: '',
@@ -45,7 +47,10 @@ export default function RegistrationFormScreen() {
 
   const handleNext = async () => {
     if (!form.name.trim() || !form.mobileNo.trim()) {
-      alert(isArabic ? 'الرجاء ملء الحقول المطلوبة (الاسم ورقم الجوال).' : 'Please fill in required fields (Name and Mobile Number).');
+      showAlert(
+        isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error',
+        isArabic ? 'الرجاء ملء الحقول المطلوبة (الاسم ورقم الجوال).' : isUrdu ? 'براہ کرم مطلوبہ فیلڈز (نام اور موبائل نمبر) پُر کریں۔' : 'Please fill in required fields (Name and Mobile Number).'
+      );
       return;
     }
 
@@ -71,7 +76,7 @@ export default function RegistrationFormScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title={isArabic ? `${registrationType} تسجيل` : `${registrationType} Registration`} showBack={true} />
+      <Header title={isArabic ? `${registrationType} تسجيل` : isUrdu ? `${registrationType} رجسٹریشن` : `${registrationType} Registration`} showBack={true} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -86,54 +91,62 @@ export default function RegistrationFormScreen() {
           >
             <Card style={styles.card}>
               <CustomInput
-                label={isArabic ? 'الاسم الاول' : 'Name'}
-                placeholder={isArabic ? 'أدخل الاسم الأول' : 'Enter Name'}
+                label={isArabic ? 'الاسم الاول' : isUrdu ? 'پہلا نام' : 'Name'}
+                placeholder={isArabic ? 'أدخل الاسم الأول' : isUrdu ? 'پہلا نام درج کریں' : 'Enter Name'}
                 value={form.name}
                 onChangeText={(val) => handleChange('name', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
               <CustomInput
-                label={isArabic ? 'الكنية / اسم العائلة' : 'Last Name'}
-                placeholder={isArabic ? 'أدخل اسم العائلة' : 'Enter Last Name'}
+                label={isArabic ? 'الكنية / اسم العائلة' : isUrdu ? 'خاندان کا نام' : 'Last Name'}
+                placeholder={isArabic ? 'أدخل اسم العائلة' : isUrdu ? 'خاندان کا نام درج کریں' : 'Enter Last Name'}
                 value={form.lastName}
                 onChangeText={(val) => handleChange('lastName', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
               <CustomInput
-                label={isArabic ? 'رقم الهاتف المحمول' : 'Mobile NO'}
-                placeholder={isArabic ? 'أدخل رقم الجوال' : 'Enter Mobile Number'}
+                label={isArabic ? 'رقم الهاتف المحمول' : isUrdu ? 'موبائل نمبر' : 'Mobile NO'}
+                placeholder={isArabic ? 'أدخل رقم الجوال' : isUrdu ? 'موبائل نمبر درج کریں' : 'Enter Mobile Number'}
                 keyboardType="phone-pad"
                 value={form.mobileNo}
                 onChangeText={(val) => handleChange('mobileNo', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
               {registrationType === 'Driver' && (
                 <CustomInput
-                  label={isArabic ? 'رقم لوحة السيارة' : 'For driver Car plate number'}
-                  placeholder={isArabic ? 'أدخل رقم لوحة السيارة' : 'Enter Car Plate Number'}
+                  label={isArabic ? 'رقم لوحة السيارة' : isUrdu ? 'ڈرائیور گاڑی کی نمبر پلیٹ کے لیے' : 'For driver Car plate number'}
+                  placeholder={isArabic ? 'أدخل رقم لوحة السيارة' : isUrdu ? 'نمبر پلیٹ درج کریں' : 'Enter Car Plate Number'}
                   value={form.carPlateNumber}
                   onChangeText={(val) => handleChange('carPlateNumber', val)}
+                  style={{ textAlign: isRTL ? 'right' : 'left' }}
                 />
               )}
 
               <CustomInput
-                label={isArabic ? 'البريد الإلكتروني (اختياري)' : 'Email Option'}
-                placeholder={isArabic ? 'أدخل البريد الإلكتروني' : 'Enter Email Address'}
+                label={isArabic ? 'البريد الإلكتروني (اختياري)' : isUrdu ? 'ای میل (اختیاری)' : 'Email Option'}
+                placeholder={isArabic ? 'أدخل البريد الإلكتروني' : isUrdu ? 'ای میل ایڈریس درج کریں' : 'Enter Email Address'}
                 keyboardType="email-address"
                 value={form.email}
                 onChangeText={(val) => handleChange('email', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
               {/* Dynamic Subscription Duration selection box */}
               <View style={{ marginVertical: SPACING.md }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: theme.textPrimary, marginBottom: 8, textAlign: isArabic ? 'right' : 'left' }}>
-                  {isArabic ? 'اختر مدة الاشتراك' : 'Select Subscription Plan'}
+                <Text style={{ fontSize: 14, fontWeight: '700', color: theme.textPrimary, marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                  {isArabic ? 'اختر مدة الاشتراك' : isUrdu ? 'سبسکرپشن پلان منتخب کریں' : 'Select Subscription Plan'}
+                  <Text style={{ fontSize: 11, fontWeight: 'normal', color: theme.textSecondary }}>
+                    {isArabic ? ' (شامل ضريبة القيمة المضافة)' : isUrdu ? ' (ٹیکس اور ویٹ سمیت)' : ' (Incl. Tax & VAT)'}
+                  </Text>
                 </Text>
-                <View style={{ flexDirection: isArabic ? 'row-reverse' : 'row', gap: 10 }}>
+                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
                   {[
-                    { id: '1m', label: isArabic ? 'شهر واحد' : '1 Month', price: '$49.99' },
-                    { id: '6m', label: isArabic ? '٦ أشهر' : '6 Months', price: '$199.99' },
-                    { id: '1y', label: isArabic ? 'سنة كاملة' : '1 Year', price: '$349.99' }
+                    { id: '1m', label: isArabic ? 'شهر واحد' : isUrdu ? '1 مہینہ' : '1 Month', price: '$49.99' },
+                    { id: '6m', label: isArabic ? '٦ أشهر' : isUrdu ? '6 مہینے' : '6 Months', price: '$199.99' },
+                    { id: '1y', label: isArabic ? 'سنة كاملة' : isUrdu ? '1 سال' : '1 Year', price: '$349.99' }
                   ].map((plan) => (
                     <TouchableOpacity
                       key={plan.id}
@@ -151,9 +164,9 @@ export default function RegistrationFormScreen() {
                 </View>
               </View>
 
-              <View style={[styles.switchRow, isArabic && { flexDirection: 'row-reverse' }]}>
+              <View style={[styles.switchRow, isRTL && { flexDirection: 'row-reverse' }]}>
                 <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>
-                  {isArabic ? 'تتبع الموقع الجغرافي' : 'Track Location'}
+                  {isArabic ? 'تتبع الموقع الجغرافي' : isUrdu ? 'لوکیشن ٹریک کریں' : 'Track Location'}
                 </Text>
                 <Switch
                   value={trackLocation}
@@ -162,9 +175,9 @@ export default function RegistrationFormScreen() {
                 />
               </View>
 
-              <View style={[styles.switchRow, isArabic && { flexDirection: 'row-reverse' }]}>
+              <View style={[styles.switchRow, isRTL && { flexDirection: 'row-reverse' }]}>
                 <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>
-                  {isArabic ? 'الموافقة على الشروط والأحكام' : 'Accept Terms & Condition'}
+                  {isArabic ? 'الموافقة على الشروط والأحكام' : isUrdu ? 'شرائط و ضوابط قبول کریں' : 'Accept Terms & Condition'}
                 </Text>
                 <Switch
                   value={acceptTerms}
@@ -175,7 +188,7 @@ export default function RegistrationFormScreen() {
             </Card>
 
             <CustomButton
-              title={isArabic ? 'التالي' : 'Next'}
+              title={isArabic ? 'التالي' : isUrdu ? 'اگلا' : 'Next'}
               onPress={handleNext}
               style={{ marginTop: SPACING.xs, marginBottom: SPACING.xl }}
             />
