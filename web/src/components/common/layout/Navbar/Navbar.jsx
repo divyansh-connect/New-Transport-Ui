@@ -278,7 +278,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
             <div className="navbar-dropdown user-menu-dropdown">
               <div className="user-menu-header">
                 <strong>{profile?.name || 'Admin User'}</strong>
-                <p>{profile?.email || 'admin@driverlife.com'}</p>
+                <p>{profile?.email || 'admin@userlife.com'}</p>
               </div>
               <div className="user-menu-items">
                 <button className="user-menu-item" onClick={() => { setShowUserMenu(false); navigate('/settings'); }} style={{ background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>

@@ -31,7 +31,7 @@ export const Login = () => {
               <div className="logo-icon-bg">
                 <Car size={32} className="logo-car" />
               </div>
-              <h1>Driver Life</h1>
+              <h1>User Life</h1>
               <p>Admin Operations Platform v2.0</p>
             </div>
             <div className="login-quote">
@@ -49,7 +49,7 @@ export const Login = () => {
                 <Car size={24} className="logo-car" />
               </div>
               <div>
-                <h3>Driver Life</h3>
+                <h3>User Life</h3>
                 <p>Admin Platform v2.0</p>
               </div>
             </div>
@@ -63,7 +63,7 @@ export const Login = () => {
               <div className="form-group">
                 <Input
                   type="email"
-                  placeholder="admin@driverlife.com"
+                  placeholder="admin@userlife.com"
                   leftIcon={Mail}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -109,7 +109,7 @@ export const Login = () => {
                   size="sm"
                   className="w-100"
                   onClick={() => {
-                    setEmail('admin@driverlife.com');
+                    setEmail('admin@userlife.com');
                     setPassword('admin123');
                     setIsLoading(true);
                     setTimeout(() => {

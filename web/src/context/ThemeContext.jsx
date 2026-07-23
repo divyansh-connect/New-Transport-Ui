@@ -14,7 +14,7 @@ export const ThemeProvider = ({ children }) => {
     const savedEmail = localStorage.getItem('admin_email');
     return {
       name: savedName || 'Admin User',
-      email: savedEmail || 'admin@driverlife.com',
+      email: savedEmail || 'admin@userlife.com',
       role: 'System Administrator',
       phone: '+1 (555) 234-5678',
     };
@@ -25,8 +25,8 @@ export const ThemeProvider = ({ children }) => {
     const savedAdmins = localStorage.getItem('admins_list');
     if (savedAdmins) return JSON.parse(savedAdmins);
     return [
-      { id: 'ADM-01', name: 'Yash Ji', email: 'yash_ji@driverlife.com', role: 'Super Admin', phone: '+966 50 123 4567' },
-      { id: 'ADM-02', name: 'Nalini Dev', email: 'nalini.dev@driverlife.com', role: 'System Admin', phone: '+966 50 987 6543' }
+      { id: 'ADM-01', name: 'Yash Ji', email: 'yash_ji@userlife.com', role: 'Super Admin', phone: '+966 50 123 4567' },
+      { id: 'ADM-02', name: 'Nalini Dev', email: 'nalini.dev@userlife.com', role: 'System Admin', phone: '+966 50 987 6543' }
     ];
   });
 

@@ -60,7 +60,7 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
             </div>
             {(!isCollapsed || isMobileOpen) && (
               <div className="logo-text">
-                <span className="logo-title">Driver Life</span>
+                <span className="logo-title">User Life</span>
                 <span className="logo-version">Admin v2.0</span>
               </div>
             )}

@@ -50,7 +50,7 @@ export const Settings = () => {
   // Local Profile data
   const [profileData, setProfileData] = useState({
     name: profile?.name || 'Admin User',
-    email: profile?.email || 'admin@driverlife.com',
+    email: profile?.email || 'admin@userlife.com',
     role: profile?.role || 'System Administrator',
     phone: profile?.phone || '+1 (555) 234-5678',
   });
