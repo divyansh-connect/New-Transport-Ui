@@ -9,7 +9,7 @@ import {
   Briefcase,
   PhoneCall,
   Settings,
-  Truck,
+  Car,
   HelpCircle,
   X,
   LogOut,
@@ -56,7 +56,7 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
         <div className="sidebar-header">
           <div className="logo-container">
             <div className="logo-icon-bg">
-              <Truck size={22} className="logo-truck" />
+              <Car size={22} className="logo-car" />
             </div>
             {(!isCollapsed || isMobileOpen) && (
               <div className="logo-text">

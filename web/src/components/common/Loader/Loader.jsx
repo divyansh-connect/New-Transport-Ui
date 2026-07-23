@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Truck } from 'lucide-react';
+import { Loader2, Car } from 'lucide-react';
 import './Loader.css';
 
 export const Loader = ({
@@ -13,7 +13,7 @@ export const Loader = ({
       <div className="loader-fullpage-overlay">
         <div className="loader-fullpage-card">
           <div className="loader-brand-icon">
-            <Truck size={32} className="loader-truck-icon" />
+            <Car size={32} className="loader-car-icon" />
           </div>
           <Loader2 size={36} className="loader-spinner-icon" />
           {text && <p className="loader-text">{text}</p>}
