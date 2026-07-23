@@ -15,9 +15,11 @@ import { RADIUS, SPACING } from '../src/constants/theme';
 import { translations } from '../src/constants/translations';
 
 export default function LoginScreen() {
-  const { theme, language, saveUserProfile } = useTheme();
+  const { theme, language, saveUserProfile, showAlert } = useTheme();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
   const router = useRouter();
   const [mobile, setMobile] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,9 +28,9 @@ export default function LoginScreen() {
   // Looks up the stored user profile and matches mobile number
   const handleLogin = async () => {
     if (!mobile.trim()) {
-      Alert.alert(
-        isArabic ? 'خطأ' : 'Error',
-        isArabic ? 'يرجى إدخال رقم الجوال' : 'Please enter your mobile number'
+      showAlert(
+        isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error',
+        isArabic ? 'يرجى إدخال رقم الجوال' : isUrdu ? 'براہ کرم اپنا موبائل نمبر درج کریں' : 'Please enter your mobile number'
       );
       return;
     }
@@ -47,23 +49,27 @@ export default function LoginScreen() {
           await saveUserProfile(profile);
           router.replace('/map');
         } else {
-          Alert.alert(
-            isArabic ? 'لم يُعثر على حساب' : 'Account Not Found',
+          showAlert(
+            isArabic ? 'لم يُعثر على حساب' : isUrdu ? 'اکاؤنٹ نہیں ملا' : 'Account Not Found',
             isArabic
               ? 'رقم الجوال هذا غير مسجل. يرجى التسجيل أولاً.'
-              : 'This mobile number is not registered. Please register first.'
+              : isUrdu
+                ? 'یہ موبائل نمبر رجسٹرڈ نہیں ہے۔ براہ کرم پہلے رجسٹریشن کریں۔'
+                : 'This mobile number is not registered. Please register first.'
           );
         }
       } else {
-        Alert.alert(
-          isArabic ? 'لا يوجد حساب' : 'No Account Found',
+        showAlert(
+          isArabic ? 'لا يوجد حساب' : isUrdu ? 'کوئی اکاؤنٹ نہیں ملا' : 'No Account Found',
           isArabic
             ? 'لا يوجد حساب مسجل على هذا الجهاز. يرجى التسجيل أولاً.'
-            : 'No registered account found on this device. Please register first.'
+            : isUrdu
+              ? 'اس ڈیوائس پر کوئی رجسٹرڈ اکاؤنٹ نہیں ملا۔ براہ کرم پہلے رجسٹریشن کریں۔'
+              : 'No registered account found on this device. Please register first.'
         );
       }
     } catch (e) {
-      Alert.alert(isArabic ? 'خطأ' : 'Error', e.message);
+      showAlert(isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error', e.message);
     } finally {
       setLoading(false);
     }
@@ -86,7 +92,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title={isArabic ? 'تسجيل الدخول' : 'Login'} showBack={true} />
+      <Header title={isArabic ? 'تسجيل الدخول' : isUrdu ? 'لاگ ان' : 'Login'} showBack={true} />
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -99,43 +105,46 @@ export default function LoginScreen() {
             <MaterialCommunityIcons name="truck-fast" size={44} color="#FFF" />
           </View>
           <Text style={[styles.appTitle, { color: theme.textPrimary }]}>
-            {isArabic ? 'نظام التتبع المباشر' : 'Driver Life Tracking'}
+            {isArabic ? 'نظام التتبع المباشر' : isUrdu ? 'ڈرائیور لائیو ٹریکنگ' : 'Driver Life Tracking'}
           </Text>
           <Text style={[styles.appTagline, { color: theme.textSecondary }]}>
-            {isArabic ? 'أدخل رقم جوالك للدخول' : 'Enter your mobile number to continue'}
+            {isArabic ? 'أدخل رقم جوالك للدخول' : isUrdu ? 'جاری رکھنے کے لیے اپنا موبائل نمبر درج کریں' : 'Enter your mobile number to continue'}
           </Text>
         </View>
 
         {/* Login Card */}
         <Card style={styles.loginCard}>
-          <Text style={[styles.cardHeading, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>
-            {isArabic ? 'مرحباً بعودتك' : 'Welcome Back'}
+          <Text style={[styles.cardHeading, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>
+            {isArabic ? 'مرحباً بعودتك' : isUrdu ? 'خوش آمدید' : 'Welcome Back'}
           </Text>
-          <Text style={[styles.cardSubheading, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+          <Text style={[styles.cardSubheading, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
             {isArabic
               ? 'أدخل رقم جوالك المسجّل للوصول إلى حسابك'
-              : 'Enter your registered mobile number to access your account'}
+              : isUrdu
+                ? 'اپنے اکاؤنٹ تک رسائی کے لیے اپنا رجسٹرڈ موبائل نمبر درج کریں'
+                : 'Enter your registered mobile number to access your account'}
           </Text>
 
           <CustomInput
-            label={isArabic ? 'رقم الجوال' : 'Mobile Number'}
-            placeholder={isArabic ? 'أدخل رقم الجوال المسجّل' : 'Enter registered mobile number'}
+            label={isArabic ? 'رقم الجوال' : isUrdu ? 'موبائل نمبر' : 'Mobile Number'}
+            placeholder={isArabic ? 'أدخل رقم الجوال المسجّل' : isUrdu ? 'رجسٹرڈ موبائل نمبر درج کریں' : 'Enter registered mobile number'}
             value={mobile}
             onChangeText={setMobile}
             keyboardType="phone-pad"
+            style={{ textAlign: isRTL ? 'right' : 'left' }}
           />
 
           <CustomButton
             title={loading
-              ? (isArabic ? 'جاري التحقق...' : 'Verifying...')
-              : (isArabic ? 'دخول' : 'Login')}
+              ? (isArabic ? 'جاري التحقق...' : isUrdu ? 'تصدیق ہو رہی ہے...' : 'Verifying...')
+              : (isArabic ? 'دخول' : isUrdu ? 'لاگ ان' : 'Login')}
             onPress={handleLogin}
             style={{ marginTop: SPACING.md }}
           />
 
           {/* ⚡ Quick Demo Button for testing Approved Driver State */}
           <CustomButton
-            title={isArabic ? '⚡ دخول فوري سائق معتمد (تجريبي)' : '⚡ Demo Login: Approved Driver'}
+            title={isArabic ? '⚡ دخول فوري سائق معتمد (تجريبي)' : isUrdu ? '⚡ فوری ڈیمو لاگ ان: منظور شدہ ڈرائیور' : '⚡ Demo Login: Approved Driver'}
             variant="secondary"
             onPress={handleDemoApprovedDriver}
             style={{ marginTop: SPACING.sm }}
@@ -146,7 +155,7 @@ export default function LoginScreen() {
         <View style={styles.dividerRow}>
           <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
           <Text style={[styles.dividerText, { color: theme.textSecondary }]}>
-            {isArabic ? 'أو' : 'OR'}
+            {isArabic ? 'أو' : isUrdu ? 'یا' : 'OR'}
           </Text>
           <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
         </View>
@@ -154,11 +163,11 @@ export default function LoginScreen() {
         {/* Register Link */}
         <View style={styles.footerRow}>
           <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-            {isArabic ? 'مستخدم جديد؟ ' : 'New user? '}
+            {isArabic ? 'مستخدم جديد؟ ' : isUrdu ? 'نیا صارف؟ ' : 'New user? '}
           </Text>
           <TouchableOpacity onPress={() => router.push('/register')}>
             <Text style={[styles.registerText, { color: theme.primary }]}>
-              {isArabic ? 'سجّل الآن' : 'Register Now'}
+              {isArabic ? 'سجّل الآن' : isUrdu ? 'ابھی رجسٹر کریں' : 'Register Now'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -169,7 +178,7 @@ export default function LoginScreen() {
           onPress={() => router.replace('/map')}
         >
           <Text style={[styles.guestText, { color: theme.textSecondary }]}>
-            {isArabic ? 'تصفح كزائر (بدون تسجيل)' : 'Continue as Visitor (no login)'}
+            {isArabic ? 'تصفح كزائر (بدون تسجيل)' : isUrdu ? 'بطور وزیٹر جاری رکھیں (لاگ ان کے بغیر)' : 'Continue as Visitor (no login)'}
           </Text>
         </TouchableOpacity>
       </ScrollView>

@@ -10,10 +10,12 @@ import { RADIUS, SPACING } from '../src/constants/theme';
 import { translations } from '../src/constants/translations';
 
 export default function MapScreen() {
-  const { theme, language, registeredUser } = useTheme();
+  const { theme, language, registeredUser, showAlert } = useTheme();
   const router = useRouter();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
   const [isLiveTracking, setIsLiveTracking] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
 
@@ -110,45 +112,70 @@ export default function MapScreen() {
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; }
         #map { height: 100%; width: 100%; }
         .leaflet-div-icon { background: transparent; border: none; }
-        .own-pin {
+        .own-dot {
+          width: 14px;
+          height: 14px;
           background: #2563EB;
-          color: white;
-          padding: 7px 14px;
-          border-radius: 50px;
-          font-family: -apple-system, Arial, sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          border: 2px solid rgba(255,255,255,0.8);
-          box-shadow: 0 3px 12px rgba(37,99,235,0.55);
-          white-space: nowrap;
+          border: 2px solid #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+          animation: own-pulse 2s infinite ease-in-out;
+          box-sizing: border-box;
+        }
+        .driver-circle {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: #0f1d2e;
+          border: 1.5px solid #3b82f6;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.45);
           display: flex;
           align-items: center;
-          gap: 5px;
-          letter-spacing: 0.2px;
+          justify-content: center;
+          animation: car-pulse 2s infinite ease-in-out;
         }
-        .service-pin {
-          background: #0f1d2e;
+        .driver-circle .svg-icon {
+          width: 14px;
+          height: 14px;
           color: #e2e8f0;
-          padding: 7px 13px;
-          border-radius: 50px;
-          font-family: -apple-system, Arial, sans-serif;
-          font-size: 12px;
-          font-weight: 600;
+        }
+        .poi-circle {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: #0f1d2e;
           border: 1.5px solid rgba(148,163,184,0.35);
           box-shadow: 0 3px 10px rgba(0,0,0,0.45);
-          white-space: nowrap;
           display: flex;
           align-items: center;
-          gap: 5px;
-          letter-spacing: 0.2px;
+          justify-content: center;
         }
-        .service-pin .pin-icon {
-          font-size: 14px;
-          line-height: 1;
+        .poi-circle .svg-icon {
+          width: 13px;
+          height: 13px;
+          color: #e2e8f0;
         }
-        .own-pin .pin-icon {
-          font-size: 14px;
-          line-height: 1;
+        @keyframes car-pulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7), 0 3px 10px rgba(0,0,0,0.45);
+          }
+          70% {
+            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0), 0 3px 10px rgba(0,0,0,0.45);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0), 0 3px 10px rgba(0,0,0,0.45);
+          }
+        }
+        @keyframes own-pulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6), 0 2px 5px rgba(0, 0, 0, 0.4);
+          }
+          70% {
+            box-shadow: 0 0 0 10px rgba(37, 99, 235, 0), 0 2px 5px rgba(0, 0, 0, 0.4);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0), 0 2px 5px rgba(0, 0, 0, 0.4);
+          }
         }
       </style>
     </head>
@@ -166,12 +193,12 @@ export default function MapScreen() {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1. Own Live GPS Pin - pill style matching reference UI
+        // 1. Own Live GPS Pin - Blue Dot style matching Google Maps
         var ownIcon = L.divIcon({
           className: '',
-          html: '<div class="own-pin"><span class="pin-icon">📍</span> Own Location</div>',
+          html: '<div class="own-dot"></div>',
           iconSize: null,
-          iconAnchor: [62, 18]
+          iconAnchor: [7, 7]
         });
         
         var ownMarker = L.marker([userLat, userLng], { icon: ownIcon }).addTo(map);
@@ -186,23 +213,36 @@ export default function MapScreen() {
           }));
         });
 
-        // 2. Service Hubs & Active Drivers
+        // 2. SVG Icons definitions
+        var carSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>';
+        var wrenchSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+        var oilSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/></svg>';
+
+        // 3. Service Hubs & Active Drivers
         var isDriver = '${userRole}' === 'Driver';
         var services = ${JSON.stringify(serviceNodes)};
         var pinConfig = {
-          workshop:  { icon: '🔧',  label: 'Workshop Hub' },
-          oil:       { icon: '🛢️', label: 'Oil Change Center' },
-          location:  { icon: '🚗', label: 'Active Driver' }
+          workshop:  { icon: wrenchSvg, isPOI: true },
+          oil:       { icon: oilSvg,    isPOI: true },
+          location:  { icon: carSvg,    isPOI: false }
         };
         services.forEach(function(s) {
           // Visitors see Active Drivers (type === 'location'). Approved Drivers see everything (workshops, oil, location).
           if (s.type === 'location' || isDriver) {
-            var cfg = pinConfig[s.type] || { icon: '📍', label: s.title };
+            var cfg = pinConfig[s.type] || { icon: wrenchSvg, isPOI: true };
+            var htmlContent = '';
+            
+            if (cfg.isPOI) {
+              htmlContent = '<div class="poi-circle">' + cfg.icon + '</div>';
+            } else {
+              htmlContent = '<div class="driver-circle">' + cfg.icon + '</div>';
+            }
+            
             var sIcon = L.divIcon({
               className: '',
-              html: '<div class="service-pin"><span class="pin-icon">' + cfg.icon + '</span> ' + cfg.label + '</div>',
+              html: htmlContent,
               iconSize: null,
-              iconAnchor: [70, 18]
+              iconAnchor: [13, 13]
             });
             var sMarker = L.marker([s.lat, s.lng], { icon: sIcon }).addTo(map);
             sMarker.on('click', function() {
@@ -218,7 +258,7 @@ export default function MapScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Top Header Bar */}
-      <View style={[styles.topBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }, isArabic && { flexDirection: 'row-reverse' }]}>
+      <View style={[styles.topBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }, isRTL && { flexDirection: 'row-reverse' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Icon name="truck" size={20} color={theme.primary} />
           <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>{t.mapTitle}</Text>
@@ -240,7 +280,7 @@ export default function MapScreen() {
                 onPress={() => router.push('/login')}
               >
                 <Text style={[styles.roleText, { color: theme.primary }]}>
-                  {isArabic ? 'دخول' : 'Login'}
+                  {isArabic ? 'دخول' : isUrdu ? 'لاگ ان' : 'Login'}
                 </Text>
               </TouchableOpacity>
             </>
@@ -272,8 +312,8 @@ export default function MapScreen() {
           {isApprovedDriver
             ? t.allServicesVisible
             : isPending
-              ? (isArabic ? 'بانتظار موافقة المدير — الخدمات غير مفعّلة بعد' : 'Pending Admin Approval — Services locked')
-              : (isArabic ? 'وضع الزائر — عرض السائقين المتاحين' : 'Visitor Mode — Viewing Active Drivers')}
+              ? (isArabic ? 'بانتظار موافقة المدير — الخدمات غير مفعّلة بعد' : isUrdu ? 'ایڈمن کی منظوری کا انتظار ہے — سروسز مقفل ہیں' : 'Pending Admin Approval — Services locked')
+              : (isArabic ? 'وضع الزائر — عرض السائقين المتاحين' : isUrdu ? 'وزیٹر موڈ — دستیاب ڈرائیورز دکھائے جا رہے ہیں' : 'Visitor Mode — Viewing Active Drivers')}
         </Text>
       </View>
 
@@ -316,7 +356,7 @@ export default function MapScreen() {
             onPress={() => router.push('/register/pending')}
           >
             <Text style={styles.pendingText}>
-              {isArabic ? '⏳ بانتظار موافقة المدير — اضغط للتحقق' : '⏳ Pending Admin Approval — tap to check'}
+              {isArabic ? '⏳ بانتظار موافقة المدير — اضغط للتحقق' : isUrdu ? '⏳ ایڈمن کی منظوری کا انتظار ہے — چیک کرنے کے لیے کلک کریں' : '⏳ Pending Admin Approval — tap to check'}
             </Text>
           </TouchableOpacity>
         )}
@@ -331,15 +371,15 @@ export default function MapScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-            <View style={[styles.modalHeader, isArabic && { flexDirection: 'row-reverse' }]}>
+            <View style={[styles.modalHeader, isRTL && { flexDirection: 'row-reverse' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <View style={[styles.modalIconBox, { backgroundColor: theme.surface }]}>
                   <Icon name={selectedService?.icon || 'truck'} size={20} color={theme.primary} />
                 </View>
                 <View>
-                  <Text style={[styles.modalTitle, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{selectedService?.title}</Text>
+                  <Text style={[styles.modalTitle, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{selectedService?.title}</Text>
                   <Text style={[styles.modalSubtitle, { color: theme.primary }]}>
-                    {selectedService?.type?.toUpperCase()} {isArabic ? 'التفاصيل' : 'DETAILS'}
+                    {selectedService?.type?.toUpperCase()} {isArabic ? 'التفاصيل' : isUrdu ? 'تفصیلات' : 'DETAILS'}
                   </Text>
                 </View>
               </View>
@@ -349,14 +389,14 @@ export default function MapScreen() {
             </View>
 
             <View style={styles.modalBody}>
-              <Text style={[styles.modalDesc, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+              <Text style={[styles.modalDesc, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
                 {selectedService?.description}
               </Text>
-              <View style={[styles.infoRow, { backgroundColor: theme.surface }, isArabic && { flexDirection: 'row-reverse' }]}>
+              <View style={[styles.infoRow, { backgroundColor: theme.surface }, isRTL && { flexDirection: 'row-reverse' }]}>
                 <Icon name="map-pin" size={16} color={theme.primary} />
                 <Text style={[styles.infoText, { color: theme.textPrimary }]}>{selectedService?.address}</Text>
               </View>
-              <View style={[styles.infoRow, { backgroundColor: theme.surface }, isArabic && { flexDirection: 'row-reverse' }]}>
+              <View style={[styles.infoRow, { backgroundColor: theme.surface }, isRTL && { flexDirection: 'row-reverse' }]}>
                 <Icon name="phone" size={16} color={theme.primary} />
                 <Text style={[styles.infoText, { color: theme.textPrimary }]}>{selectedService?.contact}</Text>
               </View>
@@ -372,7 +412,7 @@ export default function MapScreen() {
                 >
                   <Icon name="phone" size={16} color="#FFF" />
                   <Text style={styles.modalActionText}>
-                    {isArabic ? 'الاتصال بالسائق / الخدمة' : 'Call Driver / Service'}
+                    {isArabic ? 'الاتصال بالسائق / الخدمة' : isUrdu ? 'ڈرائیور / سروس کو کال کریں' : 'Call Driver / Service'}
                   </Text>
                 </TouchableOpacity>
 
@@ -386,7 +426,7 @@ export default function MapScreen() {
                 >
                   <Icon name="chat" size={16} color="#FFF" />
                   <Text style={styles.modalActionText}>
-                    {isArabic ? 'واتساب - حجز السائق' : 'WhatsApp - Book Driver'}
+                    {isArabic ? 'واتساب - حجز السائق' : isUrdu ? 'واٹس ایپ - ڈرائیور بک کریں' : 'WhatsApp - Book Driver'}
                   </Text>
                 </TouchableOpacity>
 
@@ -394,18 +434,20 @@ export default function MapScreen() {
                   <TouchableOpacity
                     style={[styles.modalActionBtn, { backgroundColor: theme.primary, flexDirection: 'row', justifyContent: 'center', gap: 6 }]}
                     onPress={() => {
-                      Alert.alert(
-                        isArabic ? 'طلب حجز الرحلة' : 'Transport Booking Sent',
+                      showAlert(
+                        isArabic ? 'طلب حجز الرحلة' : isUrdu ? 'سفر کی بکنگ بھیجی گئی' : 'Transport Booking Sent',
                         isArabic
                           ? 'تم إرسال طلب الحجز إلى السائق. سيتم التواصل معك فوراً.'
-                          : `Booking request sent to ${selectedService?.title}. Driver will contact you shortly!`,
-                        [{ text: isArabic ? 'موافق' : 'OK', onPress: () => setSelectedService(null) }]
+                          : isUrdu
+                            ? `بکنگ کی درخواست ${selectedService?.title} کو بھیج دی گئی ہے۔ ڈرائیور جلد ہی آپ سے رابطہ کرے گا!`
+                            : `Booking request sent to ${selectedService?.title}. Driver will contact you shortly!`,
+                        [{ text: isArabic ? 'موافق' : isUrdu ? 'ٹھیک ہے' : 'OK', onPress: () => setSelectedService(null) }]
                       );
                     }}
                   >
                     <Icon name="truck" size={16} color="#FFF" />
                     <Text style={styles.modalActionText}>
-                      {isArabic ? 'تأكيد طلب الشاحنة / الحجز' : 'Request Truck / Hire Now'}
+                      {isArabic ? 'تأكيد طلب الشاحنة / الحجز' : isUrdu ? 'ابھی گاڑی / بکنگ کی درخواست کریں' : 'Request Truck / Hire Now'}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -416,7 +458,7 @@ export default function MapScreen() {
               style={[styles.modalActionBtn, { backgroundColor: theme.surface, marginTop: 10, borderWidth: 1, borderColor: theme.border }]}
               onPress={() => setSelectedService(null)}
             >
-              <Text style={[styles.modalActionText, { color: theme.textSecondary }]}>{isArabic ? 'إغلاق' : 'Close'}</Text>
+              <Text style={[styles.modalActionText, { color: theme.textSecondary }]}>{isArabic ? 'إغلاق' : isUrdu ? 'بند کریں' : 'Close'}</Text>
             </TouchableOpacity>
           </View>
         </View>

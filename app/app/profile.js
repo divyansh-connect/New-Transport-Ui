@@ -15,6 +15,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
 
   // If user is not registered / logged in yet
   if (!registeredUser) {
@@ -34,8 +36,8 @@ export default function ProfileScreen() {
           </Card>
 
           <Card style={styles.infoCard}>
-            <Text style={[styles.sectionTitle, { color: theme.primary, textAlign: isArabic ? 'right' : 'left' }]}>{t.registrationRequired}</Text>
-            <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20, marginBottom: SPACING.md, textAlign: isArabic ? 'right' : 'left' }}>
+            <Text style={[styles.sectionTitle, { color: theme.primary, textAlign: isRTL ? 'right' : 'left' }]}>{t.registrationRequired}</Text>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20, marginBottom: SPACING.md, textAlign: isRTL ? 'right' : 'left' }}>
               {t.registerPrompt}
             </Text>
             <CustomButton
@@ -85,26 +87,26 @@ export default function ProfileScreen() {
         </Card>
 
         <Card style={styles.infoCard}>
-          <Text style={[styles.sectionTitle, { color: theme.primary, textAlign: isArabic ? 'right' : 'left' }]}>{t.profileInfo}</Text>
-          <View style={[styles.infoRow, isArabic && { flexDirection: 'row-reverse' }]}>
+          <Text style={[styles.sectionTitle, { color: theme.primary, textAlign: isRTL ? 'right' : 'left' }]}>{t.profileInfo}</Text>
+          <View style={[styles.infoRow, isRTL && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t.nameFld}</Text>
             <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.name}</Text>
           </View>
-          <View style={[styles.infoRow, isArabic && { flexDirection: 'row-reverse' }]}>
+          <View style={[styles.infoRow, isRTL && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t.lastNameFld}</Text>
             <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.lastName}</Text>
           </View>
-          <View style={[styles.infoRow, isArabic && { flexDirection: 'row-reverse' }]}>
+          <View style={[styles.infoRow, isRTL && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t.mobileFld}</Text>
             <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.mobileNo}</Text>
           </View>
           {user.carPlateNumber ? (
-            <View style={[styles.infoRow, isArabic && { flexDirection: 'row-reverse' }]}>
+            <View style={[styles.infoRow, isRTL && { flexDirection: 'row-reverse' }]}>
               <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t.carPlateFld}</Text>
               <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.carPlateNumber}</Text>
             </View>
           ) : null}
-          <View style={[styles.infoRow, isArabic && { flexDirection: 'row-reverse' }]}>
+          <View style={[styles.infoRow, isRTL && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t.emailFld}</Text>
             <Text style={[styles.infoValue, { color: theme.textPrimary }]}>{user.email}</Text>
           </View>

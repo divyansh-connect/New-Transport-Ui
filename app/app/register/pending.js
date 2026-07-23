@@ -14,6 +14,8 @@ export default function ApprovalPendingScreen() {
   const { theme, language, registeredUser, saveUserProfile } = useTheme();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
   const router = useRouter();
 
   // Check current approval status from stored user profile
@@ -21,7 +23,7 @@ export default function ApprovalPendingScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title={isArabic ? 'حالة الموافقة' : 'Approval Status'} showBack={false} />
+      <Header title={isArabic ? 'حالة الموافقة' : isUrdu ? 'منظوری کی حیثیت' : 'Approval Status'} showBack={false} />
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
@@ -36,8 +38,8 @@ export default function ApprovalPendingScreen() {
           {/* Title */}
           <Text style={[styles.title, { color: theme.textPrimary }]}>
             {isApproved
-              ? (isArabic ? 'تمت الموافقة على الحساب!' : 'Account Approved!')
-              : (isArabic ? 'في انتظار موافقة المدير' : 'Waiting For Admin Approval')}
+              ? (isArabic ? 'تمت الموافقة على الحساب!' : isUrdu ? 'اکاؤنٹ منظور ہو گیا!' : 'Account Approved!')
+              : (isArabic ? 'في انتظار موافقة المدير' : isUrdu ? 'ایڈمن کی منظوری کا انتظار ہے' : 'Waiting For Admin Approval')}
           </Text>
 
           {/* Sub text */}
@@ -45,30 +47,34 @@ export default function ApprovalPendingScreen() {
             {isApproved
               ? (isArabic
                 ? 'تم التحقق من تسجيلك والموافقة عليه من قِبل المدير. يمكنك الآن الوصول إلى التتبع المباشر على الخريطة.'
-                : 'Your driver registration has been verified and approved by Admin. You can now access Live Tracking and all Service Locations on Map.')
+                : isUrdu
+                  ? 'آپ کی ڈرائیور رجسٹریشن کی تصدیق اور منظوری ایڈمن کی طرف سے کر دی گئی ہے۔ اب آپ نقشے پر لائیو ٹریکنگ شروع کر سکتے ہیں۔'
+                  : 'Your driver registration has been verified and approved by Admin. You can now access Live Tracking and all Service Locations on Map.')
               : (isArabic
                 ? 'تم إرسال طلبك إلى لوحة تحكم المدير. ملفك الشخصي غير نشط بعد. يرجى الانتظار حتى تتم الموافقة.'
-                : 'Your payment & registration has been sent to Admin Dashboard. Your profile is NOT active yet. Please wait for admin approval.')}
+                : isUrdu
+                  ? 'آپ کی ادائیگی اور رجسٹریشن ایڈمن ڈیش بورڈ پر بھیج دی گئی ہے۔ آپ کی پروفائل ابھی فعال نہیں ہے۔ براہ کرم منظوری کا انتظار کریں۔'
+                  : 'Your payment & registration has been sent to Admin Dashboard. Your profile is NOT active yet. Please wait for admin approval.')}
           </Text>
 
           {/* Status Badge */}
-          <View style={[styles.statusBadge, { backgroundColor: theme.surface }]}>
+          <View style={[styles.statusBadge, { backgroundColor: theme.surface }, isRTL && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.badgeLabel, { color: theme.textSecondary }]}>
-              {isArabic ? 'الحالة الحالية:' : 'Current Status:'}
+              {isArabic ? 'الحالة الحالية:' : isUrdu ? 'موجودہ حیثیت:' : 'Current Status:'}
             </Text>
             <Text style={[styles.badgeValue, {
               color: isApproved ? '#16a34a' : '#d97706'
             }]}>
               {isApproved
-                ? (isArabic ? 'مُوافَق عليه ✓' : 'Approved ✓')
-                : (isArabic ? 'قيد الانتظار...' : 'Pending...')}
+                ? (isArabic ? 'مُوافَق عليه ✓' : isUrdu ? 'منظور شدہ ✓' : 'Approved ✓')
+                : (isArabic ? 'قيد الانتظار...' : isUrdu ? 'التواء میں...' : 'Pending...')}
             </Text>
           </View>
 
           {/* If the driver has NOT paid yet, show 'Pay Now' button to complete payment */}
           {(!registeredUser?.paymentStatus || registeredUser?.paymentStatus.includes('Unpaid') || registeredUser?.paymentStatus === '') && (
             <CustomButton
-              title={isArabic ? '💳 أكمل عملية الدفع الآن' : '💳 Complete Payment (Pay Now)'}
+              title={isArabic ? '💳 أكمل عملية الدفع الآن' : isUrdu ? '💳 ابھی ادائیگی مکمل کریں' : '💳 Complete Payment (Pay Now)'}
               onPress={() => router.push('/register/payment')}
               style={{ backgroundColor: '#2563eb', marginBottom: SPACING.md, width: '100%' }}
             />
@@ -77,8 +83,8 @@ export default function ApprovalPendingScreen() {
           {/* Go to Map */}
           <CustomButton
             title={isApproved
-              ? (isArabic ? 'الذهاب إلى الخريطة (التتبع المباشر)' : 'Go To Map — Start Live Tracking')
-              : (isArabic ? 'الذهاب إلى الخريطة (وضع الانتظار)' : 'Go To Map (Pending Mode)')}
+              ? (isArabic ? 'الذهاب إلى الخريطة (التتبع المباشر)' : isUrdu ? 'نقشے پر جائیں — لائیو ٹریکنگ شروع کریں' : 'Go To Map — Start Live Tracking')
+              : (isArabic ? 'الذهاب إلى الخريطة (وضع الانتظار)' : isUrdu ? 'نقشے پر جائیں (التواء موڈ)' : 'Go To Map (Pending Mode)')}
             onPress={() => router.replace('/map')}
           />
         </Card>

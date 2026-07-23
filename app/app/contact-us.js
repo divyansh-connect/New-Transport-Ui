@@ -10,8 +10,11 @@ import { SPACING, RADIUS } from '../src/constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ContactUsScreen() {
-  const { theme, registeredUser } = useTheme();
+  const { theme, registeredUser, showAlert, language } = useTheme();
   const router = useRouter();
+
+  const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
 
   const [subject, setSubject] = useState('');
   const [details, setDetails] = useState('');
@@ -20,7 +23,10 @@ export default function ContactUsScreen() {
   // Submit dynamic ticket to shared database/AsyncStorage simulation
   const handleRaiseTicket = async () => {
     if (!subject.trim() || !details.trim()) {
-      Alert.alert('Validation Error', 'Please enter both Subject and Issue Details.');
+      showAlert(
+        isArabic ? 'خطأ في التحقق' : isUrdu ? 'تصدیق کی غلطی' : 'Validation Error', 
+        isArabic ? 'يرجى إدخال الموضوع وتفاصيل المشكلة.' : isUrdu ? 'براہ کرم موضوع اور مسئلہ کی تفصیلات دونوں درج کریں۔' : 'Please enter both Subject and Issue Details.'
+      );
       return;
     }
 
@@ -28,35 +34,40 @@ export default function ContactUsScreen() {
 
     try {
       // Create new ticket object matching web Contact inquiry schema
-      const newTicketId = `TKT-${Math.floor(100 + Math.random() * 900)}`;
+      const newTicketId = `TK-${Math.floor(1000 + Math.random() * 9000)}`;
       const newTicket = {
         id: newTicketId,
-        user: registeredUser?.name ? `${registeredUser.name} ${registeredUser.lastName || ''}` : 'App User',
-        role: registeredUser?.role || 'Driver',
-        phone: registeredUser?.mobileNo || '+966 500000000',
-        subject: subject,
+        subject,
+        details,
+        user: registeredUser ? `${registeredUser.name} ${registeredUser.lastName}` : 'Guest Visitor',
+        mobileNo: registeredUser ? registeredUser.mobileNo : 'N/A',
         status: 'Open',
-        time: 'Just now',
-        details: details
+        date: new Date().toLocaleDateString()
       };
 
-      // In real systems, this calls the API endpoint. We will write to a mocked localStorage/AsyncStorage system
-      // Web and App communicate mock updates locally. For demo context we save to shared storage structure
-      const savedTicketsStr = await AsyncStorage.getItem('support_inquiries');
       let ticketsList = [];
-      if (savedTicketsStr) {
-        ticketsList = JSON.parse(savedTicketsStr);
+      const stored = await AsyncStorage.getItem('support_inquiries');
+      if (stored) {
+        ticketsList = JSON.parse(stored);
       } else {
-        // Initial fallback seed
+        // Pre-seed tickets for initial experience if none exist
         ticketsList = [
           {
-            id: 'TKT-101',
-            user: 'Rajesh Kumar',
-            role: 'Driver',
-            phone: '+91 98765 43210',
-            subject: 'Payment Delay',
+            id: 'TK-1209',
+            subject: 'Map Latency',
+            date: '2023-10-15',
+            status: 'Closed',
+            user: 'System Admin',
+            mobileNo: 'N/A',
+            details: 'Initial configuration load optimization.'
+          },
+          {
+            id: 'TK-1490',
+            subject: 'Payment Issue',
+            date: '2023-10-18',
             status: 'Open',
-            time: '10 mins ago',
+            user: registeredUser ? `${registeredUser.name} ${registeredUser.lastName}` : 'Guest Driver',
+            mobileNo: registeredUser ? registeredUser.mobileNo : 'N/A',
             details: 'Payout for last week trip has not credited.'
           }
         ];
@@ -68,10 +79,14 @@ export default function ContactUsScreen() {
       // Simulate a small network delay
       setTimeout(() => {
         setSubmitting(false);
-        Alert.alert(
-          'Inquiry Submitted',
-          `Ticket ${newTicketId} has been successfully raised. Our Admin team will review it shortly on the Web Panel.`,
-          [{ text: 'OK', onPress: () => router.replace('/map') }]
+        showAlert(
+          isArabic ? 'تم إرسال الطلب' : isUrdu ? 'درخواست جمع ہو گئی' : 'Inquiry Submitted',
+          isArabic
+            ? `تم تقديم التذكرة ${newTicketId} بنجاح. سيقوم فريقنا بمراجعتها قريبًا.`
+            : isUrdu
+              ? `ٹکٹ ${newTicketId} کامیابی کے ساتھ جمع کر دیا گیا ہے۔ ہماری ٹیم جلد ہی اس کا جائزہ لے گی۔`
+              : `Ticket ${newTicketId} has been successfully raised. Our Admin team will review it shortly on the Web Panel.`,
+          [{ text: isArabic ? 'موافق' : isUrdu ? 'ٹھیک ہے' : 'OK', onPress: () => router.replace('/map') }]
         );
         setSubject('');
         setDetails('');

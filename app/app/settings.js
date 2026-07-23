@@ -13,7 +13,7 @@ import { translations } from '../src/constants/translations';
 import { useRouter } from 'expo-router';
 
 // ── Reusable Setting Row ──────────────────────────────────────────────────────
-function SettingRow({ icon, iconBg, label, sublabel, right, onPress, isArabic, isLast }) {
+function SettingRow({ icon, iconBg, label, sublabel, right, onPress, isRTL, isLast }) {
   const { theme } = useTheme();
   return (
     <TouchableOpacity
@@ -21,20 +21,20 @@ function SettingRow({ icon, iconBg, label, sublabel, right, onPress, isArabic, i
       onPress={onPress}
       style={[
         styles.settingRow,
-        isArabic && { flexDirection: 'row-reverse' },
+        isRTL && { flexDirection: 'row-reverse' },
         !isLast && { borderBottomWidth: 1, borderBottomColor: theme.border + '33' },
       ]}
     >
-      <View style={[styles.rowLeft, isArabic && { flexDirection: 'row-reverse' }]}>
+      <View style={[styles.rowLeft, isRTL && { flexDirection: 'row-reverse' }]}>
         <View style={[styles.iconBox, { backgroundColor: iconBg || theme.surface }]}>
           <Icon name={icon} size={19} color={theme.primary} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.rowLabel, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>
+          <Text style={[styles.rowLabel, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>
             {label}
           </Text>
           {sublabel ? (
-            <Text style={[styles.rowSub, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+            <Text style={[styles.rowSub, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
               {sublabel}
             </Text>
           ) : null}
@@ -46,33 +46,33 @@ function SettingRow({ icon, iconBg, label, sublabel, right, onPress, isArabic, i
 }
 
 // ── Section Header ────────────────────────────────────────────────────────────
-function SectionTitle({ title, isArabic, theme }) {
+function SectionTitle({ title, isRTL, theme }) {
   return (
-    <Text style={[styles.sectionTitle, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+    <Text style={[styles.sectionTitle, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
       {title}
     </Text>
   );
 }
 
 // ── Language Option ───────────────────────────────────────────────────────────
-function LangOption({ flag, label, sublabel, selected, onPress, isArabic, theme, isLast }) {
+function LangOption({ flag, label, sublabel, selected, onPress, isRTL, theme, isLast }) {
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
       style={[
         styles.langRow,
-        isArabic && { flexDirection: 'row-reverse' },
+        isRTL && { flexDirection: 'row-reverse' },
         !isLast && { borderBottomWidth: 1, borderBottomColor: theme.border + '33' },
       ]}
     >
-      <View style={[styles.rowLeft, isArabic && { flexDirection: 'row-reverse' }]}>
+      <View style={[styles.rowLeft, isRTL && { flexDirection: 'row-reverse' }]}>
         <View style={[styles.iconBox, { backgroundColor: selected ? '#1e3a5f' : theme.surface }]}>
           <Text style={{ fontSize: 20 }}>{flag}</Text>
         </View>
         <View>
-          <Text style={[styles.rowLabel, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{label}</Text>
-          <Text style={[styles.rowSub, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>{sublabel}</Text>
+          <Text style={[styles.rowLabel, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
+          <Text style={[styles.rowSub, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>{sublabel}</Text>
         </View>
       </View>
       {selected ? (
@@ -88,23 +88,32 @@ function LangOption({ flag, label, sublabel, selected, onPress, isArabic, theme,
 
 // ── Main Settings Screen ──────────────────────────────────────────────────────
 export default function SettingsScreen() {
-  const { isDarkMode, toggleTheme, theme, language, setLanguage, saveUserProfile } = useTheme();
+  const { isDarkMode, toggleTheme, theme, language, setLanguage, saveUserProfile, showAlert } = useTheme();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
   const router = useRouter();
   const [notificationsOn, setNotificationsOn] = useState(true);
   const [locationOn, setLocationOn] = useState(true);
 
+  const tClearTitle = isArabic ? 'مسح البيانات' : isUrdu ? 'ڈیٹا صاف کریں' : 'Clear Account Data';
+  const tClearMsg = isArabic
+    ? 'هل تريد مسح بيانات الحساب؟ ستحتاج للتسجيل مرة أخرى.'
+    : isUrdu
+      ? 'اس سے آپ کے اکاؤنٹ کا ڈیٹا صاف ہو جائے گا۔ آپ کو دوبارہ رجسٹریشن کرنی ہوگی۔'
+      : 'This will clear your registration data. You will need to register again.';
+  const tCancel = isArabic ? 'إلغاء' : isUrdu ? 'منسوخ کریں' : 'Cancel';
+  const tClear = isArabic ? 'مسح' : isUrdu ? 'صاف کریں' : 'Clear';
+
   const handleClearAccount = () => {
-    Alert.alert(
-      isArabic ? 'مسح البيانات' : 'Clear Account Data',
-      isArabic
-        ? 'هل تريد مسح بيانات الحساب؟ ستحتاج للتسجيل مرة أخرى.'
-        : 'This will clear your registration data. You will need to register again.',
+    showAlert(
+      tClearTitle,
+      tClearMsg,
       [
-        { text: isArabic ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { text: tCancel, style: 'cancel' },
         {
-          text: isArabic ? 'مسح' : 'Clear',
+          text: tClear,
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem('user_profile');
@@ -123,16 +132,16 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
         {/* ── APPEARANCE ─────────────────────────── */}
-        <SectionTitle title={isArabic ? 'المظهر' : 'APPEARANCE'} isArabic={isArabic} theme={theme} />
+        <SectionTitle title={isArabic ? 'المظهر' : isUrdu ? 'مظہر' : 'APPEARANCE'} isRTL={isRTL} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <SettingRow
             icon="moon"
             iconBg={isDarkMode ? '#1e3a5f' : '#f0f4ff'}
-            label={isArabic ? 'الوضع الداكن' : 'Dark Mode'}
+            label={isArabic ? 'الوضع الداكن' : isUrdu ? 'ڈارک موڈ' : 'Dark Mode'}
             sublabel={isDarkMode
-              ? (isArabic ? 'الوضع الداكن مفعّل' : 'Dark theme is active')
-              : (isArabic ? 'الوضع الفاتح مفعّل' : 'Light theme is active')}
-            isArabic={isArabic}
+              ? (isArabic ? 'الوضع الداكن مفعّل' : isUrdu ? 'ڈارک تھیم فعال ہے' : 'Dark theme is active')
+              : (isArabic ? 'الوضع الفاتح مفعّل' : isUrdu ? 'لائٹ تھیم فعال ہے' : 'Light theme is active')}
+            isRTL={isRTL}
             isLast={true}
             right={
               <Switch
@@ -146,39 +155,49 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── LANGUAGE ───────────────────────────── */}
-        <SectionTitle title={isArabic ? 'اللغة' : 'LANGUAGE'} isArabic={isArabic} theme={theme} />
+        <SectionTitle title={isArabic ? 'اللغة' : isUrdu ? 'زبان' : 'LANGUAGE'} isRTL={isRTL} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <LangOption
             flag="🇬🇧"
             label="English"
-            sublabel={isArabic ? 'الإنجليزية' : 'English Language'}
+            sublabel={isArabic ? 'الإنجليزية' : isUrdu ? 'انگریزی' : 'English Language'}
             selected={language === 'English'}
             onPress={() => setLanguage('English')}
-            isArabic={isArabic}
+            isRTL={isRTL}
             theme={theme}
             isLast={false}
           />
           <LangOption
             flag="🇸🇦"
             label="عربي"
-            sublabel={isArabic ? 'اللغة العربية' : 'Arabic Language'}
+            sublabel={isArabic ? 'اللغة العربية' : isUrdu ? 'عربی زبان' : 'Arabic Language'}
             selected={language === 'Arabic'}
             onPress={() => setLanguage('Arabic')}
-            isArabic={isArabic}
+            isRTL={isRTL}
+            theme={theme}
+            isLast={false}
+          />
+          <LangOption
+            flag="🇵🇰"
+            label="اردو"
+            sublabel={isArabic ? 'الأردية' : isUrdu ? 'اردو زبان' : 'Urdu Language'}
+            selected={language === 'Urdu'}
+            onPress={() => setLanguage('Urdu')}
+            isRTL={isRTL}
             theme={theme}
             isLast={true}
           />
         </View>
 
         {/* ── NOTIFICATIONS & LOCATION ─────────── */}
-        <SectionTitle title={isArabic ? 'الإشعارات والموقع' : 'NOTIFICATIONS & LOCATION'} isArabic={isArabic} theme={theme} />
+        <SectionTitle title={isArabic ? 'الإشعارات والموقع' : isUrdu ? 'اطلاعات اور لوکیشن' : 'NOTIFICATIONS & LOCATION'} isRTL={isRTL} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <SettingRow
             icon="bell"
             iconBg="#1e3a5f"
-            label={isArabic ? 'الإشعارات' : 'Push Notifications'}
-            sublabel={isArabic ? 'تلقّي تنبيهات النظام' : 'Receive system alerts'}
-            isArabic={isArabic}
+            label={isArabic ? 'الإشعارات' : isUrdu ? 'اطلاعات' : 'Push Notifications'}
+            sublabel={isArabic ? 'تلقّي تنبيهات النظام' : isUrdu ? 'سسٹم الرٹس موصول کریں' : 'Receive system alerts'}
+            isRTL={isRTL}
             isLast={false}
             right={
               <Switch
@@ -192,9 +211,9 @@ export default function SettingsScreen() {
           <SettingRow
             icon="navigation"
             iconBg="#1e3a5f"
-            label={isArabic ? 'تتبع الموقع' : 'Location Tracking'}
-            sublabel={isArabic ? 'تفعيل GPS المباشر للتتبع' : 'Enable live GPS for map tracking'}
-            isArabic={isArabic}
+            label={isArabic ? 'تتبع الموقع' : isUrdu ? 'لوکیشن ٹریکنگ' : 'Location Tracking'}
+            sublabel={isArabic ? 'تفعيل GPS المباشر للتتبع' : isUrdu ? 'لائیو GPS ٹریکنگ فعال کریں' : 'Enable live GPS for map tracking'}
+            isRTL={isRTL}
             isLast={true}
             right={
               <Switch
@@ -208,72 +227,82 @@ export default function SettingsScreen() {
         </View>
 
         {/* ── ACCOUNT ─────────────────────────────── */}
-        <SectionTitle title={isArabic ? 'الحساب' : 'ACCOUNT'} isArabic={isArabic} theme={theme} />
+        <SectionTitle title={isArabic ? 'الحساب' : isUrdu ? 'اکاؤنٹ' : 'ACCOUNT'} isRTL={isRTL} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <SettingRow
             icon="user"
             iconBg="#1e3a5f"
-            label={isArabic ? 'الملف الشخصي' : 'My Profile'}
-            sublabel={isArabic ? 'عرض بيانات الحساب المسجل' : 'View registered account details'}
-            isArabic={isArabic}
+            label={isArabic ? 'الملف الشخصي' : isUrdu ? 'میری پروفائل' : 'My Profile'}
+            sublabel={isArabic ? 'عرض بيانات الحساب المسجل' : isUrdu ? 'رجسٹرڈ اکاؤنٹ کی تفصیلات دیکھیں' : 'View registered account details'}
+            isRTL={isRTL}
             isLast={false}
             onPress={() => router.push('/profile')}
-            right={<Icon name={isArabic ? 'chevronLeft' : 'chevronRight'} size={18} color={theme.textSecondary} />}
+            right={<Icon name={isRTL ? 'chevronLeft' : 'chevronRight'} size={18} color={theme.textSecondary} />}
+          />
+          <SettingRow
+            icon="pencil"
+            iconBg="#1e3a5f"
+            label={isArabic ? 'تعديل الملف الشخصي' : isUrdu ? 'پروفائل میں ترمیم کریں' : 'Edit Profile'}
+            sublabel={isArabic ? 'تحديث وتغيير معلومات حسابك' : isUrdu ? 'اپنے اکاؤنٹ کی معلومات کو تبدیل کریں' : 'Update and change your account info'}
+            isRTL={isRTL}
+            isLast={false}
+            onPress={() => router.push('/edit-profile')}
+            right={<Icon name={isRTL ? 'chevronLeft' : 'chevronRight'} size={18} color={theme.textSecondary} />}
           />
           <SettingRow
             icon="trash"
             iconBg="#3b1e1e"
-            label={isArabic ? 'مسح بيانات الحساب' : 'Clear Account Data'}
-            sublabel={isArabic ? 'إلغاء التسجيل والبدء من جديد' : 'Unregister and start fresh'}
-            isArabic={isArabic}
+            label={isArabic ? 'مسح بيانات الحساب' : isUrdu ? 'اکاؤنٹ کا ڈیٹا صاف کریں' : 'Clear Account Data'}
+            sublabel={isArabic ? 'إلغاء التسجيل والبدء من جديد' : isUrdu ? 'رجسٹریشن ختم کریں اور نیا شروع کریں' : 'Unregister and start fresh'}
+            isRTL={isRTL}
             isLast={true}
             onPress={handleClearAccount}
-            right={<Icon name={isArabic ? 'chevronLeft' : 'chevronRight'} size={18} color="#ef4444" />}
+            right={<Icon name={isRTL ? 'chevronLeft' : 'chevronRight'} size={18} color="#ef4444" />}
           />
         </View>
 
         {/* ── SUPPORT ─────────────────────────────── */}
-        <SectionTitle title={isArabic ? 'الدعم' : 'SUPPORT'} isArabic={isArabic} theme={theme} />
+        <SectionTitle title={isArabic ? 'الدعم' : isUrdu ? 'سپورٹ' : 'SUPPORT'} isRTL={isRTL} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <SettingRow
             icon="phone"
             iconBg="#1e3a5f"
-            label={isArabic ? 'اتصل بنا' : 'Contact Us'}
+            label={isArabic ? 'اتصل بنا' : isUrdu ? 'ہم سے رابطہ کریں' : 'Contact Us'}
             sublabel="+966 000 000 000"
-            isArabic={isArabic}
+            isRTL={isRTL}
             isLast={false}
             onPress={() => router.push('/contact-us')}
-            right={<Icon name={isArabic ? 'chevronLeft' : 'chevronRight'} size={18} color={theme.textSecondary} />}
+            right={<Icon name={isRTL ? 'chevronLeft' : 'chevronRight'} size={18} color={theme.textSecondary} />}
           />
           <SettingRow
             icon="shield"
             iconBg="#1e3a5f"
-            label={isArabic ? 'الشروط والأحكام' : 'Terms & Conditions'}
-            sublabel={isArabic ? 'اقرأ شروط الاستخدام' : 'Read usage terms'}
-            isArabic={isArabic}
+            label={isArabic ? 'الشروط والأحكام' : isUrdu ? 'شرائط و ضوابط' : 'Terms & Conditions'}
+            sublabel={isArabic ? 'اقرأ شروط الاستخدام' : isUrdu ? 'استعمال کی شرائط پڑھیں' : 'Read usage terms'}
+            isRTL={isRTL}
             isLast={true}
-            right={<Icon name={isArabic ? 'chevronLeft' : 'chevronRight'} size={18} color={theme.textSecondary} />}
+            right={<Icon name={isRTL ? 'chevronLeft' : 'chevronRight'} size={18} color={theme.textSecondary} />}
           />
         </View>
 
         {/* ── ABOUT ───────────────────────────────── */}
-        <SectionTitle title={isArabic ? 'حول التطبيق' : 'ABOUT'} isArabic={isArabic} theme={theme} />
+        <SectionTitle title={isArabic ? 'حول التطبيق' : isUrdu ? 'ایپ کے بارے میں' : 'ABOUT'} isRTL={isRTL} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <SettingRow
             icon="truck"
             iconBg="#1e3a5f"
-            label={isArabic ? 'نظام التتبع المباشر' : 'Driver Life Tracking System'}
-            sublabel={isArabic ? 'الإصدار 1.0.0' : 'Version 1.0.0'}
-            isArabic={isArabic}
+            label={isArabic ? 'نظام التتبع المباشر' : isUrdu ? 'ڈرائیور لائیو ٹریکنگ سسٹم' : 'Driver Life Tracking System'}
+            sublabel={isArabic ? 'الإصدار 1.0.0' : isUrdu ? 'ورژن 1.0.0' : 'Version 1.0.0'}
+            isRTL={isRTL}
             isLast={false}
             right={null}
           />
           <SettingRow
             icon="info"
             iconBg="#1e3a5f"
-            label={isArabic ? 'البنية التحتية' : 'Infrastructure'}
-            sublabel={isArabic ? 'خرائط مجانية · OpenStreetMap' : 'Free Maps · OpenStreetMap'}
-            isArabic={isArabic}
+            label={isArabic ? 'البنية التحتية' : isUrdu ? 'انفراسٹرکچر' : 'Infrastructure'}
+            sublabel={isArabic ? 'خرائط مجانية · OpenStreetMap' : isUrdu ? 'مفت نقشے · OpenStreetMap' : 'Free Maps · OpenStreetMap'}
+            isRTL={isRTL}
             isLast={true}
             right={null}
           />

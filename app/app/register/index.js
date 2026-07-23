@@ -9,10 +9,18 @@ import { SPACING, RADIUS } from '../../src/constants/theme';
 import { translations } from '../../src/constants/translations';
 
 export default function RegisterIndexScreen() {
-  const { theme, language } = useTheme();
+  const { theme, language, registeredUser } = useTheme();
   const router = useRouter();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
+
+  React.useEffect(() => {
+    if (registeredUser) {
+      router.replace('/map');
+    }
+  }, [registeredUser]);
 
   const services = [
     { title: t.driverLifeTracking, type: 'Driver' },
@@ -33,16 +41,16 @@ export default function RegisterIndexScreen() {
       <Header title={t.serviceListTitle} showBack={true} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.heading, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{t.selectServiceRole}</Text>
+        <Text style={[styles.heading, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{t.selectServiceRole}</Text>
 
         <Card style={styles.cardContainer}>
           {services.map((item, idx) => (
             <TouchableOpacity
               key={idx}
-              style={[styles.serviceRow, isArabic && { flexDirection: 'row-reverse' }]}
+              style={[styles.serviceRow, isRTL && { flexDirection: 'row-reverse' }]}
               onPress={() => handleSelectType(item.type)}
             >
-              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{item.title}</Text>
+              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</Text>
               <View style={[styles.checkbox, { borderColor: theme.primary }]} />
             </TouchableOpacity>
           ))}
@@ -51,12 +59,12 @@ export default function RegisterIndexScreen() {
         {/* Visitor Option */}
         <Card style={{ marginTop: SPACING.md }}>
           <TouchableOpacity
-            style={[styles.serviceRow, isArabic && { flexDirection: 'row-reverse' }]}
+            style={[styles.serviceRow, isRTL && { flexDirection: 'row-reverse' }]}
             onPress={() => handleSelectType('Visitor')}
           >
             <View style={{ flex: 1 }}>
-              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{t.visitorLabel}</Text>
-              <Text style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2, textAlign: isArabic ? 'right' : 'left' }}>
+              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{t.visitorLabel}</Text>
+              <Text style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
                 {t.visitorAdminNote}
               </Text>
             </View>

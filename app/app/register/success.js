@@ -12,6 +12,8 @@ export default function PaymentSuccessScreen() {
   const { theme, language, registeredUser } = useTheme();
   const router = useRouter();
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(
@@ -26,7 +28,7 @@ export default function PaymentSuccessScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header title={isArabic ? 'تأكيد عملية الدفع' : 'Payment Confirmation'} showBack={false} />
+      <Header title={isArabic ? 'تأكيد عملية الدفع' : isUrdu ? 'ادائیگی کی تصدیق' : 'Payment Confirmation'} showBack={false} />
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
@@ -35,27 +37,40 @@ export default function PaymentSuccessScreen() {
           </View>
 
           <Text style={[styles.title, { color: theme.textPrimary }]}>
-            {isArabic ? 'تم تأكيد طلب الدفع بنجاح' : 'Payment Success / Confirmed'}
+            {isArabic ? 'تم تأكيد طلب الدفع بنجاح' : isUrdu ? 'ادائیگی کی تصدیق کامیابی سے ہو گئی ہے' : 'Payment Success / Confirmed'}
           </Text>
 
           {/* Unified payment receipt details */}
           <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Text style={[styles.noticeTitle, { color: theme.primary }]}>
-              {isArabic ? 'تفاصيل فاتورة الاشتراك' : 'Subscription Invoice Details'}
+              {isArabic ? 'تفاصيل فاتورة الاشتراك' : isUrdu ? 'سبسکرپشن انوائس کی تفصیلات' : 'Subscription Invoice Details'}
             </Text>
-            <View style={styles.bankDetailRow}>
+            <View style={[styles.bankDetailRow, isRTL && { flexDirection: 'row-reverse' }]}>
               <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Subscriber Name:</Text>
               <Text style={[styles.bankValue, { color: theme.textPrimary }]}>{registeredUser?.name} {registeredUser?.lastName}</Text>
             </View>
-            <View style={styles.bankDetailRow}>
+            <View style={[styles.bankDetailRow, isRTL && { flexDirection: 'row-reverse' }]}>
               <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Selected Plan:</Text>
               <Text style={[styles.bankValue, { color: theme.textPrimary }]}>{registeredUser?.subscriptionDuration || '1 Month'}</Text>
             </View>
-            <View style={styles.bankDetailRow}>
+            <View style={[styles.bankDetailRow, isRTL && { flexDirection: 'row-reverse' }, { alignItems: 'center' }]}>
               <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Amount Paid:</Text>
-              <Text style={[styles.bankValue, { color: theme.textPrimary }]}>{registeredUser?.amountPaid || '$49.99'}</Text>
+              <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+                <Text style={[styles.bankValue, { color: theme.textPrimary }]}>
+                  {registeredUser?.amountPaid || '$49.99'}
+                </Text>
+                <Text style={{ fontSize: 9, color: theme.textSecondary, marginTop: 1 }}>
+                  {isArabic ? '(شامل الضريبة)' : isUrdu ? '(ٹیکس اور ویٹ سمیت)' : '(Incl. Tax & VAT)'}
+                </Text>
+              </View>
             </View>
-            <View style={styles.bankDetailRow}>
+            <View style={[styles.bankDetailRow, isRTL && { flexDirection: 'row-reverse' }]}>
+              <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Tax & VAT (15%):</Text>
+              <Text style={[styles.bankValue, { color: theme.textPrimary }]}>
+                {isArabic ? 'مشمول' : isUrdu ? 'شامل ہے' : 'Included'}
+              </Text>
+            </View>
+            <View style={[styles.bankDetailRow, isRTL && { flexDirection: 'row-reverse' }]}>
               <Text style={[styles.bankLabel, { color: theme.textSecondary }]}>Payment Gateway:</Text>
               <Text style={[styles.bankValue, { color: theme.textPrimary }]}>Saudi Checkout API</Text>
             </View>
@@ -64,31 +79,33 @@ export default function PaymentSuccessScreen() {
           {/* Contact Admin */}
           <View style={[styles.noticeBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Text style={[styles.noticeTitle, { color: theme.primary }]}>
-              {isArabic ? 'للتواصل مع المسؤول للتفعيل' : 'For Admin Approval Contact'}
+              {isArabic ? 'للتواصل مع المسؤول للتفعيل' : isUrdu ? 'ایڈمن کی منظوری کے لیے رابطہ کریں' : 'For Admin Approval Contact'}
             </Text>
             <Text style={[styles.phoneNum, { color: theme.textPrimary }]}>+966 50 123 4567</Text>
             <Text style={[styles.subNote, { color: theme.textSecondary }]}>
               {isArabic 
                 ? 'يرجى إرسال رسالة للمسؤول عبر الواتساب لتفعيل حسابك فوراً.'
-                : 'Share payment confirmation details with Admin on WhatsApp to get instant activation.'}
+                : isUrdu
+                  ? 'فوری فعال سازی کے لیے ایڈمن کے ساتھ واٹس ایپ پر ادائیگی کی تصدیق کی تفصیلات شیئر کریں۔'
+                  : 'Share payment confirmation details with Admin on WhatsApp to get instant activation.'}
             </Text>
           </View>
 
           <CustomButton
-            title={isArabic ? '💬 أرسل تأكيد الدفع (واتساب)' : '💬 Send Payment Copy (WhatsApp)'}
+            title={isArabic ? '💬 أرسل تأكيد الدفع (واتساب)' : isUrdu ? '💬 ادائیگی کی کاپی بھیجیں (واٹس ایپ)' : '💬 Send Payment Copy (WhatsApp)'}
             onPress={handleWhatsApp}
             style={{ backgroundColor: '#25D366', marginVertical: SPACING.xs, width: '100%' }}
           />
 
           <CustomButton
-            title={isArabic ? '📞 اتصل بالمسؤول مباشرة' : '📞 Call Admin Directly'}
+            title={isArabic ? '📞 اتصل بالمسؤول مباشرة' : isUrdu ? '📞 ایڈمن کو براہ راست کال کریں' : '📞 Call Admin Directly'}
             variant="secondary"
             onPress={handleCall}
             style={{ marginVertical: SPACING.xs, width: '100%' }}
           />
 
           <CustomButton
-            title={isArabic ? 'الذهاب إلى حالة الموافقة' : 'Proceed to Approval Status'}
+            title={isArabic ? 'الذهاب إلى حالة الموافقة' : isUrdu ? 'منظوری کی حیثیت پر جائیں' : 'Proceed to Approval Status'}
             onPress={() => router.push('/register/pending')}
             style={{ marginTop: SPACING.md, width: '100%' }}
           />

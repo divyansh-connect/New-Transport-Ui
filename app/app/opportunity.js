@@ -11,6 +11,8 @@ export default function OpportunityScreen() {
   const { theme, opportunityNotice, language } = useTheme();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
+  const isUrdu = language === 'Urdu';
+  const isRTL = isArabic || isUrdu;
 
   const notice = opportunityNotice || {
     title: 'High-Demand Cargo Routes Available',
@@ -24,21 +26,21 @@ export default function OpportunityScreen() {
       <Header title={t.opportunityTitle} showBack={true} />
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
-          <View style={[styles.badgeRow, isArabic && { flexDirection: 'row-reverse' }]}>
+          <View style={[styles.badgeRow, isRTL && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.categoryBadge, { backgroundColor: theme.surface, color: theme.primary }]}>
               {notice.category || 'Admin Announcement'}
             </Text>
             <Text style={[styles.dateText, { color: theme.textSecondary }]}>{notice.date || 'Just Now'}</Text>
           </View>
-          <Text style={[styles.title, { color: theme.textPrimary, textAlign: isArabic ? 'right' : 'left' }]}>{notice.title}</Text>
-          <Text style={[styles.desc, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+          <Text style={[styles.title, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{notice.title}</Text>
+          <Text style={[styles.desc, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
             {notice.description || notice.body || notice.content}
           </Text>
         </Card>
 
         <View style={[styles.noteBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.noteHeader, { color: theme.primary, textAlign: isArabic ? 'right' : 'left' }]}>{t.noticeInfo}</Text>
-          <Text style={[styles.noteText, { color: theme.textSecondary, textAlign: isArabic ? 'right' : 'left' }]}>
+          <Text style={[styles.noteHeader, { color: theme.primary, textAlign: isRTL ? 'right' : 'left' }]}>{t.noticeInfo}</Text>
+          <Text style={[styles.noteText, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
             {t.noticeDesc}
           </Text>
         </View>
