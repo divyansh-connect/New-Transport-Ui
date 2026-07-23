@@ -15,7 +15,7 @@ export const Payments = () => {
   const [editFormData, setEditFormData] = useState({ name: '', amount: '', gateway: '', status: '' });
 
   const handleExport = () => {
-    const csvContent = "data:text/csv;charset=utf-8,Transaction ID,Driver ID,Payer Name,Amount,Payment Gateway,Status,Date\n" + 
+    const csvContent = "data:text/csv;charset=utf-8,Transaction ID,User ID,Payer Name,Amount,Payment Gateway,Status,Date\n" + 
       payments.map(e => `${e.id},${e.driverId},${e.name},${e.amount},${e.gateway},${e.status},${e.date}`).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -65,7 +65,7 @@ export const Payments = () => {
       <Card title="Payment List">
         <Table
           className="table-scrollable"
-          headers={['Transaction ID', 'Driver ID', 'Payer Name', 'Amount', 'Payment Gateway', 'Status', 'Date', 'Actions']}
+          headers={['Transaction ID', 'User ID', 'Payer Name', 'Amount', 'Payment Gateway', 'Status', 'Date', 'Actions']}
           data={payments}
           renderRow={(row) => (
             <tr key={row.id}>
@@ -104,7 +104,7 @@ export const Payments = () => {
               <strong className="detail-value">{selectedRecord.name}</strong>
             </div>
             <div className="detail-row">
-              <span className="detail-label">Driver ID:</span>
+              <span className="detail-label">User ID:</span>
               <span className="detail-value">{selectedRecord.driverId}</span>
             </div>
             <div className="detail-row">

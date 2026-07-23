@@ -18,11 +18,12 @@ export const Dashboard = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   const initialRegistrations = [
-    { id: 'REG-101', name: 'John Doe', type: 'Commercial Driver', status: 'Pending', date: '2026-07-21', amount: '$49.99' },
-    { id: 'REG-102', name: 'Metro Workshop Hub', type: 'Repair Station', status: 'Approved', date: '2026-07-20', amount: '$149.00' },
-    { id: 'REG-103', name: 'Speedy Lube Express', type: 'Oil Change Center', status: 'Approved', date: '2026-07-20', amount: '$199.00' },
-    { id: 'REG-104', name: 'Alex Smith', type: 'Independent Driver', status: 'Pending', date: '2026-07-19', amount: '$49.99' },
-    { id: 'REG-105', name: 'City Fleet Logistics', type: 'Fleet Manager', status: 'Approved', date: '2026-07-18', amount: '$299.00' },
+    { id: 'REG-101', name: 'John Doe', type: 'Commercial Driver', status: 'Pending', date: '2026-07-21', amount: '$49.99', phone: '+1 (555) 234-5678' },
+    { id: 'REG-102', name: 'Metro Workshop Hub', type: 'Repair Station', status: 'Approved', date: '2026-07-20', amount: '$149.00', phone: '+1 (555) 876-5432' },
+    { id: 'REG-103', name: 'Speedy Lube Express', type: 'Oil Change Center', status: 'Approved', date: '2026-07-20', amount: '$199.00', phone: '+1 (555) 456-7890' },
+    { id: 'REG-104', name: 'Alex Smith', type: 'Independent Driver', status: 'Pending', date: '2026-07-19', amount: '$49.99', phone: '+1 (555) 789-0123' },
+    { id: 'REG-105', name: 'City Fleet Logistics', type: 'Fleet Manager', status: 'Approved', date: '2026-07-18', amount: '$299.00', phone: '+1 (555) 901-2345' },
+    { id: 'REG-106', name: 'Retro Car Rentals', type: 'Fleet Manager', status: 'Expired', date: '2026-07-12', amount: '$299.00', phone: '+1 (555) 654-3210' },
   ];
 
   const [registrations, setRegistrations] = useState([]);
@@ -32,7 +33,14 @@ export const Dashboard = () => {
   useEffect(() => {
     const saved = localStorage.getItem('registrations');
     if (saved) {
-      setRegistrations(JSON.parse(saved));
+      const parsed = JSON.parse(saved);
+      // Refresh if saved data is missing the phone field or doesn't have the Expired status item
+      if (parsed.length > 0 && (!parsed[0].phone || !parsed.some(r => r.status === 'Expired'))) {
+        setRegistrations(initialRegistrations);
+        localStorage.setItem('registrations', JSON.stringify(initialRegistrations));
+      } else {
+        setRegistrations(parsed);
+      }
     } else {
       setRegistrations(initialRegistrations);
       localStorage.setItem('registrations', JSON.stringify(initialRegistrations));
@@ -77,8 +85,8 @@ export const Dashboard = () => {
   };
 
   const handleExport = () => {
-    const csvContent = "data:text/csv;charset=utf-8,Registration ID,Name,Type,Status,Date,Amount\n" + 
-      filteredRegistrations.map(e => `${e.id},${e.name},${e.type},${e.status},${e.date},${e.amount}`).join("\n");
+    const csvContent = "data:text/csv;charset=utf-8,Registration ID,Name,Category,Mobile No,Status,Date,Amount\n" + 
+      filteredRegistrations.map(e => `${e.id},${e.name},${e.type},${e.phone || ''},${e.status},${e.date},${e.amount}`).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -163,6 +171,7 @@ export const Dashboard = () => {
                 { label: 'All Statuses', value: 'ALL' },
                 { label: 'Approved Only', value: 'APPROVED' },
                 { label: 'Pending Approval', value: 'PENDING' },
+                { label: 'Expired', value: 'EXPIRED' },
               ]}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -172,7 +181,7 @@ export const Dashboard = () => {
       >
         <Table
           className="table-scrollable"
-          headers={['Registration ID', 'Name / Entity', 'Category', 'Status', 'Date', 'Amount', 'Actions']}
+          headers={['Registration ID', 'Name / Entity', 'Category', 'Mobile No', 'Status', 'Date', 'Amount', 'Actions']}
           data={filteredRegistrations}
           emptyTitle="No Registrations Found"
           emptyDescription="No registration records match your current search or filter criteria."
@@ -191,9 +200,10 @@ export const Dashboard = () => {
                 <span className="row-name">{row.name}</span>
               </td>
               <td><span className="row-type">{row.type}</span></td>
+              <td>{row.phone || '—'}</td>
               <td>
                 <Badge
-                  variant={row.status === 'Approved' ? 'success' : 'warning'}
+                  variant={row.status === 'Approved' ? 'success' : row.status === 'Expired' ? 'danger' : 'warning'}
                   pulse={row.status === 'Pending'}
                 >
                   {row.status}
@@ -252,8 +262,12 @@ export const Dashboard = () => {
               <span className="detail-value">{selectedRecord.type}</span>
             </div>
             <div className="detail-row">
+              <span className="detail-label">Mobile No:</span>
+              <span className="detail-value">{selectedRecord.phone || '—'}</span>
+            </div>
+            <div className="detail-row">
               <span className="detail-label">Status:</span>
-              <Badge variant={selectedRecord.status === 'Approved' ? 'success' : 'warning'}>
+              <Badge variant={selectedRecord.status === 'Approved' ? 'success' : selectedRecord.status === 'Expired' ? 'danger' : 'warning'}>
                 {selectedRecord.status}
               </Badge>
             </div>

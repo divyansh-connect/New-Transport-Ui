@@ -76,7 +76,7 @@
   box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
 }
 
-.login-branding .logo-truck {
+.login-branding .logo-car {
   color: white;
 }
 
@@ -85,6 +85,8 @@
   font-weight: 700;
   margin: 0 0 6px 0;
   letter-spacing: -0.02em;
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(59, 130, 246, 0.35);
 }
 
 .login-branding p {

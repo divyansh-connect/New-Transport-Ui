@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, Mail, Lock } from 'lucide-react';
+import { Car, Mail, Lock } from 'lucide-react';
 import { Input } from '../../components/common/Input/Input';
 import { Button } from '../../components/common/Button/Button';
 import './Login.css';
@@ -29,7 +29,7 @@ export const Login = () => {
           <div className="login-image-overlay">
             <div className="login-branding">
               <div className="logo-icon-bg">
-                <Truck size={32} className="logo-truck" />
+                <Car size={32} className="logo-car" />
               </div>
               <h1>Driver Life</h1>
               <p>Admin Operations Platform v2.0</p>
@@ -46,7 +46,7 @@ export const Login = () => {
             {/* Mobile Branding Header */}
             <div className="mobile-branding">
               <div className="mobile-logo-bg">
-                <Truck size={24} className="logo-truck" />
+                <Car size={24} className="logo-car" />
               </div>
               <div>
                 <h3>Driver Life</h3>
