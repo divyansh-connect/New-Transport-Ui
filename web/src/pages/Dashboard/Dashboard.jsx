@@ -61,7 +61,7 @@ export const Dashboard = () => {
 
   const handleEditClick = (record) => {
     setSelectedRecord(record);
-    setEditFormData({ name: record.name, type: record.type, amount: record.amount });
+    setEditFormData({ name: record.name, type: record.type, amount: record.amount, status: record.status });
     setIsEditMode(true);
     setIsModalOpen(true);
   };
@@ -75,7 +75,19 @@ export const Dashboard = () => {
   const handleSaveEdit = () => {
     const updated = registrations.map(r => {
       if (r.id === selectedRecord.id) {
-        return { ...r, name: editFormData.name, type: editFormData.type, amount: editFormData.amount };
+        return { ...r, name: editFormData.name, type: editFormData.type, amount: editFormData.amount, status: editFormData.status };
+      }
+      return r;
+    });
+    setRegistrations(updated);
+    localStorage.setItem('registrations', JSON.stringify(updated));
+    setIsModalOpen(false);
+  };
+
+  const handleApproveRegistration = (record) => {
+    const updated = registrations.map(r => {
+      if (r.id === record.id) {
+        return { ...r, status: 'Approved' };
       }
       return r;
     });
@@ -247,8 +259,8 @@ export const Dashboard = () => {
         onClose={() => setIsModalOpen(false)}
         title={isEditMode ? `Edit Registration: ${selectedRecord?.id || ''}` : `Registration Details: ${selectedRecord?.id || ''}`}
         subtitle={isEditMode ? "Update the details of this registration." : "Review registration details and approve or reject request."}
-        primaryActionLabel={isEditMode ? "Save Changes" : "Approve Registration"}
-        onPrimaryAction={isEditMode ? handleSaveEdit : () => setIsModalOpen(false)}
+        primaryActionLabel={isEditMode ? "Save Changes" : (selectedRecord?.status === 'Pending' ? "Approve Registration" : null)}
+        onPrimaryAction={isEditMode ? handleSaveEdit : () => handleApproveRegistration(selectedRecord)}
         secondaryActionLabel="Close"
       >
         {selectedRecord && !isEditMode && (
@@ -297,6 +309,16 @@ export const Dashboard = () => {
               label="Amount" 
               value={editFormData.amount} 
               onChange={e => setEditFormData({...editFormData, amount: e.target.value})} 
+            />
+            <Select 
+              label="Status" 
+              value={editFormData.status} 
+              onChange={e => setEditFormData({...editFormData, status: e.target.value})} 
+              options={[
+                { label: 'Pending', value: 'Pending' },
+                { label: 'Approved', value: 'Approved' },
+                { label: 'Expired', value: 'Expired' }
+              ]}
             />
           </div>
         )}

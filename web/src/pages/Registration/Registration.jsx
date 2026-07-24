@@ -13,7 +13,7 @@ export const Registration = () => {
   const { subscriptionPlans } = useTheme();
   const [alertMessage, setAlertMessage] = useState('');
   const [formData, setFormData] = useState({
-    type: 'driver',
+    type: 'Commercial Driver',
     firstName: '',
     lastName: '',
     email: '',
@@ -24,10 +24,16 @@ export const Registration = () => {
     selectedPlanId: subscriptionPlans?.[0]?.id || ''
   });
 
+  const isDriver = formData.type === 'Commercial Driver' || formData.type === 'Independent Driver';
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      setAlertMessage('First Name and Last Name are required.');
+    if (!formData.firstName.trim()) {
+      setAlertMessage('Name / Entity Name is required.');
+      return;
+    }
+    if (isDriver && !formData.lastName.trim()) {
+      setAlertMessage('Last Name is required for Drivers.');
       return;
     }
     if (!formData.termsAccepted) {
@@ -42,18 +48,32 @@ export const Registration = () => {
       registrations = JSON.parse(saved);
     }
     
-    // Find active plan price
-    const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
-    const planPrice = selectedPlan ? `$${selectedPlan.price}` : '$49.99';
+    // Find active plan price or default price based on category
+    let planPrice = '-';
+    if (isDriver) {
+      const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
+      planPrice = selectedPlan ? `$${selectedPlan.price}` : '$49.99';
+    } else if (formData.type === 'Repair Station') {
+      planPrice = '$149.00';
+    } else if (formData.type === 'Oil Change Center') {
+      planPrice = '$199.00';
+    } else if (formData.type === 'Fleet Manager') {
+      planPrice = '$299.00';
+    }
     
+    const fullName = isDriver 
+      ? `${formData.firstName} ${formData.lastName}`
+      : (formData.lastName ? `${formData.firstName} ${formData.lastName}` : formData.firstName);
+
     // Create new record
     const newRecord = {
-      id: `REG-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: `${formData.firstName} ${formData.lastName}`,
-      type: formData.type === 'driver' ? 'Commercial Driver' : formData.type === 'workshop' ? 'Repair Station' : 'Oil Change Center',
+      id: `REG-${Math.floor(107 + Math.random() * 890)}`,
+      name: fullName,
+      type: formData.type,
       status: 'Pending',
       date: new Date().toISOString().split('T')[0],
-      amount: formData.type === 'driver' ? planPrice : '-'
+      amount: planPrice,
+      phone: formData.phone || '—'
     };
     
     // Save and redirect
@@ -79,19 +99,18 @@ export const Registration = () => {
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   options={[
-                    { label: 'Commercial Driver', value: 'driver' },
-                    /*
-                    { label: 'System Admin', value: 'admin' },
-                    { label: 'Repair Workshop', value: 'workshop' },
-                    { label: 'Oil Change Center', value: 'oil' }
-                    */
+                    { label: 'Commercial Driver', value: 'Commercial Driver' },
+                    { label: 'Independent Driver', value: 'Independent Driver' },
+                    { label: 'Repair Station', value: 'Repair Station' },
+                    { label: 'Oil Change Center', value: 'Oil Change Center' },
+                    { label: 'Fleet Manager', value: 'Fleet Manager' },
                   ]}
                 />
               </div>
               <div className="form-group">
-                <label>First Name</label>
+                <label>{isDriver ? 'First Name' : 'Entity / Business Name'}</label>
                 <Input 
-                  placeholder="First name" 
+                  placeholder={isDriver ? 'First name' : 'Entity / Business name'} 
                   leftIcon={User} 
                   value={formData.firstName}
                   onChange={(e) => setFormData({...formData, firstName: e.target.value})}
@@ -101,9 +120,9 @@ export const Registration = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Last Name</label>
+                <label>{isDriver ? 'Last Name' : 'Contact Person (Optional)'}</label>
                 <Input 
-                  placeholder="Last name" 
+                  placeholder={isDriver ? 'Last name' : 'Contact person name'} 
                   leftIcon={User} 
                   value={formData.lastName}
                   onChange={(e) => setFormData({...formData, lastName: e.target.value})}
@@ -131,7 +150,7 @@ export const Registration = () => {
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                 />
               </div>
-              {formData.type === 'driver' && (
+              {isDriver && (
                 <div className="form-group">
                   <label>Plate Number</label>
                   <Input 
@@ -144,7 +163,7 @@ export const Registration = () => {
               )}
             </div>
 
-            {formData.type === 'driver' && (
+            {isDriver && (
               <div className="form-checkbox">
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
                   <input 
@@ -158,7 +177,7 @@ export const Registration = () => {
               </div>
             )}
 
-            {formData.type === 'driver' && (
+            {isDriver && (
               <div className="form-row">
                 <div className="form-group">
                   <label>Subscription Plan</label>
