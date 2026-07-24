@@ -15,7 +15,7 @@ export const Icon = ({ name, size = 22, color }) => {
     bell: <Ionicons name="notifications-outline" size={size} color={activeColor} />,
     phone: <Ionicons name="call-outline" size={size} color={activeColor} />,
     settings: <Ionicons name="settings-outline" size={size} color={activeColor} />,
-    truck: <MaterialCommunityIcons name="truck-fast-outline" size={size} color={activeColor} />,
+    truck: <Ionicons name="car-outline" size={size} color={activeColor} />,
     chevronRight: <Ionicons name="chevron-forward" size={size} color={activeColor} />,
     chevronLeft: <Ionicons name="chevron-back" size={size} color={activeColor} />,
     back: <Ionicons name="arrow-back" size={size} color={activeColor} />,

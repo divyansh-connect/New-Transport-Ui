@@ -95,7 +95,13 @@ export default function ApprovalPendingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: SPACING.md, justifyContent: 'center' },
+  content: {
+    padding: SPACING.md,
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
+  },
   card: { alignItems: 'center', paddingVertical: SPACING.xl },
   statusIcon: {
     width: 72,

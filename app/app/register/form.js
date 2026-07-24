@@ -206,6 +206,9 @@ const styles = StyleSheet.create({
   content: {
     padding: SPACING.md,
     paddingBottom: 40,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   card: {
     marginBottom: SPACING.md,

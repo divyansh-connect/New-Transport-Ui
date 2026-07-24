@@ -289,9 +289,9 @@ export default function SettingsScreen() {
         <SectionTitle title={isArabic ? 'حول التطبيق' : isUrdu ? 'ایپ کے بارے میں' : 'ABOUT'} isRTL={isRTL} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <SettingRow
-            icon="truck"
+            icon="car"
             iconBg="#1e3a5f"
-            label={isArabic ? 'نظام التتبع المباشر' : isUrdu ? 'ڈرائیور لائیو ٹریکنگ سسٹم' : 'Driver Life Tracking System'}
+            label={isArabic ? 'نظام تتبع حياة المستخدم' : isUrdu ? 'صارف لائیو ٹریکنگ سسٹم' : 'User Life Tracking System'}
             sublabel={isArabic ? 'الإصدار 1.0.0' : isUrdu ? 'ورژن 1.0.0' : 'Version 1.0.0'}
             isRTL={isRTL}
             isLast={false}
@@ -316,7 +316,12 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: SPACING.md },
+  content: {
+    padding: SPACING.md,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
+  },
   sectionTitle: {
     fontSize: 11,
     fontWeight: '700',

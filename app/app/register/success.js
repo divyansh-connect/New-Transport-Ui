@@ -122,6 +122,9 @@ const styles = StyleSheet.create({
   content: {
     padding: SPACING.md,
     justifyContent: 'center',
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   card: {
     alignItems: 'center',
