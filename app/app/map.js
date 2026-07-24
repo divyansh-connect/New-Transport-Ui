@@ -112,70 +112,75 @@ export default function MapScreen() {
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; }
         #map { height: 100%; width: 100%; }
         .leaflet-div-icon { background: transparent; border: none; }
-        .own-dot {
-          width: 14px;
-          height: 14px;
-          background: #2563EB;
-          border: 2px solid #ffffff;
-          border-radius: 50%;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-          animation: own-pulse 2s infinite ease-in-out;
-          box-sizing: border-box;
-        }
-        .driver-circle {
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: #0f1d2e;
-          border: 1.5px solid #3b82f6;
-          box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+        
+        /* 1. Google Maps style Navigation Arrow */
+        .own-arrow-container {
+          position: relative;
+          width: 24px;
+          height: 24px;
           display: flex;
           align-items: center;
           justify-content: center;
-          animation: car-pulse 2s infinite ease-in-out;
         }
-        .driver-circle .svg-icon {
-          width: 14px;
-          height: 14px;
-          color: #e2e8f0;
-        }
-        .poi-circle {
-          width: 26px;
-          height: 26px;
+        .own-arrow-pulse {
+          position: absolute;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
-          background: #0f1d2e;
-          border: 1.5px solid rgba(148,163,184,0.35);
-          box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+          background: rgba(37, 99, 235, 0.25);
+          border: 1px solid rgba(37, 99, 235, 0.4);
+          animation: arrow-glow 2s infinite ease-in-out;
+          z-index: 1;
+          box-sizing: border-box;
+        }
+        .own-arrow-container .arrow-svg {
+          width: 22px;
+          height: 22px;
+          z-index: 2;
+          filter: drop-shadow(0px 2.5px 3.5px rgba(0, 0, 0, 0.4));
+        }
+        @keyframes arrow-glow {
+          0% {
+            transform: scale(0.8);
+            opacity: 0.8;
+          }
+          100% {
+            transform: scale(2.2);
+            opacity: 0;
+          }
+        }
+
+        /* 2. Driver Icon (No Background) */
+        .driver-car-marker {
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .driver-car-marker .svg-icon {
+          width: 28px;
+          height: 28px;
+          color: #2563eb;
+          filter: drop-shadow(0px 2.5px 3.5px rgba(0,0,0,0.45));
+        }
+
+        /* 3. Small POI Circles (Workshop & Oil) */
+        .poi-circle {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #1e293b;
+          border: 1.5px solid #94a3b8;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           display: flex;
           align-items: center;
           justify-content: center;
         }
         .poi-circle .svg-icon {
-          width: 13px;
-          height: 13px;
-          color: #e2e8f0;
-        }
-        @keyframes car-pulse {
-          0% {
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7), 0 3px 10px rgba(0,0,0,0.45);
-          }
-          70% {
-            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0), 0 3px 10px rgba(0,0,0,0.45);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0), 0 3px 10px rgba(0,0,0,0.45);
-          }
-        }
-        @keyframes own-pulse {
-          0% {
-            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6), 0 2px 5px rgba(0, 0, 0, 0.4);
-          }
-          70% {
-            box-shadow: 0 0 0 10px rgba(37, 99, 235, 0), 0 2px 5px rgba(0, 0, 0, 0.4);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0), 0 2px 5px rgba(0, 0, 0, 0.4);
-          }
+          width: 11px;
+          height: 11px;
+          color: #f8fafc;
         }
       </style>
     </head>
@@ -193,12 +198,12 @@ export default function MapScreen() {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1. Own Live GPS Pin - Blue Dot style matching Google Maps
+        // 1. Own Live GPS Pin - Google Maps style Bold Arrow Icon with Pulse
         var ownIcon = L.divIcon({
           className: '',
-          html: '<div class="own-dot"></div>',
-          iconSize: null,
-          iconAnchor: [7, 7]
+          html: '<div class="own-arrow-container"><div class="own-arrow-pulse"></div><svg class="arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2563EB" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M12 2L2 22l10-8 10 8z"/></svg></div>',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
         });
         
         var ownMarker = L.marker([userLat, userLng], { icon: ownIcon }).addTo(map);
@@ -214,7 +219,7 @@ export default function MapScreen() {
         });
 
         // 2. SVG Icons definitions
-        var carSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>';
+        var carSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" stroke="#FFFFFF" stroke-width="20" stroke-linejoin="round" class="svg-icon"><path d="M499.99 176h-59.87l-16.64-41.6C406.38 91.63 365.57 64 319.5 64h-127c-46.06 0-86.88 27.63-103.99 70.4L71.87 176H12.01C4.2 176-1.53 183.34.37 190.91l6 24C7.7 220.25 12.5 224 18.01 224h20.07C24.65 235.73 16 252.78 16 272v48c0 16.12 6.16 30.67 16 41.93V416c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-32h256v32c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-54.07c9.84-11.26 16-25.81 16-41.93v-48c0-19.22-8.65-36.27-22.08-48H494c5.51 0 10.31-3.75 11.64-8.91l6-24c1.9-7.57-3.83-15.09-11.65-15.09zM192 368c-26.51 0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48zm192 0c-26.51 0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48z"/></svg>';
         var wrenchSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
         var oilSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/></svg>';
 
@@ -231,18 +236,22 @@ export default function MapScreen() {
           if (s.type === 'location' || isDriver) {
             var cfg = pinConfig[s.type] || { icon: wrenchSvg, isPOI: true };
             var htmlContent = '';
+            var anchor = [11, 11];
+            var size = [22, 22];
             
             if (cfg.isPOI) {
               htmlContent = '<div class="poi-circle">' + cfg.icon + '</div>';
             } else {
-              htmlContent = '<div class="driver-circle">' + cfg.icon + '</div>';
+              htmlContent = '<div class="driver-car-marker">' + cfg.icon + '</div>';
+              anchor = [16, 16];
+              size = [32, 32];
             }
             
             var sIcon = L.divIcon({
               className: '',
               html: htmlContent,
-              iconSize: null,
-              iconAnchor: [13, 13]
+              iconSize: size,
+              iconAnchor: anchor
             });
             var sMarker = L.marker([s.lat, s.lng], { icon: sIcon }).addTo(map);
             sMarker.on('click', function() {
