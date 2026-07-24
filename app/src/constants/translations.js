@@ -35,7 +35,7 @@ export const translations = {
     // Register Service List
     serviceListTitle: 'Service List Registration',
     selectServiceRole: 'Select Service / Role',
-    driverLifeTracking: 'Driver (Life Tracking)',
+    driverLifeTracking: 'User (Life Tracking)',
     workshopLocation: 'Workshop (Location only)',
     oilChangeLocation: 'Oil change (Location only)',
     carLocationOnly: 'Car Location (Location only)',
@@ -137,7 +137,7 @@ export const translations = {
     // Register Service List
     serviceListTitle: 'تسجيل قائمة الخدمات',
     selectServiceRole: 'اختر الخدمة / الدور',
-    driverLifeTracking: 'سائق (تتبع مباشر)',
+    driverLifeTracking: 'مستخدم (تتبع مباشر)',
     workshopLocation: 'ورشة (الموقع فقط)',
     oilChangeLocation: 'تغيير الزيت (الموقع فقط)',
     carLocationOnly: 'موقع السيارة (الموقع فقط)',
@@ -238,7 +238,7 @@ export const translations = {
     // Register Service List
     serviceListTitle: 'سروس لسٹ رجسٹریشن',
     selectServiceRole: 'سروس / کردار منتخب کریں',
-    driverLifeTracking: 'ڈرائیور (لائیو ٹریکنگ)',
+    driverLifeTracking: 'صارف (لائیو ٹریکنگ)',
     workshopLocation: 'ورکشاپ (صرف مقام)',
     oilChangeLocation: 'آئل چینج (صرف مقام)',
     carLocationOnly: 'کار کا مقام (صرف مقام)',

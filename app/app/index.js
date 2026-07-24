@@ -101,7 +101,7 @@ export default function SplashScreen() {
 
         {/* Brand Text Animation */}
         <Animated.View style={{ transform: [{ translateY: textSlideAnim }], alignItems: 'center' }}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Driver Life</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>User Life</Text>
           <Text style={[styles.badgeText, { color: '#FFF', backgroundColor: theme.primary }]}>PARTNER APP</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Smart Telemetry & Map Ecosystem</Text>
         </Animated.View>

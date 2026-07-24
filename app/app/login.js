@@ -102,10 +102,10 @@ export default function LoginScreen() {
         {/* Brand Header */}
         <View style={styles.brandSection}>
           <View style={[styles.logoCard, { backgroundColor: theme.primary }]}>
-            <MaterialCommunityIcons name="truck-fast" size={44} color="#FFF" />
+            <MaterialCommunityIcons name="car" size={44} color="#FFF" />
           </View>
           <Text style={[styles.appTitle, { color: theme.textPrimary }]}>
-            {isArabic ? 'نظام التتبع المباشر' : isUrdu ? 'ڈرائیور لائیو ٹریکنگ' : 'Driver Life Tracking'}
+            {isArabic ? 'نظام تتبع حياة المستخدم' : isUrdu ? 'صارف لائیو ٹریکنگ' : 'User Life Tracking'}
           </Text>
           <Text style={[styles.appTagline, { color: theme.textSecondary }]}>
             {isArabic ? 'أدخل رقم جوالك للدخول' : isUrdu ? 'جاری رکھنے کے لیے اپنا موبائل نمبر درج کریں' : 'Enter your mobile number to continue'}
@@ -191,6 +191,9 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
+    width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
   },
   brandSection: {
     alignItems: 'center',

@@ -67,6 +67,11 @@ export const Settings = () => {
   // Local Access Config toggles
   const [accessToggles, setAccessToggles] = useState({
     activeForEveryone: subscriptionConfig.activeForEveryone,
+    paymentRequiredFor: subscriptionConfig.paymentRequiredFor || {
+      driver: true,
+      workshop: false,
+      visitor: false
+    },
     showVisitorServices: subscriptionConfig.showVisitorServices
   });
 
@@ -522,19 +527,87 @@ export const Settings = () => {
                 subtitle="Control map capabilities and platform paywall policies for different user roles."
               >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--color-text-main)' }}>Enable Paywall for Drivers</strong>
-                      <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>If enabled, Drivers must pay the active subscription rate to go Live.</span>
+                  <div style={{ borderBottom: '1px solid var(--color-card-border)', paddingBottom: '20px', marginBottom: '8px' }}>
+                    <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--color-text-main)' }}>Payment Requirements Control</strong>
+                    <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '16px' }}>
+                      Configure which registering user categories are required to pay fees.
+                    </span>
+
+                    {/* Quick Preset Buttons */}
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                      <Button 
+                        type="button"
+                        variant="secondary" 
+                        size="sm" 
+                        onClick={() => setAccessToggles({
+                          ...accessToggles,
+                          paymentRequiredFor: { driver: true, workshop: true, visitor: true }
+                        })}
+                      >
+                        Enable for Everyone
+                      </Button>
+                      <Button 
+                        type="button"
+                        variant="secondary" 
+                        size="sm" 
+                        onClick={() => setAccessToggles({
+                          ...accessToggles,
+                          paymentRequiredFor: { driver: false, workshop: false, visitor: false }
+                        })}
+                      >
+                        Disable for Everyone
+                      </Button>
                     </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={accessToggles.activeForEveryone}
-                        onChange={(e) => setAccessToggles({ ...accessToggles, activeForEveryone: e.target.checked })}
-                      />
-                      <span className="toggle-slider" />
-                    </label>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <input 
+                          type="checkbox"
+                          id="pay-driver"
+                          checked={!!accessToggles.paymentRequiredFor?.driver}
+                          onChange={(e) => setAccessToggles({
+                            ...accessToggles,
+                            paymentRequiredFor: { ...accessToggles.paymentRequiredFor, driver: e.target.checked }
+                          })}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="pay-driver" style={{ fontSize: '14px', color: 'var(--color-text-main)', cursor: 'pointer' }}>
+                          Enable payment only for <strong>Drivers</strong>
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <input 
+                          type="checkbox"
+                          id="pay-workshop"
+                          checked={!!accessToggles.paymentRequiredFor?.workshop}
+                          onChange={(e) => setAccessToggles({
+                            ...accessToggles,
+                            paymentRequiredFor: { ...accessToggles.paymentRequiredFor, workshop: e.target.checked }
+                          })}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="pay-workshop" style={{ fontSize: '14px', color: 'var(--color-text-main)', cursor: 'pointer' }}>
+                          Enable payment only for <strong>Workshops</strong>
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <input 
+                          type="checkbox"
+                          id="pay-visitor"
+                          checked={!!accessToggles.paymentRequiredFor?.visitor}
+                          onChange={(e) => setAccessToggles({
+                            ...accessToggles,
+                            paymentRequiredFor: { ...accessToggles.paymentRequiredFor, visitor: e.target.checked }
+                          })}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="pay-visitor" style={{ fontSize: '14px', color: 'var(--color-text-main)', cursor: 'pointer' }}>
+                          Enable payment only for <strong>Visitors</strong>
+                        </label>
+                      </div>
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

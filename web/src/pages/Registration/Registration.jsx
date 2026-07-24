@@ -4,16 +4,18 @@ import { Card } from '../../components/common/Cards/Card';
 import { Button } from '../../components/common/Button/Button';
 import { Input, Select } from '../../components/common/Input/Input';
 import { Modal } from '../../components/common/Modal/Modal';
-import { User, UserPlus, Mail, Phone, MapPin, Truck, CheckSquare } from 'lucide-react';
+import { User, UserPlus, Mail, Phone, MapPin, Truck, CheckSquare, Car } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useDrivers } from '../../context/DriverContext';
 import './Registration.css';
 
 export const Registration = () => {
   const navigate = useNavigate();
-  const { subscriptionPlans } = useTheme();
+  const { subscriptionPlans, subscriptionConfig } = useTheme();
+  const { registerDriver } = useDrivers();
   const [alertMessage, setAlertMessage] = useState('');
   const [formData, setFormData] = useState({
-    type: 'Commercial Driver',
+    type: 'driver',
     firstName: '',
     lastName: '',
     email: '',
@@ -24,7 +26,15 @@ export const Registration = () => {
     selectedPlanId: subscriptionPlans?.[0]?.id || ''
   });
 
-  const isDriver = formData.type === 'Commercial Driver' || formData.type === 'Independent Driver';
+  const isDriver = formData.type === 'driver';
+  const isWorkshop = formData.type === 'workshop' || formData.type === 'oil';
+  const isVisitor = formData.type === 'visitor';
+
+  const config = subscriptionConfig?.paymentRequiredFor || { driver: true, workshop: false, visitor: false };
+  const payRequired = 
+    (formData.type === 'driver' && config.driver) ||
+    ((formData.type === 'workshop' || formData.type === 'oil') && config.workshop) ||
+    (formData.type === 'visitor' && config.visitor);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -49,33 +59,87 @@ export const Registration = () => {
     }
     
     // Find active plan price or default price based on category
-    let planPrice = '-';
-    if (isDriver) {
-      const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
-      planPrice = selectedPlan ? `$${selectedPlan.price}` : '$49.99';
-    } else if (formData.type === 'Repair Station') {
-      planPrice = '$149.00';
-    } else if (formData.type === 'Oil Change Center') {
-      planPrice = '$199.00';
-    } else if (formData.type === 'Fleet Manager') {
-      planPrice = '$299.00';
+    let planPrice = 'Free';
+    if (payRequired) {
+      if (isDriver) {
+        const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
+        planPrice = selectedPlan ? `$${selectedPlan.price}` : '$49.99';
+      } else if (formData.type === 'workshop') {
+        planPrice = '$149.00';
+      } else if (formData.type === 'oil') {
+        planPrice = '$199.00';
+      } else if (formData.type === 'visitor') {
+        planPrice = '$9.99';
+      }
     }
     
     const fullName = isDriver 
       ? `${formData.firstName} ${formData.lastName}`
       : (formData.lastName ? `${formData.firstName} ${formData.lastName}` : formData.firstName);
 
+    const displayTypes = {
+      driver: 'Commercial Driver',
+      workshop: 'Repair Workshop',
+      oil: 'Oil Change Center',
+      visitor: 'Visitor'
+    };
+
     // Create new record
     const newRecord = {
       id: `REG-${Math.floor(107 + Math.random() * 890)}`,
       name: fullName,
-      type: formData.type,
+      type: displayTypes[formData.type] || formData.type,
       status: 'Pending',
       date: new Date().toISOString().split('T')[0],
       amount: planPrice,
       phone: formData.phone || '—'
     };
     
+    // Propagate to respective menus
+    if (formData.type === 'driver') {
+      const driverId = `DRV-${Math.floor(1007 + Math.random() * 890)}`;
+      const newDriver = {
+        id: driverId,
+        name: fullName,
+        email: formData.email,
+        phone: formData.phone || '—',
+        plateNumber: formData.plateNumber || '—',
+        vehicleType: 'Commercial Driver',
+        vehicleModel: 'Standard Cargo',
+        licenseNumber: 'DL-TEMP-' + Math.floor(100000 + Math.random() * 900000),
+        experienceYears: 1,
+        city: 'Delhi, IN',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
+        status: 'Pending',
+        registrationDate: new Date().toISOString().split('T')[0],
+        paymentStatus: payRequired ? 'Unpaid' : 'Paid',
+        paymentAmount: planPrice,
+        paymentMethod: payRequired ? 'None' : 'Free Bypass',
+        documents: {
+          license: { name: 'Commercial Driver License (CDL)', status: 'Pending Verification', url: '#' },
+          insurance: { name: 'Vehicle Liability Insurance', status: 'Pending Verification', url: '#' },
+          backgroundCheck: { name: 'Criminal Background Check', status: 'Pending', url: '#' }
+        },
+        rejectionReason: ''
+      };
+      registerDriver(newDriver);
+    } else if (formData.type === 'workshop' || formData.type === 'oil') {
+      const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
+      const serviceId = formData.type === 'workshop' 
+        ? `WS-${Math.floor(100 + Math.random() * 900)}` 
+        : `OC-${Math.floor(100 + Math.random() * 900)}`;
+      const newService = {
+        id: serviceId,
+        name: fullName,
+        type: formData.type === 'workshop' ? 'workshop' : 'oil change',
+        location: 'Sector 5, Telemetry Zone',
+        status: 'Active',
+        rating: 'New',
+        contact: formData.phone || '—'
+      };
+      localStorage.setItem('services_data', JSON.stringify([newService, ...existingServices]));
+    }
+
     // Save and redirect
     registrations.unshift(newRecord);
     localStorage.setItem('registrations', JSON.stringify(registrations));
@@ -99,11 +163,9 @@ export const Registration = () => {
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   options={[
-                    { label: 'Commercial Driver', value: 'Commercial Driver' },
-                    { label: 'Independent Driver', value: 'Independent Driver' },
-                    { label: 'Repair Station', value: 'Repair Station' },
-                    { label: 'Oil Change Center', value: 'Oil Change Center' },
-                    { label: 'Fleet Manager', value: 'Fleet Manager' },
+                    { label: 'Commercial Driver', value: 'driver' },
+                    { label: 'Repair Workshop', value: 'workshop' },
+                    { label: 'Oil Change Center', value: 'oil' }
                   ]}
                 />
               </div>
@@ -155,7 +217,7 @@ export const Registration = () => {
                   <label>Plate Number</label>
                   <Input 
                     placeholder="e.g. ABC-1234" 
-                    leftIcon={Truck} 
+                    leftIcon={Car} 
                     value={formData.plateNumber}
                     onChange={(e) => setFormData({...formData, plateNumber: e.target.value})}
                   />
@@ -176,8 +238,7 @@ export const Registration = () => {
                 </label>
               </div>
             )}
-
-            {isDriver && (
+            {isDriver && payRequired && (
               <div className="form-row">
                 <div className="form-group">
                   <label>Subscription Plan</label>
@@ -189,6 +250,48 @@ export const Registration = () => {
                       value: plan.id
                     }))}
                   />
+                </div>
+              </div>
+            )}
+
+            {!payRequired && (
+              <div className="form-row">
+                <div className="form-group" style={{ margin: '10px 0' }}>
+                  <div style={{
+                    padding: '14px 18px',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid #10b981',
+                    borderRadius: 'var(--radius-md)',
+                    color: '#10b981',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>✨ Registration is <strong>FREE</strong> for this category (Payment requirement disabled by Admin).</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {payRequired && !isDriver && (
+              <div className="form-row">
+                <div className="form-group" style={{ margin: '10px 0' }}>
+                  <div style={{
+                    padding: '14px 18px',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    border: '1px solid #3b82f6',
+                    borderRadius: 'var(--radius-md)',
+                    color: '#3b82f6',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>💳 A flat registration fee of <strong>{formData.type === 'workshop' ? '$149.00' : formData.type === 'oil' ? '$199.00' : '$9.99'}</strong> will be charged.</span>
+                  </div>
                 </div>
               </div>
             )}

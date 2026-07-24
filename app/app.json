@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "Driver Life Tracking System",
+    "name": "User Life Tracking System",
     "slug": "driver-life-tracking-system-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kiaan.driverlifetracking"
+      "bundleIdentifier": "com.kiaan.userlifetracking"
     },
     "android": {
       "backgroundColor": "#0F172A",
-      "package": "com.kiaan.driverlifetracking",
+      "package": "com.kiaan.userlifetracking",
       "versionCode": 1,
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -21,13 +21,13 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
-    "scheme": "driver-life-app",
+    "scheme": "user-life-app",
     "plugins": [
       "expo-router",
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Driver Life to use your location for live tracking on map."
+          "locationAlwaysAndWhenInUsePermission": "Allow User Life to use your location for live tracking on map."
         }
       ]
     ],

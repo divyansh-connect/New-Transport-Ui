@@ -55,6 +55,9 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: SPACING.md,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   card: {
     marginBottom: SPACING.md,

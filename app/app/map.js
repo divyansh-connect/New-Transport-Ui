@@ -78,14 +78,14 @@ export default function MapScreen() {
     },
     {
       id: 4,
-      title: 'Active Heavy Truck (Volvo FH16)',
-      description: 'Available for Goods & Freight Transport. Capacity: 25 Tons.',
+      title: 'Active Sedan (Toyota Camry)',
+      description: 'Available for Passenger Transport & City Rides.',
       lat: userLocation.latitude + 0.020,
       lng: userLocation.longitude - 0.010,
       type: 'location',
-      icon: 'truck',
+      icon: 'car',
       contact: '+966 51 654 3210',
-      address: 'Northern Ring Road Freight Hub',
+      address: 'Northern Ring Road Service Hub',
     },
     {
       id: 5,
@@ -260,7 +260,7 @@ export default function MapScreen() {
       {/* Top Header Bar */}
       <View style={[styles.topBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }, isRTL && { flexDirection: 'row-reverse' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Icon name="truck" size={20} color={theme.primary} />
+          <Icon name="car" size={20} color={theme.primary} />
           <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>{t.mapTitle}</Text>
         </View>
 
@@ -374,7 +374,7 @@ export default function MapScreen() {
             <View style={[styles.modalHeader, isRTL && { flexDirection: 'row-reverse' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <View style={[styles.modalIconBox, { backgroundColor: theme.surface }]}>
-                  <Icon name={selectedService?.icon || 'truck'} size={20} color={theme.primary} />
+                  <Icon name={selectedService?.icon || 'car'} size={20} color={theme.primary} />
                 </View>
                 <View>
                   <Text style={[styles.modalTitle, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{selectedService?.title}</Text>
@@ -445,9 +445,9 @@ export default function MapScreen() {
                       );
                     }}
                   >
-                    <Icon name="truck" size={16} color="#FFF" />
+                    <Icon name="car" size={16} color="#FFF" />
                     <Text style={styles.modalActionText}>
-                      {isArabic ? 'تأكيد طلب الشاحنة / الحجز' : isUrdu ? 'ابھی گاڑی / بکنگ کی درخواست کریں' : 'Request Truck / Hire Now'}
+                      {isArabic ? 'تأكيد طلب السيارة / الحجز' : isUrdu ? 'ابھی گاڑی / بکنگ کی درخواست کریں' : 'Request Car / Hire Now'}
                     </Text>
                   </TouchableOpacity>
                 )}

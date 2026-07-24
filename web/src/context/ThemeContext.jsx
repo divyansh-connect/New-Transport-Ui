@@ -49,11 +49,23 @@ export const ThemeProvider = ({ children }) => {
       delete parsed.fee1Month;
       delete parsed.fee6Months;
       delete parsed.fee1Year;
+      if (!parsed.paymentRequiredFor) {
+        parsed.paymentRequiredFor = {
+          driver: true,
+          workshop: false,
+          visitor: false
+        };
+      }
       return parsed;
     }
     return {
-      activeForEveryone: true, // If false, payment is bypassed or only for select roles
-      showVisitorServices: true // If true, visitors see available services as well, but are invisible themselves
+      activeForEveryone: false,
+      paymentRequiredFor: {
+        driver: true,
+        workshop: false,
+        visitor: false
+      },
+      showVisitorServices: true
     };
   });
 

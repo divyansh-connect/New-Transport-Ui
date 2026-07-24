@@ -8,6 +8,7 @@ import { Modal } from '../../components/common/Modal/Modal';
 import { Input, Select } from '../../components/common/Input/Input';
 import { Users, CreditCard, Clock, Wrench, RefreshCw, Plus, Download, Eye, Check, Search, Trash2, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { downloadExcel } from '../../utils/excelExport';
 import './Dashboard.css';
 
 export const Dashboard = () => {
@@ -97,15 +98,31 @@ export const Dashboard = () => {
   };
 
   const handleExport = () => {
-    const csvContent = "data:text/csv;charset=utf-8,Registration ID,Name,Category,Mobile No,Status,Date,Amount\n" + 
-      filteredRegistrations.map(e => `${e.id},${e.name},${e.type},${e.phone || ''},${e.status},${e.date},${e.amount}`).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "registrations_report.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const headers = ["Registration ID", "Name", "Category", "Mobile Number", "Status", "Date", "Amount"];
+    const rows = filteredRegistrations.map(e => [
+      e.id,
+      e.name,
+      e.type,
+      e.phone || '',
+      e.status,
+      e.date,
+      e.amount
+    ]);
+    downloadExcel(headers, rows, "Registrations", "registrations_report.xls");
+  };
+
+  const handleExportSingle = (record) => {
+    const headers = ["Registration ID", "Name", "Category", "Mobile Number", "Status", "Date", "Amount"];
+    const rows = [[
+      record.id,
+      record.name,
+      record.type,
+      record.phone || '',
+      record.status,
+      record.date,
+      record.amount
+    ]];
+    downloadExcel(headers, rows, "Registration Details", `registration_${record.id}.xls`);
   };
 
   const handleNewRegistration = () => {
@@ -202,8 +219,8 @@ export const Dashboard = () => {
             pageSize: 5,
             totalPages: 1,
             totalItems: filteredRegistrations.length,
-            onPrev: () => {},
-            onNext: () => {},
+            onPrev: () => { },
+            onNext: () => { },
           }}
           renderRow={(row) => (
             <tr key={row.id}>
@@ -230,6 +247,14 @@ export const Dashboard = () => {
                     size="sm"
                     leftIcon={Eye}
                     onClick={() => handleOpenModal(row)}
+                  >
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={Download}
+                    onClick={() => handleExportSingle(row)}
+                    title="Export Single Record"
                   >
                   </Button>
                   <Button
@@ -264,56 +289,65 @@ export const Dashboard = () => {
         secondaryActionLabel="Close"
       >
         {selectedRecord && !isEditMode && (
-          <div className="modal-record-details">
-            <div className="detail-row">
-              <span className="detail-label">Entity Name:</span>
-              <strong className="detail-value">{selectedRecord.name}</strong>
+          <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Entity Name</span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.name}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Category</span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.type}</div>
+              </div>
             </div>
-            <div className="detail-row">
-              <span className="detail-label">Category:</span>
-              <span className="detail-value">{selectedRecord.type}</span>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Mobile Number</span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.phone || '—'}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Submission Date</span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.date}</div>
+              </div>
             </div>
-            <div className="detail-row">
-              <span className="detail-label">Mobile No:</span>
-              <span className="detail-value">{selectedRecord.phone || '—'}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Status:</span>
-              <Badge variant={selectedRecord.status === 'Approved' ? 'success' : selectedRecord.status === 'Expired' ? 'danger' : 'warning'}>
-                {selectedRecord.status}
-              </Badge>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Submission Date:</span>
-              <span className="detail-value">{selectedRecord.date}</span>
-            </div>
-            <div className="detail-row">
-              <span className="detail-label">Payment Amount:</span>
-              <strong className="detail-value text-success">{selectedRecord.amount}</strong>
+
+            <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '16px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed var(--color-border)' }}>
+                <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--color-text-main)' }}>Registration Receipt</span>
+                <Badge variant={selectedRecord.status === 'Approved' ? 'success' : selectedRecord.status === 'Expired' ? 'danger' : 'warning'}>
+                  {selectedRecord.status}
+                </Badge>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--color-text-main)' }}>Registration Amount Paid</span>
+                <strong style={{ fontSize: '18px', color: 'var(--color-success)', fontWeight: '800' }}>{selectedRecord.amount}</strong>
+              </div>
             </div>
           </div>
         )}
         {selectedRecord && isEditMode && (
           <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Input 
-              label="Entity Name" 
-              value={editFormData.name} 
-              onChange={e => setEditFormData({...editFormData, name: e.target.value})} 
+            <Input
+              label="Entity Name"
+              value={editFormData.name}
+              onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
             />
-            <Input 
-              label="Category" 
-              value={editFormData.type} 
-              onChange={e => setEditFormData({...editFormData, type: e.target.value})} 
+            <Input
+              label="Category"
+              value={editFormData.type}
+              onChange={e => setEditFormData({ ...editFormData, type: e.target.value })}
             />
-            <Input 
-              label="Amount" 
-              value={editFormData.amount} 
-              onChange={e => setEditFormData({...editFormData, amount: e.target.value})} 
+            <Input
+              label="Amount"
+              value={editFormData.amount}
+              onChange={e => setEditFormData({ ...editFormData, amount: e.target.value })}
             />
-            <Select 
-              label="Status" 
-              value={editFormData.status} 
-              onChange={e => setEditFormData({...editFormData, status: e.target.value})} 
+            <Select
+              label="Status"
+              value={editFormData.status}
+              onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}
               options={[
                 { label: 'Pending', value: 'Pending' },
                 { label: 'Approved', value: 'Approved' },

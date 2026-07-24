@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const DriverContext = createContext();
 
@@ -165,9 +165,20 @@ const initialNotifications = [
 ];
 
 export const DriverProvider = ({ children }) => {
-  const [drivers, setDrivers] = useState(initialDrivers);
+  const [drivers, setDrivers] = useState(() => {
+    const saved = localStorage.getItem('drivers_data');
+    return saved ? JSON.parse(saved) : initialDrivers;
+  });
   const [payments, setPayments] = useState(initialPayments);
   const [notifications, setNotifications] = useState(initialNotifications);
+
+  useEffect(() => {
+    localStorage.setItem('drivers_data', JSON.stringify(drivers));
+  }, [drivers]);
+
+  const registerDriver = (newDriver) => {
+    setDrivers((prev) => [newDriver, ...prev]);
+  };
 
   const approveDriver = (id) => {
     setDrivers((prev) =>
@@ -311,7 +322,8 @@ export const DriverProvider = ({ children }) => {
         markNotificationAsRead,
         clearAllNotifications,
         deletePayment,
-        updatePayment
+        updatePayment,
+        registerDriver
       }}
     >
       {children}

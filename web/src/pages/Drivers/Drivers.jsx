@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDrivers } from '../../context/DriverContext';
 import { Card } from '../../components/common/Cards/Card';
 import { Table } from '../../components/common/Tables/Table';
+import { Button } from '../../components/common/Button/Button';
 import {
   Users,
   CheckCircle,
@@ -21,7 +22,9 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
+  Download,
 } from 'lucide-react';
+import { downloadExcel } from '../../utils/excelExport';
 import './Drivers.css';
 
 export const Drivers = () => {
@@ -67,6 +70,43 @@ export const Drivers = () => {
     setSearchQuery('');
     setCityFilter('');
     setVehicleFilter('');
+  };
+
+  const handleExport = () => {
+    const listToExport = getFilteredDrivers();
+    const headers = ["Driver ID", "Name", "Email", "Mobile Number", "City", "Vehicle Type", "Vehicle Model", "Plate Number", "Experience", "Status", "Registration Date"];
+    const rows = listToExport.map(e => [
+      e.id,
+      e.name,
+      e.email,
+      e.phone,
+      e.city || '',
+      e.vehicleType,
+      e.vehicleModel,
+      e.plateNumber,
+      e.experienceYears,
+      e.status,
+      e.registrationDate
+    ]);
+    downloadExcel(headers, rows, "Drivers Report", "drivers_report.xls");
+  };
+
+  const handleExportSingle = (driver) => {
+    const headers = ["Driver ID", "Name", "Email", "Mobile Number", "City", "Vehicle Type", "Vehicle Model", "Plate Number", "Experience", "Status", "Registration Date"];
+    const rows = [[
+      driver.id,
+      driver.name,
+      driver.email,
+      driver.phone,
+      driver.city || '',
+      driver.vehicleType,
+      driver.vehicleModel,
+      driver.plateNumber,
+      driver.experienceYears,
+      driver.status,
+      driver.registrationDate
+    ]];
+    downloadExcel(headers, rows, "Driver Details", `driver_${driver.id}.xls`);
   };
 
   // Filter and Search logic
@@ -169,9 +209,14 @@ export const Drivers = () => {
   return (
     <div className="page-container drivers-workspace">
       {/* Workspace Header */}
-      <div className="page-header">
-        <h1>Driver Management Center</h1>
-        <p>Manage commercial registrations, audit documentation quality, and dispatch approvals.</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>Driver Management Center</h1>
+          <p>Manage commercial registrations, audit documentation quality, and dispatch approvals.</p>
+        </div>
+        <div>
+          <Button variant="secondary" leftIcon={Download} onClick={handleExport}>Export Drivers</Button>
+        </div>
       </div>
 
       {/* Stats Summary Strip */}
@@ -251,14 +296,14 @@ export const Drivers = () => {
           activeTab === 'requests'
             ? 'Driver Registrations Inbox'
             : activeTab === 'pending'
-            ? 'Pending Approvals Workspace'
-            : activeTab === 'approved'
-            ? 'Approved Active Fleet'
-            : activeTab === 'rejected'
-            ? 'Archived Rejections'
-            : activeTab === 'payments'
-            ? 'Driver Registration Payments'
-            : 'Driver Notifications History'
+              ? 'Pending Approvals Workspace'
+              : activeTab === 'approved'
+                ? 'Approved Active Fleet'
+                : activeTab === 'rejected'
+                  ? 'Archived Rejections'
+                  : activeTab === 'payments'
+                    ? 'Driver Registration Payments'
+                    : 'Driver Notifications History'
         }
       >
         {/* Render Driver lists / Payment list / Notifications */}
@@ -710,13 +755,12 @@ export const Drivers = () => {
                           </div>
                         </div>
                         <span
-                          className={`document-status ${
-                            doc.status === 'Verified' || doc.status === 'Passed'
+                          className={`document-status ${doc.status === 'Verified' || doc.status === 'Passed'
                               ? 'verified'
                               : doc.status === 'Pending Verification' || doc.status === 'Pending'
-                              ? 'pending'
-                              : 'failed'
-                          }`}
+                                ? 'pending'
+                                : 'failed'
+                            }`}
                         >
                           {doc.status}
                         </span>
