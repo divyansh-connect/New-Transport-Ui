@@ -91,7 +91,7 @@ export const Services = () => {
       ]);
       downloadExcel(headers, rows, "Approved Drivers", "approved_drivers.xls");
     } else {
-      const headers = ["Service ID", "Name", "Location", "Latitude", "Longitude", "Mobile / Contact Number", "Rating", "Status"];
+      const headers = ["Service ID", "Name", "Location", "Latitude", "Longitude", "Mobile / Contact Number", "Status"];
       const rows = filteredServices.map(e => [
         e.id,
         e.name,
@@ -99,7 +99,6 @@ export const Services = () => {
         e.latitude || '',
         e.longitude || '',
         e.contact,
-        e.rating,
         e.status
       ]);
       downloadExcel(headers, rows, `${activeTab === 'workshop' ? 'Workshops' : 'Oil Changes'}`, `${activeTab}_services.xls`);
@@ -118,7 +117,7 @@ export const Services = () => {
       ]];
       downloadExcel(headers, rows, "Driver Details", `driver_${record.id}.xls`);
     } else {
-      const headers = ["Service ID", "Name", "Location", "Latitude", "Longitude", "Mobile / Contact Number", "Rating", "Status"];
+      const headers = ["Service ID", "Name", "Location", "Latitude", "Longitude", "Mobile / Contact Number", "Status"];
       const rows = [[
         record.id,
         record.name,
@@ -126,7 +125,6 @@ export const Services = () => {
         record.latitude || '',
         record.longitude || '',
         record.contact,
-        record.rating,
         record.status
       ]];
       downloadExcel(headers, rows, "Service Details", `service_${record.id}.xls`);
@@ -248,7 +246,7 @@ export const Services = () => {
           className="table-scrollable"
           headers={activeTab === 'driver'
             ? ['Driver ID', 'Name & City', 'Mobile Number', 'Status', 'Actions']
-            : ['Service ID', 'Name & Location', 'GPS Coordinates', 'Mobile / Contact Number', 'Rating', 'Status', 'Actions']}
+            : ['Service ID', 'Name & Location', 'GPS Coordinates', 'Mobile / Contact Number', 'Status', 'Actions']}
           data={filteredServices}
           renderRow={(row) => {
             const isDriverTab = activeTab === 'driver';
@@ -269,9 +267,7 @@ export const Services = () => {
                   </td>
                 )}
                 <td>{isDriverTab ? row.phone : row.contact}</td>
-                {!isDriverTab && (
-                  <td>{row.rating !== '-' ? `⭐ ${row.rating}` : '-'}</td>
-                )}
+
                 <td>
                   <span className={`status-badge ${row.status.toLowerCase()}`}>
                     {row.status}

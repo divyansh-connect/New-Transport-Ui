@@ -53,6 +53,21 @@ export const downloadExcel = (headers, rows, sheetName, filename) => {
     ' <Worksheet ss:Name="' + (sheetName || 'Report') + '">\n' +
     '  <Table>\n';
 
+  // Add Column widths based on max content length
+  headers.forEach((h, colIndex) => {
+    let maxLength = h ? String(h).length : 0;
+    rows.forEach(r => {
+      const val = r[colIndex];
+      const displayVal = val === undefined || val === null ? '' : String(val);
+      if (displayVal.length > maxLength) {
+        maxLength = displayVal.length;
+      }
+    });
+    // Set width: 8.5 points per character, min width 100, max width 350 for sanity
+    const width = Math.min(350, Math.max(100, maxLength * 8.5 + 20));
+    xml += '  <Column ss:Width="' + width + '"/>\n';
+  });
+
   // Add Headers
   xml += '   <Row ss:Height="24">\n';
   headers.forEach(h => {
