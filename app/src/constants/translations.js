@@ -35,7 +35,7 @@ export const translations = {
     // Register Service List
     serviceListTitle: 'Service List Registration',
     selectServiceRole: 'Select Service / Role',
-    driverLifeTracking: 'User (Life Tracking)',
+    driverLifeTracking: 'Driver (Life Tracking)',
     workshopLocation: 'Workshop (Location only)',
     oilChangeLocation: 'Oil change (Location only)',
     carLocationOnly: 'Car Location (Location only)',
@@ -60,7 +60,7 @@ export const translations = {
 
     // Profile Screen
     profileTitle: 'Profile',
-    unregisteredVisitor: 'Unregistered Visitor',
+    unregisteredVisitor: 'Visitor / User',
     noProfileInfo: 'No Profile Information Available',
     notRegistered: 'Not Registered',
     registrationRequired: 'Registration Required',
@@ -137,7 +137,7 @@ export const translations = {
     // Register Service List
     serviceListTitle: 'تسجيل قائمة الخدمات',
     selectServiceRole: 'اختر الخدمة / الدور',
-    driverLifeTracking: 'مستخدم (تتبع مباشر)',
+    driverLifeTracking: 'سائق (تتبع مباشر)',
     workshopLocation: 'ورشة (الموقع فقط)',
     oilChangeLocation: 'تغيير الزيت (الموقع فقط)',
     carLocationOnly: 'موقع السيارة (الموقع فقط)',
@@ -162,7 +162,7 @@ export const translations = {
 
     // Profile Screen
     profileTitle: 'الملف الشخصي',
-    unregisteredVisitor: 'زائر غير مسجل',
+    unregisteredVisitor: 'زائر / مستخدم',
     noProfileInfo: 'لا تتوفر معلومات الملف الشخصي',
     notRegistered: 'غير مسجل',
     registrationRequired: 'التسجيل مطلوب',
@@ -238,7 +238,7 @@ export const translations = {
     // Register Service List
     serviceListTitle: 'سروس لسٹ رجسٹریشن',
     selectServiceRole: 'سروس / کردار منتخب کریں',
-    driverLifeTracking: 'صارف (لائیو ٹریکنگ)',
+    driverLifeTracking: 'ڈرائیور (لائیو ٹریکنگ)',
     workshopLocation: 'ورکشاپ (صرف مقام)',
     oilChangeLocation: 'آئل چینج (صرف مقام)',
     carLocationOnly: 'کار کا مقام (صرف مقام)',
@@ -263,7 +263,7 @@ export const translations = {
 
     // Profile Screen
     profileTitle: 'پروفائل',
-    unregisteredVisitor: 'غیر رجسٹرڈ وزیٹر',
+    unregisteredVisitor: 'وزیٹر / صارف',
     noProfileInfo: 'پروفائل کی معلومات دستیاب نہیں ہے',
     notRegistered: 'رجسٹرڈ نہیں ہے',
     registrationRequired: 'رجسٹریشن لازمی ہے',

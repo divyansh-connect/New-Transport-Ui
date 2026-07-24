@@ -137,7 +137,8 @@ export default function MapScreen() {
           width: 22px;
           height: 22px;
           z-index: 2;
-          filter: drop-shadow(0px 2.5px 3.5px rgba(0, 0, 0, 0.4));
+          filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.35));
+          transform: rotate(45deg); /* Tilted arrow like Google Maps */
         }
         @keyframes arrow-glow {
           0% {
@@ -150,19 +151,14 @@ export default function MapScreen() {
           }
         }
 
-        /* 2. Driver Icon (No Background) */
+        /* 2. Driver Icon (🚗 Emoji, No Background) */
         .driver-car-marker {
           width: 32px;
           height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
-        }
-        .driver-car-marker .svg-icon {
-          width: 28px;
-          height: 28px;
-          color: #2563eb;
-          filter: drop-shadow(0px 2.5px 3.5px rgba(0,0,0,0.45));
+          filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.35));
         }
 
         /* 3. Small POI Circles (Workshop & Oil) */
@@ -198,10 +194,10 @@ export default function MapScreen() {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1. Own Live GPS Pin - Google Maps style Bold Arrow Icon with Pulse
+        // 1. Own Live GPS Pin - Google Maps style Tilted Arrow with blue border and Pulse
         var ownIcon = L.divIcon({
           className: '',
-          html: '<div class="own-arrow-container"><div class="own-arrow-pulse"></div><svg class="arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2563EB" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M12 2L2 22l10-8 10 8z"/></svg></div>',
+          html: '<div class="own-arrow-container"><div class="own-arrow-pulse"></div><svg class="arrow-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2563EB" stroke="#3B82F6" stroke-width="2.5"><path d="M12 2L2 22l10-6 10 6z"/></svg></div>',
           iconSize: [24, 24],
           iconAnchor: [12, 12]
         });
@@ -219,7 +215,7 @@ export default function MapScreen() {
         });
 
         // 2. SVG Icons definitions
-        var carSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" stroke="#FFFFFF" stroke-width="20" stroke-linejoin="round" class="svg-icon"><path d="M499.99 176h-59.87l-16.64-41.6C406.38 91.63 365.57 64 319.5 64h-127c-46.06 0-86.88 27.63-103.99 70.4L71.87 176H12.01C4.2 176-1.53 183.34.37 190.91l6 24C7.7 220.25 12.5 224 18.01 224h20.07C24.65 235.73 16 252.78 16 272v48c0 16.12 6.16 30.67 16 41.93V416c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-32h256v32c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-54.07c9.84-11.26 16-25.81 16-41.93v-48c0-19.22-8.65-36.27-22.08-48H494c5.51 0 10.31-3.75 11.64-8.91l6-24c1.9-7.57-3.83-15.09-11.65-15.09zM192 368c-26.51 0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48zm192 0c-26.51 0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48z"/></svg>';
+        var carSvg = '🚗';
         var wrenchSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
         var oilSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/></svg>';
 
@@ -242,7 +238,7 @@ export default function MapScreen() {
             if (cfg.isPOI) {
               htmlContent = '<div class="poi-circle">' + cfg.icon + '</div>';
             } else {
-              htmlContent = '<div class="driver-car-marker">' + cfg.icon + '</div>';
+              htmlContent = '<div class="driver-car-marker" style="font-size: 24px; line-height: 32px; text-align: center;">' + cfg.icon + '</div>';
               anchor = [16, 16];
               size = [32, 32];
             }

@@ -26,7 +26,6 @@ export default function RegisterIndexScreen() {
     { title: t.driverLifeTracking, type: 'Driver' },
     { title: t.workshopLocation, type: 'Workshop' },
     { title: t.oilChangeLocation, type: 'Oil Change' },
-    { title: t.carLocationOnly, type: 'Car Location' },
   ];
 
   const handleSelectType = (type) => {
