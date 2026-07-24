@@ -4,7 +4,7 @@ import { Card } from '../../components/common/Cards/Card';
 import { Button } from '../../components/common/Button/Button';
 import { Input, Select } from '../../components/common/Input/Input';
 import { Modal } from '../../components/common/Modal/Modal';
-import { User, UserPlus, Mail, Phone, MapPin, Truck, CheckSquare } from 'lucide-react';
+import { User, UserPlus, Mail, Phone, MapPin, Truck, CheckSquare, Car } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import './Registration.css';
 
@@ -80,11 +80,8 @@ export const Registration = () => {
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   options={[
                     { label: 'Commercial Driver', value: 'driver' },
-                    /*
-                    { label: 'System Admin', value: 'admin' },
                     { label: 'Repair Workshop', value: 'workshop' },
                     { label: 'Oil Change Center', value: 'oil' }
-                    */
                   ]}
                 />
               </div>
@@ -136,7 +133,7 @@ export const Registration = () => {
                   <label>Plate Number</label>
                   <Input 
                     placeholder="e.g. ABC-1234" 
-                    leftIcon={Truck} 
+                    leftIcon={Car} 
                     value={formData.plateNumber}
                     onChange={(e) => setFormData({...formData, plateNumber: e.target.value})}
                   />
