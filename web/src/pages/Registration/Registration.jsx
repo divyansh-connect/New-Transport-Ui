@@ -46,8 +46,8 @@ export const Registration = () => {
       setAlertMessage('Name / Entity Name is required.');
       return;
     }
-    if (isDriver && !formData.lastName.trim()) {
-      setAlertMessage('Last Name is required for Drivers.');
+    if ((isDriver || isVisitor) && !formData.lastName.trim()) {
+      setAlertMessage('Last Name is required.');
       return;
     }
     if (!formData.termsAccepted) {
@@ -188,9 +188,9 @@ export const Registration = () => {
                 />
               </div>
               <div className="form-group">
-                <label>{isDriver ? 'First Name' : 'Entity / Business Name'}</label>
+                <label>{(isDriver || isVisitor) ? 'First Name' : 'Entity / Business Name'}</label>
                 <Input 
-                  placeholder={isDriver ? 'First name' : 'Entity / Business name'} 
+                  placeholder={(isDriver || isVisitor) ? 'First name' : 'Entity / Business name'} 
                   leftIcon={User} 
                   value={formData.firstName}
                   onChange={(e) => setFormData({...formData, firstName: e.target.value})}
@@ -200,9 +200,9 @@ export const Registration = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>{isDriver ? 'Last Name' : 'Contact Person (Optional)'}</label>
+                <label>{(isDriver || isVisitor) ? 'Last Name' : 'Contact Person (Optional)'}</label>
                 <Input 
-                  placeholder={isDriver ? 'Last name' : 'Contact person name'} 
+                  placeholder={(isDriver || isVisitor) ? 'Last name' : 'Contact person name'} 
                   leftIcon={User} 
                   value={formData.lastName}
                   onChange={(e) => setFormData({...formData, lastName: e.target.value})}
@@ -230,7 +230,7 @@ export const Registration = () => {
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                 />
               </div>
-              {isDriver && (
+              {(isDriver || isVisitor) ? (
                 <div className="form-group">
                   <label>Plate Number</label>
                   <Input 
@@ -240,41 +240,38 @@ export const Registration = () => {
                     onChange={(e) => setFormData({...formData, plateNumber: e.target.value})}
                   />
                 </div>
+              ) : (
+                <div className="form-group">
+                  <label>Location Name / Zone</label>
+                  <Input 
+                    placeholder="e.g. Sector 5, Telemetry Zone" 
+                    leftIcon={MapPin} 
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  />
+                </div>
               )}
             </div>
 
-            {!isDriver && (
-              <>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Location Name / Zone</label>
-                    <Input 
-                      placeholder="e.g. Sector 5, Telemetry Zone" 
-                      leftIcon={MapPin} 
-                      value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
-                    />
-                  </div>
+            {!(isDriver || isVisitor) && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Latitude (e.g. 28.6250)</label>
+                  <Input 
+                    placeholder="28.6250" 
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({...formData, latitude: e.target.value})}
+                  />
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Latitude (e.g. 28.6250)</label>
-                    <Input 
-                      placeholder="28.6250" 
-                      value={formData.latitude}
-                      onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Longitude (e.g. 77.2180)</label>
-                    <Input 
-                      placeholder="77.2180" 
-                      value={formData.longitude}
-                      onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-                    />
-                  </div>
+                <div className="form-group">
+                  <label>Longitude (e.g. 77.2180)</label>
+                  <Input 
+                    placeholder="77.2180" 
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+                  />
                 </div>
-              </>
+              </div>
             )}
 
             {isDriver && (

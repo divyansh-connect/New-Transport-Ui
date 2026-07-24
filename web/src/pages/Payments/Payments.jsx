@@ -32,15 +32,17 @@ export const Payments = () => {
   const taxFormatted = `${currencySymbol}${taxVal.toFixed(2)}`;
 
   const handleExport = () => {
-    const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Amount", "Payment Gateway", "Status", "Date"];
+    const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Email Address", "Amount", "Payment Gateway", "Status", "Date"];
     const rows = payments.map(e => {
       const driverObj = drivers.find(d => d.id === e.driverId);
       const mobileNumber = driverObj ? driverObj.phone : '—';
+      const email = driverObj ? driverObj.email : '—';
       return [
         e.id,
         e.driverId,
         e.name,
         mobileNumber,
+        email,
         e.amount,
         e.gateway,
         e.status,
@@ -51,14 +53,16 @@ export const Payments = () => {
   };
 
   const handleExportSingle = (record) => {
-    const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Amount", "Payment Gateway", "Status", "Date"];
+    const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Email Address", "Amount", "Payment Gateway", "Status", "Date"];
     const driverObj = drivers.find(d => d.id === record.driverId);
     const mobileNumber = driverObj ? driverObj.phone : '—';
+    const email = driverObj ? driverObj.email : '—';
     const rows = [[
       record.id,
       record.driverId,
       record.name,
       mobileNumber,
+      email,
       record.amount,
       record.gateway,
       record.status,
@@ -106,27 +110,34 @@ export const Payments = () => {
       <Card title="Payment List">
         <Table
           className="table-scrollable"
-          headers={['Transaction ID', 'User ID', 'Payer Name', 'Amount', 'Payment Gateway', 'Status', 'Date', 'Actions']}
+          headers={['Transaction ID', 'User ID', 'Payer Name', 'Mobile Number', 'Email', 'Amount', 'Payment Gateway', 'Status', 'Date', 'Actions']}
           data={payments}
-          renderRow={(row) => (
-            <tr key={row.id}>
-              <td><code>{row.id}</code></td>
-              <td><code>{row.driverId}</code></td>
-              <td><strong>{row.name}</strong></td>
-              <td>{row.amount}</td>
-              <td>{row.gateway}</td>
-              <td><span className="status-badge approved">{row.status}</span></td>
-              <td>{row.date}</td>
-              <td>
-                <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
-                  <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleView(row)}></Button>
-                  <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)}></Button>
-                  <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEdit(row)}></Button>
-                  <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
-                </div>
-              </td>
-            </tr>
-          )}
+          renderRow={(row) => {
+            const driverObj = drivers.find(d => d.id === row.driverId);
+            const mobileNumber = driverObj ? driverObj.phone : '—';
+            const email = driverObj ? driverObj.email : '—';
+            return (
+              <tr key={row.id}>
+                <td><code>{row.id}</code></td>
+                <td><code>{row.driverId}</code></td>
+                <td><strong>{row.name}</strong></td>
+                <td>{mobileNumber}</td>
+                <td>{email}</td>
+                <td>{row.amount}</td>
+                <td>{row.gateway}</td>
+                <td><span className="status-badge approved">{row.status}</span></td>
+                <td>{row.date}</td>
+                <td>
+                  <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
+                    <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleView(row)}></Button>
+                    <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)}></Button>
+                    <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEdit(row)}></Button>
+                    <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
+                  </div>
+                </td>
+              </tr>
+            );
+          }}
         />
       </Card>
 

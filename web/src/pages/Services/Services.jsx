@@ -206,7 +206,7 @@ export const Services = () => {
           <h1>Registered Services</h1>
           <p>Manage workshop, oil change, and car location nodes visible on driver map telemetry.</p>
         </div>
-        {activeTab !== 'driver' && (
+        {activeTab !== 'driver' && activeTab !== 'visitor' && (
           <button className="btn-primary d-flex align-center gap-sm" onClick={handleAddClick}>
             <Plus size={18} /> Add Service
           </button>
