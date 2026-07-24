@@ -53,8 +53,11 @@ export const ThemeProvider = ({ children }) => {
         parsed.paymentRequiredFor = {
           driver: true,
           workshop: false,
-          visitor: false
+          visitor: false,
+          oilchange: false
         };
+      } else if (parsed.paymentRequiredFor.oilchange === undefined) {
+        parsed.paymentRequiredFor.oilchange = false;
       }
       return parsed;
     }
@@ -63,7 +66,8 @@ export const ThemeProvider = ({ children }) => {
       paymentRequiredFor: {
         driver: true,
         workshop: false,
-        visitor: false
+        visitor: false,
+        oilchange: false
       },
       showVisitorServices: true
     };

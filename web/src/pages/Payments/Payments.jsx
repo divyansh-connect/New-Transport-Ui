@@ -50,6 +50,23 @@ export const Payments = () => {
     downloadExcel(headers, rows, "Payments", "payments_report.xls");
   };
 
+  const handleExportSingle = (record) => {
+    const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Amount", "Payment Gateway", "Status", "Date"];
+    const driverObj = drivers.find(d => d.id === record.driverId);
+    const mobileNumber = driverObj ? driverObj.phone : '—';
+    const rows = [[
+      record.id,
+      record.driverId,
+      record.name,
+      mobileNumber,
+      record.amount,
+      record.gateway,
+      record.status,
+      record.date
+    ]];
+    downloadExcel(headers, rows, "Payment Details", `payment_${record.id}.xls`);
+  };
+
   const handleView = (record) => {
     setSelectedRecord(record);
     setIsEditMode(false);
@@ -103,6 +120,7 @@ export const Payments = () => {
               <td>
                 <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
                   <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleView(row)}></Button>
+                  <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)}></Button>
                   <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEdit(row)}></Button>
                   <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
                 </div>

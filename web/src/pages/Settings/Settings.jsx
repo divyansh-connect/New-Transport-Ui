@@ -70,7 +70,8 @@ export const Settings = () => {
     paymentRequiredFor: subscriptionConfig.paymentRequiredFor || {
       driver: true,
       workshop: false,
-      visitor: false
+      visitor: false,
+      oilchange: false
     },
     showVisitorServices: subscriptionConfig.showVisitorServices
   });
@@ -541,7 +542,7 @@ export const Settings = () => {
                         size="sm" 
                         onClick={() => setAccessToggles({
                           ...accessToggles,
-                          paymentRequiredFor: { driver: true, workshop: true, visitor: true }
+                          paymentRequiredFor: { driver: true, workshop: true, visitor: true, oilchange: true }
                         })}
                       >
                         Enable for Everyone
@@ -552,7 +553,7 @@ export const Settings = () => {
                         size="sm" 
                         onClick={() => setAccessToggles({
                           ...accessToggles,
-                          paymentRequiredFor: { driver: false, workshop: false, visitor: false }
+                          paymentRequiredFor: { driver: false, workshop: false, visitor: false, oilchange: false }
                         })}
                       >
                         Disable for Everyone
@@ -605,6 +606,22 @@ export const Settings = () => {
                         />
                         <label htmlFor="pay-visitor" style={{ fontSize: '14px', color: 'var(--color-text-main)', cursor: 'pointer' }}>
                           Enable payment only for <strong>Visitors</strong>
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <input 
+                          type="checkbox"
+                          id="pay-oilchange"
+                          checked={!!accessToggles.paymentRequiredFor?.oilchange}
+                          onChange={(e) => setAccessToggles({
+                            ...accessToggles,
+                            paymentRequiredFor: { ...accessToggles.paymentRequiredFor, oilchange: e.target.checked }
+                          })}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="pay-oilchange" style={{ fontSize: '14px', color: 'var(--color-text-main)', cursor: 'pointer' }}>
+                          Enable payment only for <strong>Oil Changes</strong>
                         </label>
                       </div>
                     </div>

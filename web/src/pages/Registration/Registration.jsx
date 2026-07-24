@@ -21,6 +21,9 @@ export const Registration = () => {
     email: '',
     phone: '',
     plateNumber: '',
+    location: '',
+    latitude: '28.6250',
+    longitude: '77.2180',
     trackingEnabled: true,
     termsAccepted: false,
     selectedPlanId: subscriptionPlans?.[0]?.id || ''
@@ -30,10 +33,11 @@ export const Registration = () => {
   const isWorkshop = formData.type === 'workshop' || formData.type === 'oil';
   const isVisitor = formData.type === 'visitor';
 
-  const config = subscriptionConfig?.paymentRequiredFor || { driver: true, workshop: false, visitor: false };
+  const config = subscriptionConfig?.paymentRequiredFor || { driver: true, workshop: false, visitor: false, oilchange: false };
   const payRequired = 
     (formData.type === 'driver' && config.driver) ||
-    ((formData.type === 'workshop' || formData.type === 'oil') && config.workshop) ||
+    (formData.type === 'workshop' && config.workshop) ||
+    (formData.type === 'oil' && config.oilchange) ||
     (formData.type === 'visitor' && config.visitor);
 
   const handleSubmit = (e) => {
@@ -123,19 +127,32 @@ export const Registration = () => {
         rejectionReason: ''
       };
       registerDriver(newDriver);
-    } else if (formData.type === 'workshop' || formData.type === 'oil') {
+    } else if (formData.type === 'workshop' || formData.type === 'oil' || formData.type === 'visitor') {
       const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
-      const serviceId = formData.type === 'workshop' 
-        ? `WS-${Math.floor(100 + Math.random() * 900)}` 
-        : `OC-${Math.floor(100 + Math.random() * 900)}`;
+      let serviceId;
+      let typeName;
+      if (formData.type === 'workshop') {
+        serviceId = `WS-${Math.floor(100 + Math.random() * 900)}`;
+        typeName = 'workshop';
+      } else if (formData.type === 'oil') {
+        serviceId = `OC-${Math.floor(100 + Math.random() * 900)}`;
+        typeName = 'oil change';
+      } else {
+        serviceId = `VIS-${Math.floor(100 + Math.random() * 900)}`;
+        typeName = 'visitor';
+      }
       const newService = {
         id: serviceId,
         name: fullName,
-        type: formData.type === 'workshop' ? 'workshop' : 'oil change',
-        location: 'Sector 5, Telemetry Zone',
+        type: typeName,
+        location: formData.location || 'Sector 5, Telemetry Zone',
+        latitude: formData.latitude || '28.6250',
+        longitude: formData.longitude || '77.2180',
         status: 'Active',
         rating: 'New',
-        contact: formData.phone || '—'
+        contact: formData.phone || '—',
+        email: formData.email || '—',
+        amount: planPrice
       };
       localStorage.setItem('services_data', JSON.stringify([newService, ...existingServices]));
     }
@@ -165,7 +182,8 @@ export const Registration = () => {
                   options={[
                     { label: 'Commercial Driver', value: 'driver' },
                     { label: 'Repair Workshop', value: 'workshop' },
-                    { label: 'Oil Change Center', value: 'oil' }
+                    { label: 'Oil Change Center', value: 'oil' },
+                    { label: 'Visitor', value: 'visitor' }
                   ]}
                 />
               </div>
@@ -224,6 +242,40 @@ export const Registration = () => {
                 </div>
               )}
             </div>
+
+            {!isDriver && (
+              <>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Location Name / Zone</label>
+                    <Input 
+                      placeholder="e.g. Sector 5, Telemetry Zone" 
+                      leftIcon={MapPin} 
+                      value={formData.location}
+                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Latitude (e.g. 28.6250)</label>
+                    <Input 
+                      placeholder="28.6250" 
+                      value={formData.latitude}
+                      onChange={(e) => setFormData({...formData, latitude: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Longitude (e.g. 77.2180)</label>
+                    <Input 
+                      placeholder="77.2180" 
+                      value={formData.longitude}
+                      onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
 
             {isDriver && (
               <div className="form-checkbox">
