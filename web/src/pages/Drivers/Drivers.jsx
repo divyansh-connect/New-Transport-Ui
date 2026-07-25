@@ -339,7 +339,11 @@ export const Drivers = () => {
                   className="filter-select"
                   value={categoryFilter}
                   onChange={(e) => {
-                    setCategoryFilter(e.target.value);
+                    const selectedVal = e.target.value;
+                    setCategoryFilter(selectedVal);
+                    if (selectedVal !== 'driver') {
+                      setVehicleFilter('');
+                    }
                     setCurrentPage(1);
                   }}
                 >
@@ -350,21 +354,23 @@ export const Drivers = () => {
                   <option value="visitor">Visitors</option>
                 </select>
 
-                <select
-                  className="filter-select"
-                  value={vehicleFilter}
-                  onChange={(e) => {
-                    setVehicleFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="">All Vehicle Types</option>
-                  {vehicleTypes.map((vt) => (
-                    <option key={vt} value={vt}>
-                      {vt}
-                    </option>
-                  ))}
-                </select>
+                {categoryFilter === 'driver' && (
+                  <select
+                    className="filter-select"
+                    value={vehicleFilter}
+                    onChange={(e) => {
+                      setVehicleFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value="">All Vehicle Types</option>
+                    {vehicleTypes.map((vt) => (
+                      <option key={vt} value={vt}>
+                        {vt}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
