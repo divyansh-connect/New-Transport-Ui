@@ -42,6 +42,16 @@ export const Contact = () => {
 
   const [inquiries, setInquiries] = React.useState([]);
 
+  const defaultContactInfo = {
+    emergency1: '+1 (800) 555-0199',
+    emergency2: '+1 (800) 555-0200',
+    whatsapp: '+1 (800) 555-0199',
+    partner: 'partners@herologistics.com'
+  };
+
+  const [contactInfo, setContactInfo] = React.useState(defaultContactInfo);
+  const [isEditing, setIsEditing] = React.useState(false);
+
   React.useEffect(() => {
     const saved = localStorage.getItem('support_inquiries');
     if (saved) {
@@ -50,7 +60,21 @@ export const Contact = () => {
       setInquiries(initialInquiries);
       localStorage.setItem('support_inquiries', JSON.stringify(initialInquiries));
     }
+
+    const savedContact = localStorage.getItem('support_contact_info');
+    if (savedContact) {
+      try {
+        setContactInfo(JSON.parse(savedContact));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }, []);
+
+  const handleSaveContactInfo = () => {
+    localStorage.setItem('support_contact_info', JSON.stringify(contactInfo));
+    setIsEditing(false);
+  };
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,20 +109,90 @@ export const Contact = () => {
 
   return (
     <div className="page-container contact-page">
-      <div className="page-header">
-        <h1>Support & Contact Hub</h1>
-        <p>Manage driver and partner support channels and incoming inquiries.</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>Support & Contact Hub</h1>
+          <p>Manage driver and partner support channels and incoming inquiries.</p>
+        </div>
+        <button
+          onClick={() => {
+            if (isEditing) {
+              handleSaveContactInfo();
+            } else {
+              setIsEditing(true);
+            }
+          }}
+          className="btn-primary"
+          style={{
+            padding: '8px 16px',
+            borderRadius: 'var(--radius-md)',
+            cursor: 'pointer',
+            fontWeight: '600',
+            border: 'none',
+            backgroundColor: isEditing ? 'var(--color-success, #10b981)' : 'var(--color-primary, #2563eb)',
+            color: '#fff'
+          }}
+        >
+          {isEditing ? 'Save Changes' : 'Edit Contact Info'}
+        </button>
       </div>
 
-      <div className="contact-cards-grid">
+      <div className="contact-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <div className="contact-card">
           <div className="icon-wrapper primary">
             <Phone size={24} />
           </div>
-          <div className="contact-details">
-            <h3>Emergency Hotline</h3>
-            <p>24/7 Support for Drivers</p>
-            <span className="contact-value">+1 (800) 555-0199</span>
+          <div className="contact-details" style={{ width: '100%' }}>
+            <h3>Emergency Hotline 1</h3>
+            <p>Primary Support for Drivers</p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={contactInfo.emergency1}
+                onChange={(e) => setContactInfo({ ...contactInfo, emergency1: e.target.value })}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 'var(--radius-sm, 4px)',
+                  border: '1px solid var(--color-border, #ccc)',
+                  backgroundColor: 'var(--color-input-bg, #1e293b)',
+                  color: 'var(--color-text-main, #fff)',
+                  fontSize: '14px',
+                  width: '100%',
+                  marginTop: '4px'
+                }}
+              />
+            ) : (
+              <span className="contact-value">{contactInfo.emergency1}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="contact-card">
+          <div className="icon-wrapper primary">
+            <Phone size={24} />
+          </div>
+          <div className="contact-details" style={{ width: '100%' }}>
+            <h3>Emergency Hotline 2</h3>
+            <p>Secondary Support for Drivers</p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={contactInfo.emergency2}
+                onChange={(e) => setContactInfo({ ...contactInfo, emergency2: e.target.value })}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 'var(--radius-sm, 4px)',
+                  border: '1px solid var(--color-border, #ccc)',
+                  backgroundColor: 'var(--color-input-bg, #1e293b)',
+                  color: 'var(--color-text-main, #fff)',
+                  fontSize: '14px',
+                  width: '100%',
+                  marginTop: '4px'
+                }}
+              />
+            ) : (
+              <span className="contact-value">{contactInfo.emergency2}</span>
+            )}
           </div>
         </div>
 
@@ -106,10 +200,28 @@ export const Contact = () => {
           <div className="icon-wrapper success">
             <MessageSquare size={24} />
           </div>
-          <div className="contact-details">
+          <div className="contact-details" style={{ width: '100%' }}>
             <h3>WhatsApp Dispatch</h3>
             <p>Quick chat & document upload</p>
-            <span className="contact-value">+1 (800) 555-0199</span>
+            {isEditing ? (
+              <input
+                type="text"
+                value={contactInfo.whatsapp}
+                onChange={(e) => setContactInfo({ ...contactInfo, whatsapp: e.target.value })}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 'var(--radius-sm, 4px)',
+                  border: '1px solid var(--color-border, #ccc)',
+                  backgroundColor: 'var(--color-input-bg, #1e293b)',
+                  color: 'var(--color-text-main, #fff)',
+                  fontSize: '14px',
+                  width: '100%',
+                  marginTop: '4px'
+                }}
+              />
+            ) : (
+              <span className="contact-value">{contactInfo.whatsapp}</span>
+            )}
           </div>
         </div>
 
@@ -117,10 +229,28 @@ export const Contact = () => {
           <div className="icon-wrapper warning">
             <Mail size={24} />
           </div>
-          <div className="contact-details">
+          <div className="contact-details" style={{ width: '100%' }}>
             <h3>Partner Email Support</h3>
             <p>For workshops & corporate</p>
-            <span className="contact-value">partners@herologistics.com</span>
+            {isEditing ? (
+              <input
+                type="text"
+                value={contactInfo.partner}
+                onChange={(e) => setContactInfo({ ...contactInfo, partner: e.target.value })}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 'var(--radius-sm, 4px)',
+                  border: '1px solid var(--color-border, #ccc)',
+                  backgroundColor: 'var(--color-input-bg, #1e293b)',
+                  color: 'var(--color-text-main, #fff)',
+                  fontSize: '14px',
+                  width: '100%',
+                  marginTop: '4px'
+                }}
+              />
+            ) : (
+              <span className="contact-value">{contactInfo.partner}</span>
+            )}
           </div>
         </div>
       </div>
