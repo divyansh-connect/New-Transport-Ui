@@ -7,6 +7,12 @@ import { Modal } from '../../components/common/Modal/Modal';
 import { User, UserPlus, Mail, Phone, MapPin, Truck, CheckSquare, Car } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useDrivers } from '../../context/DriverContext';
+import { 
+  DriverRegistrationForm, 
+  WorkshopRegistrationForm, 
+  OilChangeRegistrationForm, 
+  VisitorRegistrationForm 
+} from '../../components/common/RegistrationForms';
 import './Registration.css';
 
 export const Registration = () => {
@@ -203,195 +209,54 @@ export const Registration = () => {
 
       <div className="registration-content">
         <Card title="Registration Form">
-          <form className="registration-form" onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Entity Category</label>
-                <Select
-                  value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  options={[
-                    { label: 'Commercial Driver', value: 'driver' },
-                    { label: 'Repair Workshop', value: 'workshop' },
-                    { label: 'Oil Change Center', value: 'oil' },
-                    { label: 'Visitor', value: 'visitor' }
-                  ]}
-                />
-              </div>
-              <div className="form-group">
-                <label>{(isDriver || isVisitor) ? 'First Name' : 'Entity / Business Name'}</label>
-                <Input 
-                  placeholder={(isDriver || isVisitor) ? 'First name' : 'Entity / Business name'} 
-                  leftIcon={User} 
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                />
-              </div>
-            </div>
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label style={{ fontSize: '14px', fontWeight: '600', display: 'block', marginBottom: '8px', color: 'var(--color-text-main)' }}>Entity Category</label>
+            <Select
+              value={formData.type}
+              onChange={(e) => setFormData({...formData, type: e.target.value})}
+              options={[
+                { label: 'Commercial Driver', value: 'driver' },
+                { label: 'Repair Workshop', value: 'workshop' },
+                { label: 'Oil Change Center', value: 'oil' },
+                { label: 'Visitor', value: 'visitor' }
+              ]}
+            />
+          </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>{(isDriver || isVisitor) ? 'Last Name' : 'Contact Person (Optional)'}</label>
-                <Input 
-                  placeholder={(isDriver || isVisitor) ? 'Last name' : 'Contact person name'} 
-                  leftIcon={User} 
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                />
-              </div>
-              <div className="form-group">
-                <label>Mobile Number</label>
-                <Input 
-                  placeholder="+1 (555) 000-0000" 
-                  leftIcon={Phone} 
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Email Address</label>
-                <Input 
-                  type="email" 
-                  placeholder="email@example.com" 
-                  leftIcon={Mail} 
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                />
-              </div>
-              {(isDriver || isVisitor) ? (
-                <div className="form-group">
-                  <label>Plate Number</label>
-                  <Input 
-                    placeholder="e.g. ABC-1234" 
-                    leftIcon={Car} 
-                    value={formData.plateNumber}
-                    onChange={(e) => setFormData({...formData, plateNumber: e.target.value})}
-                  />
-                </div>
-              ) : (
-                <div className="form-group">
-                  <label>Location Name / Zone</label>
-                  <Input 
-                    placeholder="e.g. Sector 5, Telemetry Zone" 
-                    leftIcon={MapPin} 
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  />
-                </div>
-              )}
-            </div>
-
-            {!(isDriver || isVisitor) && (
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Latitude (e.g. 28.6250)</label>
-                  <Input 
-                    placeholder="28.6250" 
-                    value={formData.latitude}
-                    onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Longitude (e.g. 77.2180)</label>
-                  <Input 
-                    placeholder="77.2180" 
-                    value={formData.longitude}
-                    onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-                  />
-                </div>
-              </div>
-            )}
-
-            {isDriver && (
-              <div className="form-checkbox">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={formData.trackingEnabled}
-                    onChange={(e) => setFormData({...formData, trackingEnabled: e.target.checked})}
-                    disabled
-                  />
-                  Tracking location always on for driver
-                </label>
-              </div>
-            )}
-            {isDriver && payRequired && (
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Subscription Plan</label>
-                  <Select
-                    value={formData.selectedPlanId || (subscriptionPlans?.[0]?.id || '')}
-                    onChange={(e) => setFormData({...formData, selectedPlanId: e.target.value})}
-                    options={subscriptionPlans.map(plan => ({
-                      label: `${plan.name} (${plan.duration}) - $${plan.price}`,
-                      value: plan.id
-                    }))}
-                  />
-                </div>
-              </div>
-            )}
-
-            {!payRequired && (
-              <div className="form-row">
-                <div className="form-group" style={{ margin: '10px 0' }}>
-                  <div style={{
-                    padding: '14px 18px',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    border: '1px solid #10b981',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#10b981',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <span>✨ Registration is <strong>FREE</strong> for this category (Payment requirement disabled by Admin).</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {payRequired && !isDriver && (
-              <div className="form-row">
-                <div className="form-group" style={{ margin: '10px 0' }}>
-                  <div style={{
-                    padding: '14px 18px',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    border: '1px solid #3b82f6',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#3b82f6',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <span>💳 A flat registration fee of <strong>{formData.type === 'workshop' ? '$149.00' : formData.type === 'oil' ? '$199.00' : '$9.99'}</strong> will be charged.</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="form-checkbox" style={{ marginTop: '8px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
-                <input 
-                  type="checkbox" 
-                  checked={formData.termsAccepted}
-                  onChange={(e) => setFormData({...formData, termsAccepted: e.target.checked})}
-                />
-                I accept the Terms and Conditions
-              </label>
-            </div>
-
-            <div className="form-actions mt-md">
-              <Button variant="secondary" type="button" onClick={() => window.history.back()}>Cancel</Button>
-              <Button variant="primary" type="submit">Next / Submit</Button>
-            </div>
-          </form>
+          {formData.type === 'driver' && (
+            <DriverRegistrationForm
+              formData={formData}
+              onChange={setFormData}
+              onSubmit={handleSubmit}
+              onCancel={() => window.history.back()}
+              subscriptionPlans={subscriptionPlans}
+              payRequired={payRequired}
+            />
+          )}
+          {formData.type === 'workshop' && (
+            <WorkshopRegistrationForm
+              formData={formData}
+              onChange={setFormData}
+              onSubmit={handleSubmit}
+              onCancel={() => window.history.back()}
+            />
+          )}
+          {formData.type === 'oil' && (
+            <OilChangeRegistrationForm
+              formData={formData}
+              onChange={setFormData}
+              onSubmit={handleSubmit}
+              onCancel={() => window.history.back()}
+            />
+          )}
+          {formData.type === 'visitor' && (
+            <VisitorRegistrationForm
+              formData={formData}
+              onChange={setFormData}
+              onSubmit={handleSubmit}
+              onCancel={() => window.history.back()}
+            />
+          )}
         </Card>
       </div>
 

@@ -285,61 +285,50 @@ export const Settings = () => {
                 title="Manage Dashboard Administrators"
                 subtitle="Add, configure roles, or revoke access for platform system admins."
               >
-                <form onSubmit={handleAddAdminSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
-                  {/* Row 1: Name and Email */}
-                  <div className="admin-form-row">
-                    <Input
-                      label="Name"
-                      value={newAdminForm.name}
-                      onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
-                      required
-                    />
-                    <Input
-                      label="Email"
-                      type="email"
-                      value={newAdminForm.email}
-                      onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
-                      required
-                    />
+                <form onSubmit={handleAddAdminSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' }}>
+                  <Input
+                    label="Name"
+                    value={newAdminForm.name}
+                    onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={newAdminForm.email}
+                    onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Phone"
+                    value={newAdminForm.phone}
+                    onChange={(e) => setNewAdminForm({ ...newAdminForm, phone: e.target.value })}
+                  />
+                  <Input
+                    label="Password"
+                    type="password"
+                    value={newAdminForm.password}
+                    onChange={(e) => setNewAdminForm({ ...newAdminForm, password: e.target.value })}
+                    required
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Role</label>
+                    <select
+                      value={newAdminForm.role}
+                      onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'var(--color-surface)',
+                        border: '1px solid var(--color-card-border)',
+                        color: 'var(--color-text-main)',
+                        height: '42px'
+                      }}
+                    >
+                      <option value="System Admin">System Admin</option>
+                    </select>
                   </div>
-
-                  {/* Row 2: Phone and Role */}
-                  <div className="admin-form-row">
-                    <Input
-                      label="Phone"
-                      value={newAdminForm.phone}
-                      onChange={(e) => setNewAdminForm({ ...newAdminForm, phone: e.target.value })}
-                    />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Role</label>
-                      <select
-                        value={newAdminForm.role}
-                        onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
-                        style={{
-                          padding: '10px 14px',
-                          borderRadius: 'var(--radius-md)',
-                          backgroundColor: 'var(--color-surface)',
-                          border: '1px solid var(--color-card-border)',
-                          color: 'var(--color-text-main)',
-                          height: '42px'
-                        }}
-                      >
-                        {/* <option value="Super Admin">Super Admin</option> */}
-                        <option value="System Admin">System Admin</option>
-                        {/* <option value="Billing Admin">Billing Admin</option> */}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Row 3: Password and Add Admin Button */}
-                  <div className="admin-form-row align-end">
-                    <Input
-                      label="Password"
-                      type="password"
-                      value={newAdminForm.password}
-                      onChange={(e) => setNewAdminForm({ ...newAdminForm, password: e.target.value })}
-                      required
-                    />
+                  <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
                     <Button type="submit" variant="primary" leftIcon={Plus} isLoading={isSaving} disabled={isSaving} style={{ height: '42px', width: '100%', justifyContent: 'center' }}>Add Admin</Button>
                   </div>
                 </form>
@@ -351,6 +340,7 @@ export const Settings = () => {
                         <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>ID</th>
                         <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Name</th>
                         <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Email</th>
+                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Phone</th>
                         <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Role</th>
                         <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Actions</th>
                       </tr>
@@ -361,6 +351,7 @@ export const Settings = () => {
                           <td style={{ padding: '12px' }}><code>{adm.id}</code></td>
                           <td style={{ padding: '12px', fontWeight: '600' }}>{adm.name}</td>
                           <td style={{ padding: '12px' }}>{adm.email}</td>
+                          <td style={{ padding: '12px' }}>{adm.phone || '—'}</td>
                           <td style={{ padding: '12px' }}><Badge variant="primary">{adm.role}</Badge></td>
                           <td style={{ padding: '12px' }}>
                             <button
