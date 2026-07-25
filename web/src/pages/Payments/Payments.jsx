@@ -9,11 +9,11 @@ import { Download, Eye, Edit2, Trash2 } from 'lucide-react';
 import { downloadExcel } from '../../utils/excelExport';
 
 export const Payments = () => {
-  const { payments, drivers, deletePayment, updatePayment } = useDrivers();
+  const { payments, drivers, deletePayment, updatePayment, updateDriverProfile } = useDrivers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [editFormData, setEditFormData] = useState({ name: '', amount: '', gateway: '', status: '' });
+  const [editFormData, setEditFormData] = useState({ name: '', amount: '', gateway: '', status: '', driverId: '', phone: '', email: '' });
 
   const getNumericAmount = (amtStr) => {
     if (!amtStr) return 0;
@@ -32,6 +32,19 @@ export const Payments = () => {
   const taxFormatted = `${currencySymbol}${taxVal.toFixed(2)}`;
 
   const currentDriverObj = selectedRecord ? drivers.find(d => d.id === selectedRecord.driverId) : null;
+
+  const getUserType = (driverId) => {
+    if (driverId?.startsWith('DRV-')) return 'Driver';
+    if (driverId?.startsWith('WS-')) return 'Workshop';
+    if (driverId?.startsWith('OC-')) return 'Oil Change';
+    if (driverId?.startsWith('VIS-')) return 'Visitor';
+    const d = drivers.find(drv => drv.id === driverId);
+    if (d?.type === 'driver') return 'Driver';
+    if (d?.type === 'workshop') return 'Workshop';
+    if (d?.type === 'oil') return 'Oil Change';
+    if (d?.type === 'visitor') return 'Visitor';
+    return 'Driver';
+  };
 
   const handleExport = () => {
     const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Email Address", "Amount", "Payment Gateway", "Status", "Date"];
@@ -81,7 +94,17 @@ export const Payments = () => {
 
   const handleEdit = (record) => {
     setSelectedRecord(record);
-    setEditFormData({ name: record.name, amount: record.amount, gateway: record.gateway, status: record.status });
+    const dObj = drivers.find(d => d.id === record.driverId);
+    setEditFormData({
+      name: record.name,
+      amount: record.amount,
+      gateway: record.gateway,
+      status: record.status,
+      driverId: record.driverId,
+      phone: dObj ? dObj.phone : '',
+      email: dObj ? dObj.email : '',
+      userType: dObj ? dObj.type : (record.driverId?.startsWith('DRV-') ? 'driver' : record.driverId?.startsWith('WS-') ? 'workshop' : record.driverId?.startsWith('OC-') ? 'oil' : record.driverId?.startsWith('VIS-') ? 'visitor' : 'driver')
+    });
     setIsEditMode(true);
     setIsModalOpen(true);
   };
@@ -93,7 +116,24 @@ export const Payments = () => {
   };
 
   const handleSaveEdit = () => {
-    updatePayment(selectedRecord.id, editFormData);
+    updatePayment(selectedRecord.id, {
+      name: editFormData.name,
+      amount: editFormData.amount,
+      gateway: editFormData.gateway,
+      status: editFormData.status,
+      driverId: editFormData.driverId
+    });
+
+    const dObj = drivers.find(d => d.id === editFormData.driverId);
+    if (dObj) {
+      updateDriverProfile(editFormData.driverId, {
+        ...dObj,
+        name: editFormData.name,
+        phone: editFormData.phone,
+        email: editFormData.email,
+        type: editFormData.userType
+      });
+    }
     setIsModalOpen(false);
   };
 
@@ -154,7 +194,7 @@ export const Payments = () => {
       >
         {selectedRecord && !isEditMode && (
           <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 1fr', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Payer Name</span>
                 <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.name}</div>
@@ -162,6 +202,10 @@ export const Payments = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>User ID</span>
                 <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.driverId}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>User Type</span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{getUserType(selectedRecord.driverId)}</div>
               </div>
             </div>
 
@@ -217,26 +261,73 @@ export const Payments = () => {
         )}
         {selectedRecord && isEditMode && (
           <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Input
-              label="Payer Name"
-              value={editFormData.name}
-              onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
-            />
-            <Input
-              label="Amount"
-              value={editFormData.amount}
-              onChange={e => setEditFormData({ ...editFormData, amount: e.target.value })}
-            />
-            <Input
-              label="Payment Gateway"
-              value={editFormData.gateway}
-              onChange={e => setEditFormData({ ...editFormData, gateway: e.target.value })}
-            />
-            <Input
-              label="Status"
-              value={editFormData.status}
-              onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}
-            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <Input
+                label="Payer Name"
+                value={editFormData.name}
+                onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
+              />
+              <Input
+                label="User ID"
+                value={editFormData.driverId}
+                onChange={e => setEditFormData({ ...editFormData, driverId: e.target.value })}
+              />
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <Input
+                label="Email Address"
+                value={editFormData.email}
+                onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
+              />
+              <Input
+                label="Mobile / Phone"
+                value={editFormData.phone}
+                onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <Input
+                label="Amount"
+                value={editFormData.amount}
+                onChange={e => setEditFormData({ ...editFormData, amount: e.target.value })}
+              />
+              <Input
+                label="Payment Gateway"
+                value={editFormData.gateway}
+                onChange={e => setEditFormData({ ...editFormData, gateway: e.target.value })}
+              />
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <Input
+                label="Status"
+                value={editFormData.status}
+                onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>User Type</label>
+                <select
+                  value={editFormData.userType}
+                  onChange={e => setEditFormData({ ...editFormData, userType: e.target.value })}
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-card-border)',
+                    color: 'var(--color-text-main)',
+                    height: '42px',
+                    width: '100%'
+                  }}
+                >
+                  <option value="driver">Driver</option>
+                  <option value="visitor">Visitor</option>
+                  <option value="workshop">Workshop</option>
+                  <option value="oil">Oil Change</option>
+                </select>
+              </div>
+            </div>
           </div>
         )}
       </Modal>
