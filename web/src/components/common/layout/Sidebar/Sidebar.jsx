@@ -13,7 +13,8 @@ import {
   HelpCircle,
   X,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  User
 } from 'lucide-react';
 import { useTheme } from '../../../../context/ThemeContext';
 import { useDrivers } from '../../../../context/DriverContext';
@@ -37,7 +38,7 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
     { title: 'Dashboard', path: '/', icon: LayoutDashboard },
     { title: 'User Requests', path: '/users', icon: Users, badge: drivers.filter(d => d.status === 'Pending').length.toString() },
     { title: 'Payments', path: '/payments', icon: CreditCard },
-    { title: 'User Service', path: '/services', icon: Wrench },
+    { title: 'User/Service', path: '/services', icon: User },
   ];
 
   const secondaryNavItems = [

@@ -229,7 +229,7 @@ export const Dashboard = () => {
       >
         <Table
           className="table-scrollable"
-          headers={['Registration ID', 'Name / Entity', 'Category', 'Mobile No', 'Status', 'Date', 'Amount', 'Actions']}
+          headers={['Registration ID', 'Name / Entity', 'Category', 'Mobile No', 'Status', 'Date', 'Amount']}
           data={filteredRegistrations}
           emptyTitle="No Registrations Found"
           emptyDescription="No registration records match your current search or filter criteria."
@@ -259,39 +259,6 @@ export const Dashboard = () => {
               </td>
               <td><span className="row-date">{row.date}</span></td>
               <td><strong className="row-amount">{row.amount}</strong></td>
-              <td>
-                <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={Eye}
-                    onClick={() => handleOpenModal(row)}
-                  >
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={Download}
-                    onClick={() => handleExportSingle(row)}
-                    title="Export Single Record"
-                  >
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={Edit2}
-                    onClick={() => handleEditClick(row)}
-                  >
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={Trash2}
-                    onClick={() => handleDelete(row.id)}
-                  >
-                  </Button>
-                </div>
-              </td>
             </tr>
           )}
         />
