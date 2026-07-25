@@ -6,12 +6,27 @@ import { Input } from '../../components/common/Input/Input';
 import { Button } from '../../components/common/Button/Button';
 import { Wrench, Droplet, MapPin, Plus, Search, Eye, Edit2, Trash2, Download, Users, User } from 'lucide-react';
 import { useDrivers } from '../../context/DriverContext';
+import { useTheme } from '../../context/ThemeContext';
 import { downloadExcel } from '../../utils/excelExport';
+import { 
+  DriverRegistrationForm, 
+  WorkshopRegistrationForm, 
+  OilChangeRegistrationForm, 
+  VisitorRegistrationForm 
+} from '../../components/common/RegistrationForms';
 import './Services.css';
 
 export const Services = () => {
-  const { drivers } = useDrivers();
+  const { drivers, registerDriver } = useDrivers();
+  const { subscriptionPlans, subscriptionConfig } = useTheme();
   const [activeTab, setActiveTab] = useState('workshop');
+
+  const config = subscriptionConfig?.paymentRequiredFor || { driver: true, workshop: false, visitor: false, oilchange: false };
+  const payRequiredForTab = 
+    (activeTab === 'driver' && config.driver) ||
+    (activeTab === 'workshop' && config.workshop) ||
+    (activeTab === 'oil change' && config.oilchange) ||
+    (activeTab === 'visitor' && config.visitor);
 
   const initialServices = [
     { id: 'WS-01', name: 'Central Maintenance Garage', type: 'workshop', location: 'Zone 4, Sector B', status: 'Active', rating: '4.8', contact: '+1 (555) 0192', email: 'central.garage@example.com', amount: '$99.99' },
@@ -140,7 +155,7 @@ export const Services = () => {
 
   const handleAddClick = () => {
     setModalMode('add');
-    setFormData({ name: '', location: '', latitude: '28.6250', longitude: '77.2180', contact: '', email: '', status: 'Active', amount: '$49.99' });
+    setFormData({ type: activeTab, firstName: '', lastName: '', phone: '', email: '', plateNumber: '', location: '', latitude: '28.6250', longitude: '77.2180', termsAccepted: false });
     setIsModalOpen(true);
   };
 
@@ -199,6 +214,90 @@ export const Services = () => {
     setIsModalOpen(false);
   };
 
+  const handleFormSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    
+    const isDriver = activeTab === 'driver';
+    const isVisitor = activeTab === 'visitor';
+    
+    const fullName = isDriver || isVisitor
+      ? `${formData.firstName} ${formData.lastName}`
+      : (formData.lastName ? `${formData.firstName} ${formData.lastName}` : formData.firstName);
+
+    const displayTypes = {
+      driver: 'Commercial Driver',
+      workshop: 'Repair Workshop',
+      'oil change': 'Oil Change Center',
+      visitor: 'Visitor'
+    };
+
+    let planPrice = 'Free';
+    if (activeTab === 'driver') planPrice = '$49.99';
+    else if (activeTab === 'workshop') planPrice = '$149.00';
+    else if (activeTab === 'oil change') planPrice = '$199.00';
+    else if (activeTab === 'visitor') planPrice = '$9.99';
+
+    const targetEntityId = activeTab === 'driver'
+      ? `DRV-${Math.floor(1007 + Math.random() * 890)}`
+      : activeTab === 'workshop'
+        ? `WS-${Math.floor(100 + Math.random() * 900)}`
+        : activeTab === 'oil change'
+          ? `OC-${Math.floor(100 + Math.random() * 900)}`
+          : `VIS-${Math.floor(100 + Math.random() * 900)}`;
+
+    const newRecord = {
+      id: `REG-${Math.floor(107 + Math.random() * 890)}`,
+      name: fullName,
+      type: displayTypes[activeTab] || activeTab,
+      status: 'Pending',
+      date: new Date().toISOString().split('T')[0],
+      amount: planPrice,
+      phone: formData.phone || '—',
+      driverId: targetEntityId
+    };
+
+    // Save to registrations in localStorage
+    const savedRegs = JSON.parse(localStorage.getItem('registrations') || '[]');
+    savedRegs.unshift(newRecord);
+    localStorage.setItem('registrations', JSON.stringify(savedRegs));
+
+    // Register in context
+    const newEntityRequest = {
+      id: targetEntityId,
+      name: fullName,
+      email: formData.email,
+      phone: formData.phone || '—',
+      plateNumber: formData.plateNumber || '—',
+      vehicleType: displayTypes[activeTab] || activeTab,
+      vehicleModel: activeTab === 'workshop' ? 'Workshop Hub' : activeTab === 'oil change' ? 'Oil Change Station' : activeTab === 'visitor' ? 'Guest Access' : 'Standard Cargo',
+      licenseNumber: 'LIC-' + targetEntityId + '-' + Math.floor(1000 + Math.random() * 9000),
+      experienceYears: 1,
+      city: formData.location || 'Delhi, IN',
+      avatar: activeTab === 'workshop'
+        ? 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256'
+        : activeTab === 'oil change'
+          ? 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=256'
+          : activeTab === 'visitor'
+            ? 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256'
+            : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
+      status: 'Pending',
+      registrationDate: new Date().toISOString().split('T')[0],
+      paymentStatus: 'Paid',
+      paymentAmount: planPrice,
+      paymentMethod: 'Credit Card',
+      type: activeTab === 'oil change' ? 'oil' : activeTab,
+      documents: {
+        license: { name: 'License / ID', status: 'Pending Verification', url: '#' },
+        insurance: { name: 'Insurance Policy', status: 'Pending Verification', url: '#' },
+        backgroundCheck: { name: 'Safety/Background Check', status: 'Pending', url: '#' }
+      },
+      rejectionReason: ''
+    };
+
+    registerDriver(newEntityRequest);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="page-container services-page">
       <div className="page-header d-flex justify-between align-center">
@@ -206,9 +305,9 @@ export const Services = () => {
           <h1>Registered User Services</h1>
           <p>Manage workshop, oil change, and car location nodes visible on driver map telemetry.</p>
         </div>
-        {activeTab !== 'driver' && activeTab !== 'visitor' && (
+        {activeTab && (
           <button className="btn-primary d-flex align-center gap-sm" onClick={handleAddClick}>
-            <Plus size={18} /> Add Service
+            <Plus size={18} /> Add {activeTab === 'driver' ? 'Driver' : activeTab === 'visitor' ? 'Visitor' : activeTab === 'oil change' ? 'Oil Change' : 'Workshop'}
           </button>
         )}
       </div>
@@ -252,12 +351,12 @@ export const Services = () => {
 
         <Table
           className="table-scrollable"
-          headers={activeTab === 'driver'
-            ? ['Driver ID', 'Name & City', 'Email', 'Mobile Number', 'Status', 'Actions']
+          headers={(activeTab === 'driver' || activeTab === 'visitor')
+            ? [activeTab === 'driver' ? 'Driver ID' : 'Visitor ID', 'Name', 'Email', 'Mobile Number', 'Status', 'Actions']
             : ['Service ID', 'Name & Location', 'Email', 'GPS Coordinates', 'Mobile / Contact Number', 'Status', 'Actions']}
           data={filteredServices}
           renderRow={(row) => {
-            const isDriverTab = activeTab === 'driver';
+            const isPeopleTab = activeTab === 'driver' || activeTab === 'visitor';
             return (
               <tr key={row.id}>
                 <td>
@@ -266,16 +365,17 @@ export const Services = () => {
                 <td>
                   <div className="d-flex flex-column">
                     <strong>{row.name}</strong>
-                    <span className="text-muted text-sm">{isDriverTab ? (row.city || '—') : row.location}</span>
+                    {!isPeopleTab && <span className="text-muted text-sm">{row.location}</span>}
+                    {activeTab === 'driver' && row.city && <span className="text-muted text-sm">{row.city}</span>}
                   </div>
                 </td>
                 <td>{row.email || '—'}</td>
-                {!isDriverTab && (
+                {!isPeopleTab && (
                   <td>
                     <code>{row.latitude || '28.6250'}, {row.longitude || '77.2180'}</code>
                   </td>
                 )}
-                <td>{isDriverTab ? row.phone : row.contact}</td>
+                <td>{isPeopleTab ? (row.phone || '—') : (row.contact || '—')}</td>
 
                 <td>
                   <span className={`status-badge ${row.status.toLowerCase()}`}>
@@ -286,7 +386,7 @@ export const Services = () => {
                   <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
                     <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleViewClick(row)}></Button>
                     <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)} title="Export Single Record"></Button>
-                    {!isDriverTab && (
+                    {!isPeopleTab && (
                       <>
                         <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEditClick(row)}></Button>
                         <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
@@ -303,36 +403,44 @@ export const Services = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalMode === 'add' ? `Add New ${activeTab}` : modalMode === 'edit' ? `Edit Service` : `Service Details`}
-        primaryActionLabel={modalMode !== 'view' ? "Save" : "Close"}
-        onPrimaryAction={modalMode !== 'view' ? handleSaveModal : () => setIsModalOpen(false)}
-        secondaryActionLabel={modalMode !== 'view' ? "Cancel" : null}
+        title={modalMode === 'view' ? `${activeTab === 'oil change' ? 'Oil Change' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Details` : modalMode === 'add' ? `Add New ${activeTab === 'oil change' ? 'Oil Change' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}` : `Edit Service`}
+        primaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? "Save" : "Close")}
+        onPrimaryAction={modalMode === 'add' ? null : (modalMode !== 'view' ? handleSaveModal : () => setIsModalOpen(false))}
+        secondaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? "Cancel" : null)}
       >
         {modalMode === 'view' && selectedRecord && (
           <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Name</span>
                 <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.name}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>{activeTab === 'driver' ? 'City' : 'Location'}</span>
-                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{activeTab === 'driver' ? (selectedRecord.city || '—') : selectedRecord.location}</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Email</span>
                 <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.email || '—'}</div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Contact / Mobile</span>
-                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{activeTab === 'driver' ? selectedRecord.phone : selectedRecord.contact}</div>
-              </div>
             </div>
 
-            {activeTab !== 'driver' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Contact / Mobile</span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.phone || selectedRecord.contact || '—'}</div>
+              </div>
+              
+              {(activeTab === 'driver' || activeTab === 'visitor') ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Plate Number</span>
+                  <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.plateNumber || '—'}</div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Location Name / Zone</span>
+                  <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.location || '—'}</div>
+                </div>
+              )}
+            </div>
+
+            {activeTab !== 'driver' && activeTab !== 'visitor' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Coordinates</span>
                 <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)', fontFamily: 'monospace' }}>{selectedRecord.latitude || '28.6250'}, {selectedRecord.longitude || '77.2180'}</div>
@@ -369,19 +477,60 @@ export const Services = () => {
             </div>
           </div>
         )}
-        {modalMode !== 'view' && (
+        {modalMode === 'edit' && (
           <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Input label="Name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-            <Input label="Location Name / Zone" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <Input label="Latitude (e.g. 28.6250)" value={formData.latitude} onChange={e => setFormData({ ...formData, latitude: e.target.value })} />
-              <Input label="Longitude (e.g. 77.2180)" value={formData.longitude} onChange={e => setFormData({ ...formData, longitude: e.target.value })} />
-            </div>
+            {activeTab !== 'driver' && activeTab !== 'visitor' && (
+              <>
+                <Input label="Location Name / Zone" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <Input label="Latitude (e.g. 28.6250)" value={formData.latitude} onChange={e => setFormData({ ...formData, latitude: e.target.value })} />
+                  <Input label="Longitude (e.g. 77.2180)" value={formData.longitude} onChange={e => setFormData({ ...formData, longitude: e.target.value })} />
+                </div>
+              </>
+            )}
             <Input label="Contact" value={formData.contact} onChange={e => setFormData({ ...formData, contact: e.target.value })} />
             <Input label="Email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
             <Input label="Status" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} />
             <Input label="Amount" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} />
           </div>
+        )}
+        {modalMode === 'add' && activeTab === 'driver' && (
+          <DriverRegistrationForm
+            formData={formData}
+            onChange={setFormData}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsModalOpen(false)}
+            subscriptionPlans={subscriptionPlans}
+            payRequired={payRequiredForTab}
+          />
+        )}
+        {modalMode === 'add' && activeTab === 'workshop' && (
+          <WorkshopRegistrationForm
+            formData={formData}
+            onChange={setFormData}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsModalOpen(false)}
+            payRequired={payRequiredForTab}
+          />
+        )}
+        {modalMode === 'add' && activeTab === 'oil change' && (
+          <OilChangeRegistrationForm
+            formData={formData}
+            onChange={setFormData}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsModalOpen(false)}
+            payRequired={payRequiredForTab}
+          />
+        )}
+        {modalMode === 'add' && activeTab === 'visitor' && (
+          <VisitorRegistrationForm
+            formData={formData}
+            onChange={setFormData}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsModalOpen(false)}
+            payRequired={payRequiredForTab}
+          />
         )}
       </Modal>
 
