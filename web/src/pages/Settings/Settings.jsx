@@ -83,12 +83,25 @@ export const Settings = () => {
     price: ''
   });
 
+  const [freeTrialEnabled, setFreeTrialEnabled] = useState(subscriptionConfig.freeTrialEnabled);
+  const [freeTrialDuration, setFreeTrialDuration] = useState(subscriptionConfig.freeTrialDuration);
+
   const handleSaveProfile = () => {
     setIsSaving(true);
     setTimeout(() => {
       updateProfile(profileData);
       setIsSaving(false);
       setSuccessBanner('Profile details saved successfully!');
+      setTimeout(() => setSuccessBanner(''), 3000);
+    }, 500);
+  };
+
+  const handleSaveFreeTrial = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      updateSubscriptionConfig({ freeTrialEnabled, freeTrialDuration });
+      setIsSaving(false);
+      setSuccessBanner('Free Trial settings saved successfully!');
       setTimeout(() => setSuccessBanner(''), 3000);
     }, 500);
   };
@@ -405,40 +418,85 @@ export const Settings = () => {
 
           {activeTab === 'subscriptions' && (
             <div className="settings-tab-content">
-              <Card
-                title="Create Subscription Plan"
-                subtitle="Define a new driver tracking access plan rate and duration."
-              >
-                <form onSubmit={handleAddPlanSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
-                  <div className="admin-form-row">
-                    <Input
-                      label="Plan Name"
-                      placeholder="e.g. Monthly Standard"
-                      value={newPlanForm.name}
-                      onChange={(e) => setNewPlanForm({ ...newPlanForm, name: e.target.value })}
-                      required
-                    />
-                    <Input
-                      label="Duration"
-                      placeholder="e.g. 1 Month"
-                      value={newPlanForm.duration}
-                      onChange={(e) => setNewPlanForm({ ...newPlanForm, duration: e.target.value })}
-                      required
-                    />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px', alignItems: 'stretch' }}>
+                <Card
+                  title="Create Subscription Plan"
+                  subtitle="Define a new driver tracking access plan rate and duration."
+                >
+                  <form onSubmit={handleAddPlanSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+                    <div className="admin-form-row">
+                      <Input
+                        label="Plan Name"
+                        placeholder="e.g. Monthly Standard"
+                        value={newPlanForm.name}
+                        onChange={(e) => setNewPlanForm({ ...newPlanForm, name: e.target.value })}
+                        required
+                      />
+                      <Input
+                        label="Duration"
+                        placeholder="e.g. 1 Month"
+                        value={newPlanForm.duration}
+                        onChange={(e) => setNewPlanForm({ ...newPlanForm, duration: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="admin-form-row align-end">
+                      <Input
+                        label="Price ($)"
+                        type="number"
+                        placeholder="e.g. 49.99"
+                        value={newPlanForm.price}
+                        onChange={(e) => setNewPlanForm({ ...newPlanForm, price: e.target.value })}
+                        required
+                      />
+                      <Button type="submit" variant="primary" leftIcon={Plus} isLoading={isSaving} disabled={isSaving} style={{ height: '42px', width: '100%', justifyContent: 'center' }}>Add Plan</Button>
+                    </div>
+                  </form>
+                </Card>
+
+                <Card
+                  title="Free Trial Configuration"
+                  subtitle="Configure a free trial period before users/drivers are charged."
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <input
+                        type="checkbox"
+                        id="enable-free-trial"
+                        checked={freeTrialEnabled}
+                        onChange={(e) => setFreeTrialEnabled(e.target.checked)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="enable-free-trial" style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text-main)', cursor: 'pointer' }}>
+                        Enable Free Trial Period
+                      </label>
+                    </div>
+
+                    <div style={{ maxWidth: '400px', opacity: freeTrialEnabled ? 1 : 0.5, pointerEvents: freeTrialEnabled ? 'auto' : 'none', transition: 'opacity 0.2s ease' }}>
+                      <Input
+                        label="Trial Duration"
+                        placeholder="e.g. 1 Month, 15 Days"
+                        value={freeTrialDuration}
+                        onChange={(e) => setFreeTrialDuration(e.target.value)}
+                        required={freeTrialEnabled}
+                        disabled={!freeTrialEnabled}
+                      />
+                    </div>
+
+                    <div style={{ marginTop: '8px' }}>
+                      <Button
+                        onClick={handleSaveFreeTrial}
+                        variant="primary"
+                        leftIcon={Save}
+                        isLoading={isSaving}
+                        disabled={isSaving}
+                      >
+                        Save Trial Settings
+                      </Button>
+                    </div>
                   </div>
-                  <div className="admin-form-row align-end">
-                    <Input
-                      label="Price ($)"
-                      type="number"
-                      placeholder="e.g. 49.99"
-                      value={newPlanForm.price}
-                      onChange={(e) => setNewPlanForm({ ...newPlanForm, price: e.target.value })}
-                      required
-                    />
-                    <Button type="submit" variant="primary" leftIcon={Plus} isLoading={isSaving} disabled={isSaving} style={{ height: '42px', width: '100%', justifyContent: 'center' }}>Add Plan</Button>
-                  </div>
-                </form>
-              </Card>
+                </Card>
+              </div>
 
               <Card
                 title="Active Subscription Plans"

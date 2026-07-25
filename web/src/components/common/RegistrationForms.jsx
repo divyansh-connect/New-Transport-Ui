@@ -2,6 +2,7 @@ import React from 'react';
 import { Input, Select } from './Input/Input';
 import { Button } from './Button/Button';
 import { User, Phone, Mail, Car, MapPin } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const formBoxStyle = {
   width: '100%',
@@ -27,6 +28,10 @@ export const DriverRegistrationForm = ({
   subscriptionPlans = [],
   payRequired = true
 }) => {
+  const { subscriptionConfig } = useTheme();
+  const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
+  const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -65,7 +70,6 @@ export const DriverRegistrationForm = ({
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value })}
-            required
           />
         </div>
 
@@ -80,12 +84,16 @@ export const DriverRegistrationForm = ({
           />
           {payRequired && subscriptionPlans.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Subscription Plan</label>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
+              </label>
               <Select
                 value={formData.selectedPlanId || subscriptionPlans[0]?.id}
                 onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
                 options={subscriptionPlans.map(plan => ({
-                  label: `${plan.name} (${plan.duration}) - $${plan.price}`,
+                  label: freeTrialEnabled 
+                    ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
+                    : `${plan.name} (${plan.duration}) - $${plan.price}`,
                   value: plan.id
                 }))}
               />
@@ -145,6 +153,10 @@ export const WorkshopRegistrationForm = ({
   onCancel,
   payRequired = false
 }) => {
+  const { subscriptionConfig } = useTheme();
+  const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
+  const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -182,7 +194,6 @@ export const WorkshopRegistrationForm = ({
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value })}
-            required
           />
         </div>
 
@@ -223,7 +234,11 @@ export const WorkshopRegistrationForm = ({
             fontSize: '13px',
             fontWeight: '600'
           }}>
-            💳 A flat registration fee of <strong>$149.00</strong> will be charged.
+            {freeTrialEnabled ? (
+              <span>🎁 Free Trial active: <strong>{freeTrialDuration} Free</strong>, then flat $149.00 registration fee.</span>
+            ) : (
+              <span>💳 A flat registration fee of <strong>$149.00</strong> will be charged.</span>
+            )}
           </div>
         ) : (
           <div style={{
@@ -265,6 +280,10 @@ export const OilChangeRegistrationForm = ({
   onCancel,
   payRequired = false
 }) => {
+  const { subscriptionConfig } = useTheme();
+  const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
+  const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -302,7 +321,6 @@ export const OilChangeRegistrationForm = ({
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value })}
-            required
           />
         </div>
 
@@ -343,7 +361,11 @@ export const OilChangeRegistrationForm = ({
             fontSize: '13px',
             fontWeight: '600'
           }}>
-            💳 A flat registration fee of <strong>$199.00</strong> will be charged.
+            {freeTrialEnabled ? (
+              <span>🎁 Free Trial active: <strong>{freeTrialDuration} Free</strong>, then flat $199.00 registration fee.</span>
+            ) : (
+              <span>💳 A flat registration fee of <strong>$199.00</strong> will be charged.</span>
+            )}
           </div>
         ) : (
           <div style={{
@@ -385,6 +407,10 @@ export const VisitorRegistrationForm = ({
   onCancel,
   payRequired = false
 }) => {
+  const { subscriptionConfig } = useTheme();
+  const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
+  const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -423,48 +449,41 @@ export const VisitorRegistrationForm = ({
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value })}
-            required
           />
         </div>
 
-        <div style={gridStyle}>
-          <Input
-            label="Plate Number"
-            placeholder="e.g. ABC-1234"
-            leftIcon={Car}
-            value={formData.plateNumber || ''}
-            onChange={(e) => onChange({ ...formData, plateNumber: e.target.value })}
-            required
-          />
-          <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
-            {payRequired ? (
-              <div style={{
-                padding: '12px',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid #3b82f6',
-                borderRadius: '6px',
-                color: '#3b82f6',
-                fontSize: '13px',
-                fontWeight: '600',
-                width: '100%'
-              }}>
-                💳 Registration fee: $9.99
-              </div>
-            ) : (
-              <div style={{
-                padding: '12px',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid #10b981',
-                borderRadius: '6px',
-                color: '#10b981',
-                fontSize: '13px',
-                fontWeight: '600',
-                width: '100%'
-              }}>
-                ✨ Registration is FREE
-              </div>
-            )}
-          </div>
+        <div style={{ display: 'flex', width: '100%' }}>
+          {payRequired ? (
+            <div style={{
+              padding: '12px',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid #3b82f6',
+              borderRadius: '6px',
+              color: '#3b82f6',
+              fontSize: '13px',
+              fontWeight: '600',
+              width: '100%'
+            }}>
+              {freeTrialEnabled ? (
+                <span>🎁 Free Trial active: <strong>{freeTrialDuration} Free</strong>, then flat $9.99 registration fee.</span>
+              ) : (
+                <span>💳 Registration fee: $9.99</span>
+              )}
+            </div>
+          ) : (
+            <div style={{
+              padding: '12px',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid #10b981',
+              borderRadius: '6px',
+              color: '#10b981',
+              fontSize: '13px',
+              fontWeight: '600',
+              width: '100%'
+            }}>
+              ✨ Registration is FREE
+            </div>
+          )}
         </div>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>

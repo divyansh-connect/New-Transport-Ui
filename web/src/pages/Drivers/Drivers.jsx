@@ -398,7 +398,7 @@ export const Drivers = () => {
                   <td>
                     <div>{row.vehicleModel}</div>
                     <small style={{ color: 'var(--color-text-muted)' }}>
-                      <code>{row.plateNumber}</code> • {row.vehicleType}
+                      {row.type === 'visitor' ? row.vehicleType : <><code style={{ marginRight: '4px' }}>{row.plateNumber}</code> • {row.vehicleType}</>}
                     </small>
                   </td>
                   <td>
@@ -751,10 +751,12 @@ export const Drivers = () => {
                         <label>Vehicle Type</label>
                         <span>{selectedDriver.vehicleType}</span>
                       </div>
-                      <div className="info-item">
-                        <label>Plate Number</label>
-                        <span><code>{selectedDriver.plateNumber}</code></span>
-                      </div>
+                      {selectedDriver.type !== 'visitor' && (
+                        <div className="info-item">
+                          <label>Plate Number</label>
+                          <span><code>{selectedDriver.plateNumber}</code></span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -59,6 +59,12 @@ export const ThemeProvider = ({ children }) => {
       } else if (parsed.paymentRequiredFor.oilchange === undefined) {
         parsed.paymentRequiredFor.oilchange = false;
       }
+      if (parsed.freeTrialEnabled === undefined) {
+        parsed.freeTrialEnabled = false;
+      }
+      if (parsed.freeTrialDuration === undefined) {
+        parsed.freeTrialDuration = '1 Month';
+      }
       return parsed;
     }
     return {
@@ -69,7 +75,9 @@ export const ThemeProvider = ({ children }) => {
         visitor: false,
         oilchange: false
       },
-      showVisitorServices: true
+      showVisitorServices: true,
+      freeTrialEnabled: false,
+      freeTrialDuration: '1 Month'
     };
   });
 

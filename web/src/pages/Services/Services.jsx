@@ -231,11 +231,26 @@ export const Services = () => {
       visitor: 'Visitor'
     };
 
+    const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
+    const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+
+    const payRequired = 
+      (activeTab === 'driver' && config.driver) ||
+      (activeTab === 'workshop' && config.workshop) ||
+      (activeTab === 'oil change' && config.oilchange) ||
+      (activeTab === 'visitor' && config.visitor);
+
     let planPrice = 'Free';
-    if (activeTab === 'driver') planPrice = '$49.99';
-    else if (activeTab === 'workshop') planPrice = '$149.00';
-    else if (activeTab === 'oil change') planPrice = '$199.00';
-    else if (activeTab === 'visitor') planPrice = '$9.99';
+    if (payRequired) {
+      if (freeTrialEnabled) {
+        planPrice = `Free (${freeTrialDuration} Trial)`;
+      } else {
+        if (activeTab === 'driver') planPrice = '$49.99';
+        else if (activeTab === 'workshop') planPrice = '$149.00';
+        else if (activeTab === 'oil change') planPrice = '$199.00';
+        else if (activeTab === 'visitor') planPrice = '$9.99';
+      }
+    }
 
     const targetEntityId = activeTab === 'driver'
       ? `DRV-${Math.floor(1007 + Math.random() * 890)}`
@@ -282,9 +297,9 @@ export const Services = () => {
             : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
       status: 'Pending',
       registrationDate: new Date().toISOString().split('T')[0],
-      paymentStatus: 'Paid',
+      paymentStatus: payRequired ? (freeTrialEnabled ? 'Trial' : 'Unpaid') : 'Paid',
       paymentAmount: planPrice,
-      paymentMethod: 'Credit Card',
+      paymentMethod: payRequired ? (freeTrialEnabled ? 'Trial Activation' : 'None') : 'Free Bypass',
       type: activeTab === 'oil change' ? 'oil' : activeTab,
       documents: {
         license: { name: 'License / ID', status: 'Pending Verification', url: '#' },
@@ -427,7 +442,7 @@ export const Services = () => {
                 <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.phone || selectedRecord.contact || '—'}</div>
               </div>
               
-              {(activeTab === 'driver' || activeTab === 'visitor') ? (
+              {activeTab === 'driver' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Plate Number</span>
                   <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.plateNumber || '—'}</div>
