@@ -88,6 +88,14 @@ export const Registration = () => {
       visitor: 'Visitor'
     };
 
+    const targetEntityId = formData.type === 'driver'
+      ? `DRV-${Math.floor(1007 + Math.random() * 890)}`
+      : formData.type === 'workshop'
+        ? `WS-${Math.floor(100 + Math.random() * 900)}`
+        : formData.type === 'oil'
+          ? `OC-${Math.floor(100 + Math.random() * 900)}`
+          : `VIS-${Math.floor(100 + Math.random() * 900)}`;
+
     // Create new record
     const newRecord = {
       id: `REG-${Math.floor(107 + Math.random() * 890)}`,
@@ -96,14 +104,14 @@ export const Registration = () => {
       status: 'Pending',
       date: new Date().toISOString().split('T')[0],
       amount: planPrice,
-      phone: formData.phone || '—'
+      phone: formData.phone || '—',
+      driverId: targetEntityId
     };
     
     // Propagate to respective menus
     if (formData.type === 'driver') {
-      const driverId = `DRV-${Math.floor(1007 + Math.random() * 890)}`;
       const newDriver = {
-        id: driverId,
+        id: targetEntityId,
         name: fullName,
         email: formData.email,
         phone: formData.phone || '—',
@@ -128,33 +136,56 @@ export const Registration = () => {
       };
       registerDriver(newDriver);
     } else if (formData.type === 'workshop' || formData.type === 'oil' || formData.type === 'visitor') {
-      const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
-      let serviceId;
-      let typeName;
+      let displayType;
       if (formData.type === 'workshop') {
-        serviceId = `WS-${Math.floor(100 + Math.random() * 900)}`;
-        typeName = 'workshop';
+        displayType = 'Repair Workshop';
       } else if (formData.type === 'oil') {
-        serviceId = `OC-${Math.floor(100 + Math.random() * 900)}`;
-        typeName = 'oil change';
+        displayType = 'Oil Change Center';
       } else {
-        serviceId = `VIS-${Math.floor(100 + Math.random() * 900)}`;
-        typeName = 'visitor';
+        displayType = 'Visitor';
       }
-      const newService = {
-        id: serviceId,
+      const newEntityRequest = {
+        id: targetEntityId,
         name: fullName,
-        type: typeName,
-        location: formData.location || 'Sector 5, Telemetry Zone',
-        latitude: formData.latitude || '28.6250',
-        longitude: formData.longitude || '77.2180',
-        status: 'Active',
-        rating: 'New',
-        contact: formData.phone || '—',
-        email: formData.email || '—',
-        amount: planPrice
+        email: formData.email,
+        phone: formData.phone || '—',
+        plateNumber: '—',
+        vehicleType: displayType,
+        vehicleModel: formData.type === 'workshop' ? 'Workshop Hub' : formData.type === 'oil' ? 'Oil Change Station' : 'Guest Access',
+        licenseNumber: 'LIC-' + targetEntityId + '-' + Math.floor(1000 + Math.random() * 9000),
+        experienceYears: 1,
+        city: formData.location || 'Delhi, IN',
+        avatar: formData.type === 'workshop'
+          ? 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256'
+          : formData.type === 'oil'
+            ? 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=256'
+            : 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256',
+        status: 'Pending',
+        registrationDate: new Date().toISOString().split('T')[0],
+        paymentStatus: payRequired ? 'Unpaid' : 'Paid',
+        paymentAmount: planPrice,
+        paymentMethod: payRequired ? 'None' : 'Free Bypass',
+        type: formData.type,
+        documents: {
+          license: { 
+            name: formData.type === 'workshop' ? 'Business Trade License' : formData.type === 'oil' ? 'Environmental Permit' : 'Government ID Proof', 
+            status: 'Pending Verification', 
+            url: '#' 
+          },
+          insurance: { 
+            name: formData.type === 'workshop' ? 'Liability Insurance Policy' : formData.type === 'oil' ? 'Commercial General Liability' : 'Self Declaration / Medical Cert', 
+            status: 'Pending Verification', 
+            url: '#' 
+          },
+          backgroundCheck: { 
+            name: formData.type === 'workshop' ? 'Safety Audit Report' : formData.type === 'oil' ? 'Pollution Control Board Cert' : 'Address Verification Check', 
+            status: 'Pending', 
+            url: '#' 
+          }
+        },
+        rejectionReason: ''
       };
-      localStorage.setItem('services_data', JSON.stringify([newService, ...existingServices]));
+      registerDriver(newEntityRequest);
     }
 
     // Save and redirect

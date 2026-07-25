@@ -46,7 +46,7 @@ export const Drivers = () => {
 
   // Search and Filter States
   const [searchQuery, setSearchQuery] = useState('');
-  const [cityFilter, setCityFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [vehicleFilter, setVehicleFilter] = useState('');
 
   // Pagination states
@@ -68,7 +68,7 @@ export const Drivers = () => {
     setActiveTab(tab);
     setCurrentPage(1);
     setSearchQuery('');
-    setCityFilter('');
+    setCategoryFilter('');
     setVehicleFilter('');
   };
 
@@ -124,13 +124,24 @@ export const Drivers = () => {
         driver.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         driver.plateNumber.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // City filter
-      const matchCity = cityFilter ? driver.city.includes(cityFilter) : true;
+      // Category filter
+      let matchCategory = true;
+      if (categoryFilter) {
+        if (categoryFilter === 'driver') {
+          matchCategory = driver.id.startsWith('DRV-') || driver.type === 'driver' || (!driver.id.startsWith('WS-') && !driver.id.startsWith('OC-') && !driver.id.startsWith('VIS-') && driver.type !== 'workshop' && driver.type !== 'oil' && driver.type !== 'visitor');
+        } else if (categoryFilter === 'workshop') {
+          matchCategory = driver.id.startsWith('WS-') || driver.type === 'workshop' || driver.vehicleType === 'Repair Workshop';
+        } else if (categoryFilter === 'oil') {
+          matchCategory = driver.id.startsWith('OC-') || driver.type === 'oil' || driver.vehicleType === 'Oil Change Center';
+        } else if (categoryFilter === 'visitor') {
+          matchCategory = driver.id.startsWith('VIS-') || driver.type === 'visitor' || driver.vehicleType === 'Visitor';
+        }
+      }
 
       // Vehicle type filter
       const matchVehicle = vehicleFilter ? driver.vehicleType.includes(vehicleFilter) : true;
 
-      return matchSearch && matchCity && matchVehicle;
+      return matchSearch && matchCategory && matchVehicle;
     });
   };
 
@@ -203,7 +214,6 @@ export const Drivers = () => {
   };
 
   // Unique lists for filters
-  const cities = Array.from(new Set(drivers.map((d) => d.city.split(',')[0])));
   const vehicleTypes = Array.from(new Set(drivers.map((d) => d.vehicleType)));
 
   return (
@@ -211,11 +221,11 @@ export const Drivers = () => {
       {/* Workspace Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1>Driver Management Center</h1>
-          <p>Manage commercial registrations, audit documentation quality, and dispatch approvals.</p>
+          <h1>User Management Center</h1>
+          <p>Manage registrations, audit documentation quality, and dispatch approvals.</p>
         </div>
         <div>
-          <Button variant="secondary" leftIcon={Download} onClick={handleExport}>Export Drivers</Button>
+          <Button variant="secondary" leftIcon={Download} onClick={handleExport}>Export Users</Button>
         </div>
       </div>
 
@@ -246,7 +256,7 @@ export const Drivers = () => {
             <CheckCircle size={24} />
           </div>
           <div className="stat-info">
-            <h4>Approved Drivers</h4>
+            <h4>Approved Users</h4>
             <p>{countApproved}</p>
           </div>
         </div>
@@ -274,7 +284,7 @@ export const Drivers = () => {
           className={`drivers-tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
           onClick={() => handleTabChange('pending')}
         >
-          Pending Drivers ({countPending})
+          Pending Requests ({countPending})
         </button>
         <button
           className={`drivers-tab-btn ${activeTab === 'approved' ? 'active' : ''}`}
@@ -294,16 +304,16 @@ export const Drivers = () => {
       <Card
         title={
           activeTab === 'requests'
-            ? 'Driver Registrations Inbox'
+            ? 'User Registrations Inbox'
             : activeTab === 'pending'
               ? 'Pending Approvals Workspace'
               : activeTab === 'approved'
-                ? 'Approved Active Fleet'
+                ? 'Approved Active Users'
                 : activeTab === 'rejected'
                   ? 'Archived Rejections'
                   : activeTab === 'payments'
-                    ? 'Driver Registration Payments'
-                    : 'Driver Notifications History'
+                    ? 'Registration Payments'
+                    : 'User Notifications History'
         }
       >
         {/* Render Driver lists / Payment list / Notifications */}
@@ -327,18 +337,17 @@ export const Drivers = () => {
               <div className="filters-group">
                 <select
                   className="filter-select"
-                  value={cityFilter}
+                  value={categoryFilter}
                   onChange={(e) => {
-                    setCityFilter(e.target.value);
+                    setCategoryFilter(e.target.value);
                     setCurrentPage(1);
                   }}
                 >
-                  <option value="">All Cities</option>
-                  {cities.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
+                  <option value="">All Categories</option>
+                  <option value="driver">Drivers</option>
+                  <option value="workshop">Workshops</option>
+                  <option value="oil">Oil Changes</option>
+                  <option value="visitor">Visitors</option>
                 </select>
 
                 <select
@@ -361,7 +370,7 @@ export const Drivers = () => {
 
             {/* Drivers Table */}
             <Table
-              headers={['Driver', 'Contact & Region', 'Vehicle Detail', 'Status', 'Registration Date', 'Actions']}
+              headers={['User', 'Contact & Region', 'Details', 'Status', 'Registration Date', 'Actions']}
               data={paginatedList}
               renderRow={(row) => (
                 <tr key={row.id}>

@@ -203,7 +203,7 @@ export const Services = () => {
     <div className="page-container services-page">
       <div className="page-header d-flex justify-between align-center">
         <div>
-          <h1>Registered Services</h1>
+          <h1>Registered User Services</h1>
           <p>Manage workshop, oil change, and car location nodes visible on driver map telemetry.</p>
         </div>
         {activeTab !== 'driver' && activeTab !== 'visitor' && (

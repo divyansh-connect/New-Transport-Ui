@@ -9,22 +9,27 @@ import { Input, Select } from '../../components/common/Input/Input';
 import { Users, CreditCard, Clock, Wrench, RefreshCw, Plus, Download, Eye, Check, Search, Trash2, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { downloadExcel } from '../../utils/excelExport';
+import { useDrivers } from '../../context/DriverContext';
 import './Dashboard.css';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
+  const { drivers } = useDrivers();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   const initialRegistrations = [
-    { id: 'REG-101', name: 'John Doe', type: 'Commercial Driver', status: 'Pending', date: '2026-07-21', amount: '$49.99', phone: '+1 (555) 234-5678' },
-    { id: 'REG-102', name: 'Metro Workshop Hub', type: 'Repair Station', status: 'Approved', date: '2026-07-20', amount: '$149.00', phone: '+1 (555) 876-5432' },
-    { id: 'REG-103', name: 'Speedy Lube Express', type: 'Oil Change Center', status: 'Approved', date: '2026-07-20', amount: '$199.00', phone: '+1 (555) 456-7890' },
-    { id: 'REG-104', name: 'Alex Smith', type: 'Independent Driver', status: 'Pending', date: '2026-07-19', amount: '$49.99', phone: '+1 (555) 789-0123' },
-    { id: 'REG-105', name: 'City Fleet Logistics', type: 'Fleet Manager', status: 'Approved', date: '2026-07-18', amount: '$299.00', phone: '+1 (555) 901-2345' },
-    { id: 'REG-106', name: 'Retro Car Rentals', type: 'Fleet Manager', status: 'Expired', date: '2026-07-12', amount: '$299.00', phone: '+1 (555) 654-3210' },
+    { id: 'REG-101', name: 'Marcus Vance', type: 'Commercial Driver', status: 'Pending', date: '2026-07-20', amount: '$49.99', phone: '+1 (555) 234-5678', driverId: 'DRV-1001' },
+    { id: 'REG-102', name: 'Sarah Connor', type: 'Commercial Driver', status: 'Approved', date: '2026-07-18', amount: '$49.99', phone: '+1 (555) 876-5432', driverId: 'DRV-1002' },
+    { id: 'REG-103', name: 'Alejandro Gomez', type: 'Commercial Driver', status: 'Pending', date: '2026-07-21', amount: '$49.99', phone: '+1 (555) 456-7890', driverId: 'DRV-1003' },
+    { id: 'REG-104', name: 'Elena Rostova', type: 'Commercial Driver', status: 'Rejected', date: '2026-07-15', amount: '$49.99', phone: '+1 (555) 789-0123', driverId: 'DRV-1004' },
+    { id: 'REG-105', name: 'David Beck', type: 'Commercial Driver', status: 'Approved', date: '2026-07-10', amount: '$49.99', phone: '+1 (555) 901-2345', driverId: 'DRV-1005' },
+    { id: 'REG-106', name: 'Leah Vance', type: 'Commercial Driver', status: 'Pending', date: '2026-07-21', amount: '$49.99', phone: '+1 (555) 345-6789', driverId: 'DRV-1006' },
+    { id: 'REG-107', name: 'Apex Workshop Solutions', type: 'Repair Workshop', status: 'Pending', date: '2026-07-23', amount: '$149.00', phone: '+91 94444 55555', driverId: 'WS-201' },
+    { id: 'REG-108', name: 'Rapid Oil Change Inc', type: 'Oil Change Center', status: 'Pending', date: '2026-07-24', amount: '$199.00', phone: '+91 88888 77777', driverId: 'OC-202' },
+    { id: 'REG-109', name: 'Rohan Deshmukh', type: 'Visitor', status: 'Pending', date: '2026-07-25', amount: '$9.99', phone: '+91 99999 11111', driverId: 'VIS-203' }
   ];
 
   const [registrations, setRegistrations] = useState([]);
@@ -35,10 +40,12 @@ export const Dashboard = () => {
     const saved = localStorage.getItem('registrations');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Refresh if saved data is missing the phone field or doesn't have the Expired status item
-      if (parsed.length > 0 && (!parsed[0].phone || !parsed.some(r => r.status === 'Expired'))) {
-        setRegistrations(initialRegistrations);
-        localStorage.setItem('registrations', JSON.stringify(initialRegistrations));
+      // Merging logic to ensure our new initial dummy registrations are imported if not present
+      const missing = initialRegistrations.filter(initItem => !parsed.some(item => item.id === initItem.id || item.driverId === initItem.driverId));
+      if (missing.length > 0) {
+        const merged = [...missing, ...parsed];
+        setRegistrations(merged);
+        localStorage.setItem('registrations', JSON.stringify(merged));
       } else {
         setRegistrations(parsed);
       }
@@ -48,7 +55,19 @@ export const Dashboard = () => {
     }
   }, []);
 
-  const filteredRegistrations = registrations.filter((item) => {
+  const syncedRegistrations = registrations.map(reg => {
+    const matchedDriver = drivers.find(d => 
+      d.id === reg.driverId || 
+      d.id === reg.id || 
+      d.name.toLowerCase() === reg.name.toLowerCase()
+    );
+    if (matchedDriver) {
+      return { ...reg, status: matchedDriver.status };
+    }
+    return reg;
+  });
+
+  const filteredRegistrations = syncedRegistrations.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || item.status.toUpperCase() === statusFilter.toUpperCase();
     return matchesSearch && matchesStatus;
@@ -156,12 +175,12 @@ export const Dashboard = () => {
         />
         <StatCard
           title="Pending Approvals Queue"
-          value="18"
+          value={drivers.filter(d => d.status === 'Pending').length.toString()}
           change="Requires Review"
           trend="down"
           icon={Clock}
           color="warning"
-          description="4 pending document verifications"
+          description={`${drivers.filter(d => d.status === 'Pending').length} pending user requests`}
         />
         <StatCard
           title="Total Platform Revenue"

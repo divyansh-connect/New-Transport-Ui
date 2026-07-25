@@ -16,10 +16,12 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { useTheme } from '../../../../context/ThemeContext';
+import { useDrivers } from '../../../../context/DriverContext';
 import './Sidebar.css';
 
 export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   const { activeSettingsTab, setActiveSettingsTab } = useTheme();
+  const { drivers } = useDrivers();
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -33,9 +35,9 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
 
   const mainNavItems = [
     { title: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { title: 'Driver Requests', path: '/drivers', icon: Users, badge: '18' },
+    { title: 'User Requests', path: '/users', icon: Users, badge: drivers.filter(d => d.status === 'Pending').length.toString() },
     { title: 'Payments', path: '/payments', icon: CreditCard },
-    { title: 'Services', path: '/services', icon: Wrench },
+    { title: 'User Service', path: '/services', icon: Wrench },
   ];
 
   const secondaryNavItems = [

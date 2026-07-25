@@ -146,6 +146,81 @@ const initialDrivers = [
       backgroundCheck: { name: 'Criminal Background Check', status: 'Pending', url: '#' }
     },
     rejectionReason: ''
+  },
+  {
+    id: 'WS-201',
+    name: 'Apex Workshop Solutions',
+    email: 'info@apexworkshop.com',
+    phone: '+91 94444 55555',
+    plateNumber: '—',
+    vehicleType: 'Repair Workshop',
+    vehicleModel: 'Workshop Hub',
+    licenseNumber: 'LIC-WS-9921',
+    experienceYears: 5,
+    city: 'Delhi, IN',
+    avatar: 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256',
+    status: 'Pending',
+    registrationDate: '2026-07-23',
+    paymentStatus: 'Paid',
+    paymentAmount: '$149.00',
+    paymentMethod: 'Credit Card',
+    type: 'workshop',
+    documents: {
+      license: { name: 'Business Trade License', status: 'Pending Verification', url: '#' },
+      insurance: { name: 'Liability Insurance Policy', status: 'Pending Verification', url: '#' },
+      backgroundCheck: { name: 'Safety Audit Report', status: 'Passed', url: '#' }
+    },
+    rejectionReason: ''
+  },
+  {
+    id: 'OC-202',
+    name: 'Rapid Oil Change Inc',
+    email: 'contact@rapidoil.com',
+    phone: '+91 88888 77777',
+    plateNumber: '—',
+    vehicleType: 'Oil Change Center',
+    vehicleModel: 'Oil Change Station',
+    licenseNumber: 'LIC-OC-8832',
+    experienceYears: 3,
+    city: 'Mumbai, IN',
+    avatar: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=256',
+    status: 'Pending',
+    registrationDate: '2026-07-24',
+    paymentStatus: 'Paid',
+    paymentAmount: '$199.00',
+    paymentMethod: 'Apple Pay',
+    type: 'oil',
+    documents: {
+      license: { name: 'Environmental Permit', status: 'Pending Verification', url: '#' },
+      insurance: { name: 'Commercial General Liability', status: 'Pending Verification', url: '#' },
+      backgroundCheck: { name: 'Pollution Control Board Cert', status: 'Passed', url: '#' }
+    },
+    rejectionReason: ''
+  },
+  {
+    id: 'VIS-203',
+    name: 'Rohan Deshmukh',
+    email: 'rohan.d@example.com',
+    phone: '+91 99999 11111',
+    plateNumber: '—',
+    vehicleType: 'Visitor',
+    vehicleModel: 'Guest Access',
+    licenseNumber: 'LIC-VIS-1102',
+    experienceYears: 1,
+    city: 'Pune, IN',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256',
+    status: 'Pending',
+    registrationDate: '2026-07-25',
+    paymentStatus: 'Paid',
+    paymentAmount: '$9.99',
+    paymentMethod: 'Credit Card',
+    type: 'visitor',
+    documents: {
+      license: { name: 'Government ID Proof', status: 'Pending Verification', url: '#' },
+      insurance: { name: 'Self Declaration / Medical Cert', status: 'Pending Verification', url: '#' },
+      backgroundCheck: { name: 'Address Verification Check', status: 'Passed', url: '#' }
+    },
+    rejectionReason: ''
   }
 ];
 
@@ -167,7 +242,15 @@ const initialNotifications = [
 export const DriverProvider = ({ children }) => {
   const [drivers, setDrivers] = useState(() => {
     const saved = localStorage.getItem('drivers_data');
-    return saved ? JSON.parse(saved) : initialDrivers;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const missing = initialDrivers.filter(initItem => !parsed.some(item => item.id === initItem.id));
+      if (missing.length > 0) {
+        return [...missing, ...parsed];
+      }
+      return parsed;
+    }
+    return initialDrivers;
   });
   const [payments, setPayments] = useState(initialPayments);
   const [notifications, setNotifications] = useState(initialNotifications);
@@ -188,6 +271,32 @@ export const DriverProvider = ({ children }) => {
           Object.keys(updatedDocs).forEach(key => {
             updatedDocs[key].status = 'Verified';
           });
+
+          // Sync to services_data if this is a service entity
+          if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-') || d.type === 'workshop' || d.type === 'oil' || d.type === 'visitor') {
+            const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
+            if (!existingServices.some(s => s.id === d.id)) {
+              let typeName = 'visitor';
+              if (d.id.startsWith('WS-') || d.type === 'workshop') typeName = 'workshop';
+              else if (d.id.startsWith('OC-') || d.type === 'oil') typeName = 'oil change';
+              
+              const newService = {
+                id: d.id,
+                name: d.name,
+                type: typeName,
+                location: d.city || 'Sector 5, Telemetry Zone',
+                latitude: d.latitude || '28.6250',
+                longitude: d.longitude || '77.2180',
+                status: 'Active',
+                rating: 'New',
+                contact: d.phone || '—',
+                email: d.email || '—',
+                amount: d.paymentAmount || 'Free'
+              };
+              localStorage.setItem('services_data', JSON.stringify([newService, ...existingServices]));
+            }
+          }
+
           return { ...d, status: 'Approved', documents: updatedDocs, rejectionReason: '' };
         }
         return d;
@@ -200,7 +309,7 @@ export const DriverProvider = ({ children }) => {
       const newNotif = {
         id: `NOT-${Date.now()}`,
         type: 'approval',
-        title: 'Driver Approved',
+        title: 'Entity Approved',
         message: `${driver.name} (ID: ${driver.id}) has been approved and marked active.`,
         time: 'Just now',
         read: false
@@ -215,7 +324,7 @@ export const DriverProvider = ({ children }) => {
             id: newPayId,
             driverId: driver.id,
             name: driver.name,
-            amount: '$49.99',
+            amount: driver.paymentAmount || '$49.99',
             gateway: 'Credit Card',
             status: 'Completed',
             date: new Date().toISOString().split('T')[0]
@@ -233,6 +342,12 @@ export const DriverProvider = ({ children }) => {
     setDrivers((prev) =>
       prev.map((d) => {
         if (d.id === id) {
+          // Remove from services_data if present
+          if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-')) {
+            const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
+            const filtered = existingServices.filter(s => s.id !== d.id);
+            localStorage.setItem('services_data', JSON.stringify(filtered));
+          }
           return { ...d, status: 'Rejected', rejectionReason: reason };
         }
         return d;
@@ -245,7 +360,7 @@ export const DriverProvider = ({ children }) => {
       const newNotif = {
         id: `NOT-${Date.now()}`,
         type: 'rejection',
-        title: 'Driver Rejected',
+        title: 'Entity Rejected',
         message: `${driver.name} (ID: ${driver.id}) has been rejected. Reason: ${reason}`,
         time: 'Just now',
         read: false
@@ -263,10 +378,40 @@ export const DriverProvider = ({ children }) => {
             Object.keys(updatedDocs).forEach(key => {
               updatedDocs[key].status = 'Verified';
             });
+            // Sync to services_data
+            if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-') || d.type === 'workshop' || d.type === 'oil' || d.type === 'visitor') {
+              const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
+              if (!existingServices.some(s => s.id === d.id)) {
+                let typeName = 'visitor';
+                if (d.id.startsWith('WS-') || d.type === 'workshop') typeName = 'workshop';
+                else if (d.id.startsWith('OC-') || d.type === 'oil') typeName = 'oil change';
+                
+                const newService = {
+                  id: d.id,
+                  name: d.name,
+                  type: typeName,
+                  location: d.city || 'Sector 5, Telemetry Zone',
+                  latitude: d.latitude || '28.6250',
+                  longitude: d.longitude || '77.2180',
+                  status: 'Active',
+                  rating: 'New',
+                  contact: d.phone || '—',
+                  email: d.email || '—',
+                  amount: d.paymentAmount || 'Free'
+                };
+                localStorage.setItem('services_data', JSON.stringify([newService, ...existingServices]));
+              }
+            }
           } else if (newStatus === 'Pending') {
             Object.keys(updatedDocs).forEach(key => {
               updatedDocs[key].status = 'Pending Verification';
             });
+            // Remove from services_data if pending
+            if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-')) {
+              const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
+              const filtered = existingServices.filter(s => s.id !== d.id);
+              localStorage.setItem('services_data', JSON.stringify(filtered));
+            }
           }
           return { ...d, status: newStatus, documents: updatedDocs, rejectionReason: '' };
         }

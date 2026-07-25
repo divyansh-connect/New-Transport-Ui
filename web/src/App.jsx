@@ -36,7 +36,7 @@ export function App() {
                 <MainLayout>
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
-                    <Route path="/drivers" element={<Drivers />} />
+                    <Route path="/users" element={<Drivers />} />
                     <Route path="/payments" element={<Payments />} />
                     <Route path="/services" element={<Services />} />
                     <Route path="/notifications" element={<Notifications />} />
