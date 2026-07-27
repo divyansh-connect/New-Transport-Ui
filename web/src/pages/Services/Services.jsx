@@ -242,13 +242,15 @@ export const Services = () => {
 
     let planPrice = 'Free';
     if (payRequired) {
-      if (freeTrialEnabled) {
+      if (formData.paymentStatus === 'Free') {
+        planPrice = 'Free';
+      } else if (freeTrialEnabled) {
         planPrice = `Free (${freeTrialDuration} Trial)`;
       } else {
-        if (activeTab === 'driver') planPrice = '$49.99';
-        else if (activeTab === 'workshop') planPrice = '$149.00';
-        else if (activeTab === 'oil change') planPrice = '$199.00';
-        else if (activeTab === 'visitor') planPrice = '$9.99';
+        const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
+        planPrice = selectedPlan ? `$${selectedPlan.price}` : (
+          activeTab === 'driver' ? '$49.99' : (activeTab === 'workshop' ? '$149.00' : activeTab === 'oil change' ? '$199.00' : '$9.99')
+        );
       }
     }
 
@@ -297,9 +299,9 @@ export const Services = () => {
             : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
       status: 'Pending',
       registrationDate: new Date().toISOString().split('T')[0],
-      paymentStatus: payRequired ? (freeTrialEnabled ? 'Trial' : 'Unpaid') : 'Paid',
+      paymentStatus: payRequired ? (formData.paymentStatus === 'Free' ? 'Paid' : (freeTrialEnabled ? 'Trial' : 'Unpaid')) : 'Paid',
       paymentAmount: planPrice,
-      paymentMethod: payRequired ? (freeTrialEnabled ? 'Trial Activation' : 'None') : 'Free Bypass',
+      paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
       type: activeTab === 'oil change' ? 'oil' : activeTab,
       documents: {
         license: { name: 'License / ID', status: 'Pending Verification', url: '#' },
@@ -526,6 +528,7 @@ export const Services = () => {
             onChange={setFormData}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsModalOpen(false)}
+            subscriptionPlans={subscriptionPlans}
             payRequired={payRequiredForTab}
           />
         )}
@@ -535,6 +538,7 @@ export const Services = () => {
             onChange={setFormData}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsModalOpen(false)}
+            subscriptionPlans={subscriptionPlans}
             payRequired={payRequiredForTab}
           />
         )}
@@ -544,6 +548,7 @@ export const Services = () => {
             onChange={setFormData}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsModalOpen(false)}
+            subscriptionPlans={subscriptionPlans}
             payRequired={payRequiredForTab}
           />
         )}

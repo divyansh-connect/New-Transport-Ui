@@ -450,6 +450,19 @@ export const DriverProvider = ({ children }) => {
     setPayments((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const deleteDriver = (id) => {
+    setDrivers((prev) => {
+      const filtered = prev.filter((d) => d.id !== id);
+      // If it is a service (starts with WS-, OC-, VIS-), also delete it from services_data
+      if (id && (id.startsWith('WS-') || id.startsWith('OC-') || id.startsWith('VIS-'))) {
+        const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
+        const filteredServices = existingServices.filter(s => s.id !== id);
+        localStorage.setItem('services_data', JSON.stringify(filteredServices));
+      }
+      return filtered;
+    });
+  };
+
   const updatePayment = (id, updatedData) => {
     setPayments((prev) => prev.map((p) => (p.id === id ? { ...p, ...updatedData } : p)));
   };
@@ -467,6 +480,7 @@ export const DriverProvider = ({ children }) => {
         markNotificationAsRead,
         clearAllNotifications,
         deletePayment,
+        deleteDriver,
         updatePayment,
         registerDriver
       }}

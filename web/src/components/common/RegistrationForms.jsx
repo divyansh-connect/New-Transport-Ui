@@ -31,6 +31,7 @@ export const DriverRegistrationForm = ({
   const { subscriptionConfig } = useTheme();
   const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
   const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+  const isFreeSelected = formData.paymentStatus === 'Free';
 
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
@@ -82,23 +83,25 @@ export const DriverRegistrationForm = ({
             onChange={(e) => onChange({ ...formData, plateNumber: e.target.value })}
             required
           />
-          {payRequired && subscriptionPlans.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
-                Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
-              </label>
-              <Select
-                value={formData.selectedPlanId || subscriptionPlans[0]?.id}
-                onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
-                options={subscriptionPlans.map(plan => ({
-                  label: freeTrialEnabled 
-                    ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
-                    : `${plan.name} (${plan.duration}) - $${plan.price}`,
-                  value: plan.id
-                }))}
-              />
-            </div>
-          ) : (
+          {payRequired && !isFreeSelected ? (
+            subscriptionPlans.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: freeTrialEnabled 
+                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
+                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            ) : null
+          ) : payRequired && isFreeSelected ? null : (
             <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
               <div style={{
                 padding: '12px',
@@ -115,6 +118,22 @@ export const DriverRegistrationForm = ({
             </div>
           )}
         </div>
+
+        {payRequired && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+            <Select
+              value={formData.paymentStatus || 'Paid'}
+              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+              options={[
+                { label: 'Paid', value: 'Paid' },
+                { label: 'Free', value: 'Free' }
+              ]}
+            />
+          </div>
+        )}
+
+
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)' }}>
@@ -151,11 +170,13 @@ export const WorkshopRegistrationForm = ({
   onChange,
   onSubmit,
   onCancel,
+  subscriptionPlans = [],
   payRequired = false
 }) => {
   const { subscriptionConfig } = useTheme();
   const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
   const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+  const isFreeSelected = formData.paymentStatus === 'Free';
 
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
@@ -224,23 +245,7 @@ export const WorkshopRegistrationForm = ({
           </div>
         </div>
 
-        {payRequired ? (
-          <div style={{
-            padding: '12px',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            border: '1px solid #3b82f6',
-            borderRadius: '6px',
-            color: '#3b82f6',
-            fontSize: '13px',
-            fontWeight: '600'
-          }}>
-            {freeTrialEnabled ? (
-              <span>🎁 Free Trial active: <strong>{freeTrialDuration} Free</strong>, then flat $149.00 registration fee.</span>
-            ) : (
-              <span>💳 A flat registration fee of <strong>$149.00</strong> will be charged.</span>
-            )}
-          </div>
-        ) : (
+        {!payRequired && (
           <div style={{
             padding: '12px',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -251,6 +256,39 @@ export const WorkshopRegistrationForm = ({
             fontWeight: '600'
           }}>
             ✨ Registration is FREE for this category (Payment requirement disabled by Admin).
+          </div>
+        )}
+
+        {payRequired && (
+          <div style={gridStyle}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+              <Select
+                value={formData.paymentStatus || 'Paid'}
+                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+                options={[
+                  { label: 'Paid', value: 'Paid' },
+                  { label: 'Free', value: 'Free' }
+                ]}
+              />
+            </div>
+            {!isFreeSelected && subscriptionPlans.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: freeTrialEnabled 
+                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
+                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -278,11 +316,13 @@ export const OilChangeRegistrationForm = ({
   onChange,
   onSubmit,
   onCancel,
+  subscriptionPlans = [],
   payRequired = false
 }) => {
   const { subscriptionConfig } = useTheme();
   const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
   const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+  const isFreeSelected = formData.paymentStatus === 'Free';
 
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
@@ -351,23 +391,7 @@ export const OilChangeRegistrationForm = ({
           </div>
         </div>
 
-        {payRequired ? (
-          <div style={{
-            padding: '12px',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            border: '1px solid #3b82f6',
-            borderRadius: '6px',
-            color: '#3b82f6',
-            fontSize: '13px',
-            fontWeight: '600'
-          }}>
-            {freeTrialEnabled ? (
-              <span>🎁 Free Trial active: <strong>{freeTrialDuration} Free</strong>, then flat $199.00 registration fee.</span>
-            ) : (
-              <span>💳 A flat registration fee of <strong>$199.00</strong> will be charged.</span>
-            )}
-          </div>
-        ) : (
+        {!payRequired && (
           <div style={{
             padding: '12px',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -378,6 +402,39 @@ export const OilChangeRegistrationForm = ({
             fontWeight: '600'
           }}>
             ✨ Registration is FREE for this category (Payment requirement disabled by Admin).
+          </div>
+        )}
+
+        {payRequired && (
+          <div style={gridStyle}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+              <Select
+                value={formData.paymentStatus || 'Paid'}
+                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+                options={[
+                  { label: 'Paid', value: 'Paid' },
+                  { label: 'Free', value: 'Free' }
+                ]}
+              />
+            </div>
+            {!isFreeSelected && subscriptionPlans.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: freeTrialEnabled 
+                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
+                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -405,11 +462,13 @@ export const VisitorRegistrationForm = ({
   onChange,
   onSubmit,
   onCancel,
+  subscriptionPlans = [],
   payRequired = false
 }) => {
   const { subscriptionConfig } = useTheme();
   const freeTrialEnabled = subscriptionConfig?.freeTrialEnabled;
   const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
+  const isFreeSelected = formData.paymentStatus === 'Free';
 
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
@@ -452,39 +511,54 @@ export const VisitorRegistrationForm = ({
           />
         </div>
 
-        <div style={{ display: 'flex', width: '100%' }}>
-          {payRequired ? (
-            <div style={{
-              padding: '12px',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              border: '1px solid #3b82f6',
-              borderRadius: '6px',
-              color: '#3b82f6',
-              fontSize: '13px',
-              fontWeight: '600',
-              width: '100%'
-            }}>
-              {freeTrialEnabled ? (
-                <span>🎁 Free Trial active: <strong>{freeTrialDuration} Free</strong>, then flat $9.99 registration fee.</span>
-              ) : (
-                <span>💳 Registration fee: $9.99</span>
-              )}
+        {!payRequired && (
+          <div style={{
+            padding: '12px',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid #10b981',
+            borderRadius: '6px',
+            color: '#10b981',
+            fontSize: '13px',
+            fontWeight: '600',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            ✨ Registration is FREE
+          </div>
+        )}
+
+        {payRequired && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+              <Select
+                value={formData.paymentStatus || 'Paid'}
+                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+                options={[
+                  { label: 'Paid', value: 'Paid' },
+                  { label: 'Free', value: 'Free' }
+                ]}
+              />
             </div>
-          ) : (
-            <div style={{
-              padding: '12px',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid #10b981',
-              borderRadius: '6px',
-              color: '#10b981',
-              fontSize: '13px',
-              fontWeight: '600',
-              width: '100%'
-            }}>
-              ✨ Registration is FREE
-            </div>
-          )}
-        </div>
+            {!isFreeSelected && subscriptionPlans.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: freeTrialEnabled 
+                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
+                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            ) : null}
+          </div>
+        )}
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
           <input

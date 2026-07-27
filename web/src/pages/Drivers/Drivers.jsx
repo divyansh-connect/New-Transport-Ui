@@ -23,6 +23,7 @@ import {
   ChevronRight,
   TrendingUp,
   Download,
+  Trash2,
 } from 'lucide-react';
 import { downloadExcel } from '../../utils/excelExport';
 import './Drivers.css';
@@ -38,6 +39,7 @@ export const Drivers = () => {
     updateDriverProfile,
     markNotificationAsRead,
     clearAllNotifications,
+    deleteDriver,
   } = useDrivers();
 
   // Active tab state
@@ -59,6 +61,7 @@ export const Drivers = () => {
   const [rejectingDriver, setRejectingDriver] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   // Edit profile state
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -495,6 +498,14 @@ export const Drivers = () => {
                           </button>
                         </>
                       )}
+                      <button
+                        className="btn-table-action reject"
+                        title="Delete User Permanently"
+                        onClick={() => setDeleteConfirmId(row.id)}
+                        style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -1028,6 +1039,47 @@ export const Drivers = () => {
                 }}
               >
                 Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="dialog-overlay" onClick={() => setDeleteConfirmId(null)}>
+          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h4 className="dialog-title" style={{ margin: 0, color: '#ef4444' }}>Confirm Permanent Delete</h4>
+              <button
+                className="close-icon-btn"
+                onClick={() => setDeleteConfirmId(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="dialog-body">
+              <p style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>
+                Are you sure you want to permanently delete this user/service record (ID: <strong>{deleteConfirmId}</strong>)? This action cannot be undone.
+              </p>
+            </div>
+            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+              <button className="btn-secondary" onClick={() => setDeleteConfirmId(null)}>
+                Cancel
+              </button>
+              <button
+                className="btn-danger"
+                onClick={() => {
+                  deleteDriver(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                  if (selectedDriver && selectedDriver.id === deleteConfirmId) {
+                    setSelectedDriver(null);
+                  }
+                }}
+                style={{ cursor: 'pointer', backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px' }}
+              >
+                Confirm Delete
               </button>
             </div>
           </div>

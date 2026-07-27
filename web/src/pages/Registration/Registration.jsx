@@ -74,19 +74,15 @@ export const Registration = () => {
     // Find active plan price or default price based on category
     let planPrice = 'Free';
     if (payRequired) {
-      if (freeTrialEnabled) {
+      if (formData.paymentStatus === 'Free') {
+        planPrice = 'Free';
+      } else if (freeTrialEnabled) {
         planPrice = `Free (${freeTrialDuration} Trial)`;
       } else {
-        if (isDriver) {
-          const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
-          planPrice = selectedPlan ? `$${selectedPlan.price}` : '$49.99';
-        } else if (formData.type === 'workshop') {
-          planPrice = '$149.00';
-        } else if (formData.type === 'oil') {
-          planPrice = '$199.00';
-        } else if (formData.type === 'visitor') {
-          planPrice = '$9.99';
-        }
+        const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
+        planPrice = selectedPlan ? `$${selectedPlan.price}` : (
+          formData.type === 'workshop' ? '$149.00' : formData.type === 'oil' ? '$199.00' : formData.type === 'visitor' ? '$9.99' : '$49.99'
+        );
       }
     }
     
@@ -137,9 +133,9 @@ export const Registration = () => {
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
         status: 'Pending',
         registrationDate: new Date().toISOString().split('T')[0],
-        paymentStatus: payRequired ? (freeTrialEnabled ? 'Trial' : 'Unpaid') : 'Paid',
+        paymentStatus: payRequired ? (formData.paymentStatus === 'Free' ? 'Paid' : (freeTrialEnabled ? 'Trial' : 'Unpaid')) : 'Paid',
         paymentAmount: planPrice,
-        paymentMethod: payRequired ? (freeTrialEnabled ? 'Trial Activation' : 'None') : 'Free Bypass',
+        paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
         documents: {
           license: { name: 'Commercial Driver License (CDL)', status: 'Pending Verification', url: '#' },
           insurance: { name: 'Vehicle Liability Insurance', status: 'Pending Verification', url: '#' },
@@ -175,9 +171,9 @@ export const Registration = () => {
             : 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256',
         status: 'Pending',
         registrationDate: new Date().toISOString().split('T')[0],
-        paymentStatus: payRequired ? (freeTrialEnabled ? 'Trial' : 'Unpaid') : 'Paid',
+        paymentStatus: payRequired ? (formData.paymentStatus === 'Free' ? 'Paid' : (freeTrialEnabled ? 'Trial' : 'Unpaid')) : 'Paid',
         paymentAmount: planPrice,
-        paymentMethod: payRequired ? (freeTrialEnabled ? 'Trial Activation' : 'None') : 'Free Bypass',
+        paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
         type: formData.type,
         documents: {
           license: { 
@@ -246,6 +242,8 @@ export const Registration = () => {
               onChange={setFormData}
               onSubmit={handleSubmit}
               onCancel={() => window.history.back()}
+              subscriptionPlans={subscriptionPlans}
+              payRequired={payRequired}
             />
           )}
           {formData.type === 'oil' && (
@@ -254,6 +252,8 @@ export const Registration = () => {
               onChange={setFormData}
               onSubmit={handleSubmit}
               onCancel={() => window.history.back()}
+              subscriptionPlans={subscriptionPlans}
+              payRequired={payRequired}
             />
           )}
           {formData.type === 'visitor' && (
@@ -262,6 +262,8 @@ export const Registration = () => {
               onChange={setFormData}
               onSubmit={handleSubmit}
               onCancel={() => window.history.back()}
+              subscriptionPlans={subscriptionPlans}
+              payRequired={payRequired}
             />
           )}
         </Card>
