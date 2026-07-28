@@ -47,7 +47,6 @@ export const Payments = () => {
   };
 
   const handleExport = () => {
-  const handleExport = () => {
     const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Email Address", "Amount", "Payment Gateway", "Status", "Date"];
     const rows = payments.map(e => {
       const driverObj = drivers.find(d => d.id === e.driverId || d.realId === e.driverId);
