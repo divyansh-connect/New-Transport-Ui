@@ -85,21 +85,44 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Update personal user profile details
+// Update personal user profile details & document credentials
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, lastName, email, carPlateNumber, trackLocation } = req.body;
+    const {
+      name,
+      lastName,
+      mobileNo,
+      email,
+      carPlateNumber,
+      licenseName,
+      insuranceName,
+      paymentStatus,
+      paymentMethod,
+      amountPaid,
+      trackLocation,
+      latitude,
+      longitude
+    } = req.body;
+
+    const dataToUpdate = {};
+    if (name !== undefined) dataToUpdate.name = name;
+    if (lastName !== undefined) dataToUpdate.lastName = lastName;
+    if (mobileNo !== undefined) dataToUpdate.mobileNo = mobileNo;
+    if (email !== undefined) dataToUpdate.email = email;
+    if (carPlateNumber !== undefined) dataToUpdate.carPlateNumber = carPlateNumber;
+    if (licenseName !== undefined) dataToUpdate.licenseName = licenseName;
+    if (insuranceName !== undefined) dataToUpdate.insuranceName = insuranceName;
+    if (paymentStatus !== undefined) dataToUpdate.paymentStatus = paymentStatus;
+    if (paymentMethod !== undefined) dataToUpdate.paymentMethod = paymentMethod;
+    if (amountPaid !== undefined) dataToUpdate.amountPaid = amountPaid;
+    if (trackLocation !== undefined) dataToUpdate.trackLocation = trackLocation;
+    if (latitude !== undefined) dataToUpdate.latitude = parseFloat(latitude);
+    if (longitude !== undefined) dataToUpdate.longitude = parseFloat(longitude);
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        name,
-        lastName,
-        email,
-        carPlateNumber,
-        trackLocation
-      }
+      data: dataToUpdate
     });
 
     const { password: _, ...userWithoutPassword } = updatedUser;

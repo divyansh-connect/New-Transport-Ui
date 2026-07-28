@@ -89,7 +89,7 @@ export const DriverRegistrationForm = ({
           />
         </div>
 
-        {/* Plate Number + Subscription Row */}
+        {/* Plate Number Row */}
         <div style={gridStyle}>
           <Input
             label="Plate Number"
@@ -99,51 +99,39 @@ export const DriverRegistrationForm = ({
             onChange={(e) => onChange({ ...formData, plateNumber: e.target.value })}
             required
           />
-          {subscriptionPlans.length > 0 && (
+        </div>
+        {/* Payment Status Selection & Subscription Plan */}
+        {payRequired && (
+          <div style={gridStyle}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
-                Subscription Plan
-              </label>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
               <Select
-                value={formData.selectedPlanId || subscriptionPlans[0]?.id}
-                onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
-                options={subscriptionPlans.map(plan => ({
-                  label: `${plan.name} (${plan.duration}) - $${plan.price}`,
-                  value: plan.id
-                }))}
+                value={formData.paymentStatus || 'Paid'}
+                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+                options={[
+                  { label: 'Paid', value: 'Paid' },
+                  { label: 'Free', value: 'Free' }
+                ]}
               />
             </div>
-          )}
-        </div>
 
-        {/* Payment Mode & Method Selection */}
-        <div style={gridStyle}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
-            <Select
-              value={formData.paymentStatus || 'Paid'}
-              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
-              options={[
-                { label: 'Paid (Full Access)', value: 'Paid' },
-                { label: 'Free (Admin Bypass)', value: 'Free' },
-                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
-              ]}
-            />
+            {formData.paymentStatus !== 'Free' && subscriptionPlans.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
-            <Select
-              value={formData.paymentMethod || 'Free Bypass'}
-              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
-              options={[
-                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
-                { label: 'Cash Receipt', value: 'Cash' },
-                { label: 'Credit / Debit Card', value: 'Credit Card' },
-                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
-              ]}
-            />
-          </div>
-        </div>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)' }}>
@@ -271,34 +259,38 @@ export const WorkshopRegistrationForm = ({
           </div>
         </div>
 
-        {/* Payment Mode & Method Selection */}
-        <div style={gridStyle}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
-            <Select
-              value={formData.paymentStatus || 'Paid'}
-              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
-              options={[
-                { label: 'Paid (Full Access)', value: 'Paid' },
-                { label: 'Free (Admin Bypass)', value: 'Free' },
-                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
-              ]}
-            />
+        {/* Payment Status Selection & Subscription Plan */}
+        {payRequired && (
+          <div style={gridStyle}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+              <Select
+                value={formData.paymentStatus || 'Paid'}
+                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+                options={[
+                  { label: 'Paid', value: 'Paid' },
+                  { label: 'Free', value: 'Free' }
+                ]}
+              />
+            </div>
+
+            {formData.paymentStatus !== 'Free' && subscriptionPlans.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
-            <Select
-              value={formData.paymentMethod || 'Free Bypass'}
-              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
-              options={[
-                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
-                { label: 'Cash Receipt', value: 'Cash' },
-                { label: 'Credit / Debit Card', value: 'Credit Card' },
-                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
-              ]}
-            />
-          </div>
-        </div>
+        )}
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
           <input
@@ -415,34 +407,38 @@ export const OilChangeRegistrationForm = ({
           </div>
         </div>
 
-        {/* Payment Mode & Method Selection */}
-        <div style={gridStyle}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
-            <Select
-              value={formData.paymentStatus || 'Paid'}
-              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
-              options={[
-                { label: 'Paid (Full Access)', value: 'Paid' },
-                { label: 'Free (Admin Bypass)', value: 'Free' },
-                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
-              ]}
-            />
+        {/* Payment Status Selection & Subscription Plan */}
+        {payRequired && (
+          <div style={gridStyle}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+              <Select
+                value={formData.paymentStatus || 'Paid'}
+                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+                options={[
+                  { label: 'Paid', value: 'Paid' },
+                  { label: 'Free', value: 'Free' }
+                ]}
+              />
+            </div>
+
+            {formData.paymentStatus !== 'Free' && subscriptionPlans.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
-            <Select
-              value={formData.paymentMethod || 'Free Bypass'}
-              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
-              options={[
-                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
-                { label: 'Cash Receipt', value: 'Cash' },
-                { label: 'Credit / Debit Card', value: 'Credit Card' },
-                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
-              ]}
-            />
-          </div>
-        </div>
+        )}
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
           <input
@@ -532,34 +528,38 @@ export const VisitorRegistrationForm = ({
           />
         </div>
 
-        {/* Payment Mode & Method Selection */}
-        <div style={gridStyle}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
-            <Select
-              value={formData.paymentStatus || 'Paid'}
-              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
-              options={[
-                { label: 'Paid (Full Access)', value: 'Paid' },
-                { label: 'Free (Admin Bypass)', value: 'Free' },
-                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
-              ]}
-            />
+        {/* Payment Status Selection & Subscription Plan */}
+        {payRequired && (
+          <div style={gridStyle}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+              <Select
+                value={formData.paymentStatus || 'Paid'}
+                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+                options={[
+                  { label: 'Paid', value: 'Paid' },
+                  { label: 'Free', value: 'Free' }
+                ]}
+              />
+            </div>
+
+            {formData.paymentStatus !== 'Free' && subscriptionPlans.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                  Subscription Plan
+                </label>
+                <Select
+                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                  options={subscriptionPlans.map(plan => ({
+                    label: `${plan.name} (${plan.duration}) - $${plan.price}`,
+                    value: plan.id
+                  }))}
+                />
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
-            <Select
-              value={formData.paymentMethod || 'Free Bypass'}
-              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
-              options={[
-                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
-                { label: 'Cash Receipt', value: 'Cash' },
-                { label: 'Credit / Debit Card', value: 'Credit Card' },
-                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
-              ]}
-            />
-          </div>
-        </div>
+        )}
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
           <input

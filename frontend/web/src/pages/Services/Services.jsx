@@ -298,9 +298,9 @@ export const Services = () => {
             : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
       status: 'Pending',
       registrationDate: new Date().toISOString().split('T')[0],
-      paymentStatus: payRequired ? (formData.paymentStatus === 'Free' ? 'Paid' : (freeTrialEnabled ? 'Trial' : 'Unpaid')) : 'Paid',
+      paymentStatus: payRequired ? (formData.paymentStatus || 'Paid') : 'Paid',
       paymentAmount: planPrice,
-      paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
+      paymentMethod: payRequired ? (formData.paymentMethod || 'Free Bypass') : 'Free Bypass',
       type: addFormType === 'oil change' ? 'oil' : addFormType,
       password: formData.password || 'password123',
       documents: {
@@ -397,7 +397,7 @@ export const Services = () => {
                     <code>{row.latitude || '28.6250'}, {row.longitude || '77.2180'}</code>
                   </td>
                 )}
-                <td>{isPeopleTab ? (row.phone || '—') : (row.contact || '—')}</td>
+                <td>{row.phone || row.contact || row.mobileNo || '—'}</td>
 
                 <td>
                   <span className={`status-badge ${row.status.toLowerCase()}`}>
