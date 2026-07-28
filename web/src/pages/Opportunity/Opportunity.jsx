@@ -46,10 +46,33 @@ export const Opportunity = () => {
 
   const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEdit = (opp) => {
+    setEditingId(opp.id);
+    setFormData({
+      title: opp.title,
+      type: opp.type,
+      priority: opp.priority,
+      location: opp.location === 'All Zones' ? '' : opp.location,
+      description: opp.description
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({
+      title: '',
+      type: 'Freight',
+      priority: 'Normal',
+      location: '',
+      description: ''
+    });
   };
 
   const handlePublish = (e) => {
@@ -62,20 +85,41 @@ export const Opportunity = () => {
     setIsSubmitting(true);
 
     setTimeout(() => {
-      const today = new Date();
-      const formattedDate = `${today.getDate()} ${today.toLocaleString('en', { month: 'short' })} ${today.getFullYear()}`;
+      if (editingId) {
+        setOpportunities((prev) =>
+          prev.map((item) =>
+            item.id === editingId
+              ? {
+                  ...item,
+                  title: formData.title.trim(),
+                  type: formData.type,
+                  priority: formData.priority,
+                  location: formData.location.trim() || 'All Zones',
+                  description: formData.description.trim()
+                }
+              : item
+          )
+        );
+        setEditingId(null);
+        setSuccessMessage('Notice successfully updated!');
+      } else {
+        const today = new Date();
+        const formattedDate = `${today.getDate()} ${today.toLocaleString('en', { month: 'short' })} ${today.getFullYear()}`;
 
-      const newNotice = {
-        id: Date.now(),
-        title: formData.title.trim(),
-        type: formData.type,
-        priority: formData.priority,
-        location: formData.location.trim() || 'All Zones',
-        date: formattedDate,
-        description: formData.description.trim()
-      };
+        const newNotice = {
+          id: Date.now(),
+          title: formData.title.trim(),
+          type: formData.type,
+          priority: formData.priority,
+          location: formData.location.trim() || 'All Zones',
+          date: formattedDate,
+          description: formData.description.trim()
+        };
 
-      setOpportunities((prev) => [newNotice, ...prev]);
+        setOpportunities((prev) => [newNotice, ...prev]);
+        setSuccessMessage('Notice successfully published & live broadcasted to Driver App!');
+      }
+
       setFormData({
         title: '',
         type: 'Freight',
@@ -84,7 +128,6 @@ export const Opportunity = () => {
         description: ''
       });
       setIsSubmitting(false);
-      setSuccessMessage('Notice successfully published & live broadcasted to Driver App!');
 
       setTimeout(() => {
         setSuccessMessage('');
@@ -93,6 +136,9 @@ export const Opportunity = () => {
   };
 
   const handleDelete = (id) => {
+    if (editingId === id) {
+      handleCancelEdit();
+    }
     setOpportunities((prev) => prev.filter((item) => item.id !== id));
   };
 
@@ -128,7 +174,10 @@ export const Opportunity = () => {
 
       <div className="opportunity-grid">
         <div className="form-column">
-          <Card title="Publish New Notice" subtitle="Broadcast information to all registered drivers.">
+          <Card 
+            title={editingId ? "Edit Notice" : "Publish New Notice"} 
+            subtitle={editingId ? "Modify notice details for broadcasting." : "Broadcast information to all registered drivers."}
+          >
             <form className="opportunity-form" onSubmit={handlePublish}>
               <div className="form-group">
                 <label>Notice Title</label>
@@ -188,23 +237,43 @@ export const Opportunity = () => {
                 ></textarea>
               </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-sm"
-                style={{
-                  padding: '9px 12px',
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'white',
-                  borderRadius: 'var(--radius-md)',
-                  fontWeight: '600',
-                  border: 'none',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                  opacity: isSubmitting ? 0.7 : 1
-                }}
-              >
-                <Send size={18} /> {isSubmitting ? 'Publishing...' : 'Publish Notice'}
-              </button>
+              <div className="d-flex gap-sm">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-sm"
+                  style={{
+                    padding: '9px 12px',
+                    backgroundColor: 'var(--color-primary)',
+                    color: 'white',
+                    borderRadius: 'var(--radius-md)',
+                    fontWeight: '600',
+                    border: 'none',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    opacity: isSubmitting ? 0.7 : 1
+                  }}
+                >
+                  <Send size={18} /> {isSubmitting ? (editingId ? 'Updating...' : 'Publishing...') : (editingId ? 'Update Notice' : 'Publish Notice')}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="btn-secondary w-100 d-flex justify-center align-center mt-sm"
+                    style={{
+                      padding: '9px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: '600',
+                      border: '1px solid var(--color-border)',
+                      cursor: 'pointer',
+                      backgroundColor: 'transparent',
+                      color: 'var(--color-text-main)'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           </Card>
         </div>
@@ -242,7 +311,10 @@ export const Opportunity = () => {
                       <span className="meta-item"><Clock size={14} /> {opp.date}</span>
                       <span className="meta-item"><Map size={14} /> {opp.location}</span>
                     </div>
-                    <div className="action-buttons">
+                    <div className="action-buttons" style={{ display: 'flex', gap: '8px' }}>
+                      <button className="btn-icon primary" onClick={() => handleEdit(opp)} title="Edit Broadcast" style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <Edit2 size={16} />
+                      </button>
                       <button className="btn-icon danger" onClick={() => handleDelete(opp.id)} title="Delete Broadcast">
                         <Trash2 size={16} />
                       </button>

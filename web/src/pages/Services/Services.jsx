@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Table } from '../../components/common/Tables/Table';
 import { Modal } from '../../components/common/Modal/Modal';
-import { Input } from '../../components/common/Input/Input';
+import { Input, Select } from '../../components/common/Input/Input';
 import { Button } from '../../components/common/Button/Button';
 import { Wrench, Droplet, MapPin, Plus, Search, Eye, Edit2, Trash2, Download, Users, User } from 'lucide-react';
 import { useDrivers } from '../../context/DriverContext';
@@ -43,8 +43,15 @@ export const Services = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add', 'edit', 'view'
+  const [addFormType, setAddFormType] = useState('driver');
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [formData, setFormData] = useState({ name: '', location: '', latitude: '', longitude: '', contact: '', email: '', status: 'Active', amount: '' });
+
+  const payRequiredForType = 
+    (addFormType === 'driver' && config.driver) ||
+    (addFormType === 'workshop' && config.workshop) ||
+    (addFormType === 'oil change' && config.oilchange) ||
+    (addFormType === 'visitor' && config.visitor);
 
   const getNumericAmount = (amtStr) => {
     if (!amtStr) return 0;
@@ -155,6 +162,7 @@ export const Services = () => {
 
   const handleAddClick = () => {
     setModalMode('add');
+    setAddFormType(activeTab);
     setFormData({ type: activeTab, firstName: '', lastName: '', phone: '', email: '', plateNumber: '', location: '', latitude: '28.6250', longitude: '77.2180', termsAccepted: false });
     setIsModalOpen(true);
   };
@@ -217,8 +225,8 @@ export const Services = () => {
   const handleFormSubmit = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     
-    const isDriver = activeTab === 'driver';
-    const isVisitor = activeTab === 'visitor';
+    const isDriver = addFormType === 'driver';
+    const isVisitor = addFormType === 'visitor';
     
     const fullName = isDriver || isVisitor
       ? `${formData.firstName} ${formData.lastName}`
@@ -235,10 +243,10 @@ export const Services = () => {
     const freeTrialDuration = subscriptionConfig?.freeTrialDuration || '1 Month';
 
     const payRequired = 
-      (activeTab === 'driver' && config.driver) ||
-      (activeTab === 'workshop' && config.workshop) ||
-      (activeTab === 'oil change' && config.oilchange) ||
-      (activeTab === 'visitor' && config.visitor);
+      (addFormType === 'driver' && config.driver) ||
+      (addFormType === 'workshop' && config.workshop) ||
+      (addFormType === 'oil change' && config.oilchange) ||
+      (addFormType === 'visitor' && config.visitor);
 
     let planPrice = 'Free';
     if (payRequired) {
@@ -249,23 +257,23 @@ export const Services = () => {
       } else {
         const selectedPlan = subscriptionPlans.find(p => p.id === (formData.selectedPlanId || subscriptionPlans?.[0]?.id));
         planPrice = selectedPlan ? `$${selectedPlan.price}` : (
-          activeTab === 'driver' ? '$49.99' : (activeTab === 'workshop' ? '$149.00' : activeTab === 'oil change' ? '$199.00' : '$9.99')
+          addFormType === 'driver' ? '$49.99' : (addFormType === 'workshop' ? '$149.00' : addFormType === 'oil change' ? '$199.00' : '$9.99')
         );
       }
     }
 
-    const targetEntityId = activeTab === 'driver'
+    const targetEntityId = addFormType === 'driver'
       ? `DRV-${Math.floor(1007 + Math.random() * 890)}`
-      : activeTab === 'workshop'
+      : addFormType === 'workshop'
         ? `WS-${Math.floor(100 + Math.random() * 900)}`
-        : activeTab === 'oil change'
+        : addFormType === 'oil change'
           ? `OC-${Math.floor(100 + Math.random() * 900)}`
           : `VIS-${Math.floor(100 + Math.random() * 900)}`;
 
     const newRecord = {
       id: `REG-${Math.floor(107 + Math.random() * 890)}`,
       name: fullName,
-      type: displayTypes[activeTab] || activeTab,
+      type: displayTypes[addFormType] || addFormType,
       status: 'Pending',
       date: new Date().toISOString().split('T')[0],
       amount: planPrice,
@@ -285,16 +293,16 @@ export const Services = () => {
       email: formData.email,
       phone: formData.phone || '—',
       plateNumber: formData.plateNumber || '—',
-      vehicleType: displayTypes[activeTab] || activeTab,
-      vehicleModel: activeTab === 'workshop' ? 'Workshop Hub' : activeTab === 'oil change' ? 'Oil Change Station' : activeTab === 'visitor' ? 'Guest Access' : 'Standard Cargo',
+      vehicleType: displayTypes[addFormType] || addFormType,
+      vehicleModel: addFormType === 'workshop' ? 'Workshop Hub' : addFormType === 'oil change' ? 'Oil Change Station' : addFormType === 'visitor' ? 'Guest Access' : 'Standard Cargo',
       licenseNumber: 'LIC-' + targetEntityId + '-' + Math.floor(1000 + Math.random() * 9000),
       experienceYears: 1,
       city: formData.location || 'Delhi, IN',
-      avatar: activeTab === 'workshop'
+      avatar: addFormType === 'workshop'
         ? 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256'
-        : activeTab === 'oil change'
+        : addFormType === 'oil change'
           ? 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=256'
-          : activeTab === 'visitor'
+          : addFormType === 'visitor'
             ? 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256'
             : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
       status: 'Pending',
@@ -302,7 +310,7 @@ export const Services = () => {
       paymentStatus: payRequired ? (formData.paymentStatus === 'Free' ? 'Paid' : (freeTrialEnabled ? 'Trial' : 'Unpaid')) : 'Paid',
       paymentAmount: planPrice,
       paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
-      type: activeTab === 'oil change' ? 'oil' : activeTab,
+      type: addFormType === 'oil change' ? 'oil' : addFormType,
       documents: {
         license: { name: 'License / ID', status: 'Pending Verification', url: '#' },
         insurance: { name: 'Insurance Policy', status: 'Pending Verification', url: '#' },
@@ -512,44 +520,75 @@ export const Services = () => {
             <Input label="Amount" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} />
           </div>
         )}
-        {modalMode === 'add' && activeTab === 'driver' && (
+        {modalMode === 'add' && (
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '8px', color: 'var(--color-text-main)' }}>Entity Category</label>
+            <Select
+              value={addFormType}
+              onChange={(e) => {
+                setAddFormType(e.target.value);
+                setFormData({
+                  type: e.target.value,
+                  firstName: '',
+                  lastName: '',
+                  phone: '',
+                  email: '',
+                  plateNumber: '',
+                  location: '',
+                  latitude: '28.6250',
+                  longitude: '77.2180',
+                  termsAccepted: false,
+                  paymentStatus: 'Paid',
+                  selectedPlanId: subscriptionPlans?.[0]?.id || ''
+                });
+              }}
+              options={[
+                { label: 'Commercial Driver', value: 'driver' },
+                { label: 'Repair Workshop', value: 'workshop' },
+                { label: 'Oil Change Center', value: 'oil change' },
+                { label: 'Visitor', value: 'visitor' }
+              ]}
+            />
+          </div>
+        )}
+        {modalMode === 'add' && addFormType === 'driver' && (
           <DriverRegistrationForm
             formData={formData}
             onChange={setFormData}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsModalOpen(false)}
             subscriptionPlans={subscriptionPlans}
-            payRequired={payRequiredForTab}
+            payRequired={payRequiredForType}
           />
         )}
-        {modalMode === 'add' && activeTab === 'workshop' && (
+        {modalMode === 'add' && addFormType === 'workshop' && (
           <WorkshopRegistrationForm
             formData={formData}
             onChange={setFormData}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsModalOpen(false)}
             subscriptionPlans={subscriptionPlans}
-            payRequired={payRequiredForTab}
+            payRequired={payRequiredForType}
           />
         )}
-        {modalMode === 'add' && activeTab === 'oil change' && (
+        {modalMode === 'add' && addFormType === 'oil change' && (
           <OilChangeRegistrationForm
             formData={formData}
             onChange={setFormData}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsModalOpen(false)}
             subscriptionPlans={subscriptionPlans}
-            payRequired={payRequiredForTab}
+            payRequired={payRequiredForType}
           />
         )}
-        {modalMode === 'add' && activeTab === 'visitor' && (
+        {modalMode === 'add' && addFormType === 'visitor' && (
           <VisitorRegistrationForm
             formData={formData}
             onChange={setFormData}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsModalOpen(false)}
             subscriptionPlans={subscriptionPlans}
-            payRequired={payRequiredForTab}
+            payRequired={payRequiredForType}
           />
         )}
       </Modal>
