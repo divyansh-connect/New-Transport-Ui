@@ -31,6 +31,11 @@ export const ThemeProvider = ({ children }) => {
       }
     } catch (e) {
       console.log('Error refreshing user profile:', e);
+      if (e.message && (e.message.includes('not found') || e.message.includes('Server connection error'))) {
+        await AsyncStorage.removeItem('auth_token');
+        await AsyncStorage.removeItem('user_profile');
+        setRegisteredUser(null);
+      }
     }
   };
 

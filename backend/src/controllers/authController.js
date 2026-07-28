@@ -158,43 +158,46 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { mobileNo, email, password } = req.body;
+    const { mobileNo, email, identity, password } = req.body;
+    const searchTerm = (identity || mobileNo || email || '').trim();
 
-    if (!password || (!mobileNo && !email)) {
-      return res.status(400).json({ error: 'Identity (mobileNo or email) and password are required.' });
+    if (!password || !searchTerm) {
+      return res.status(400).json({ error: 'Identity (Mobile Number, Email, or User ID) and Password are required.' });
     }
 
-    let user;
-    if (email) {
-      // Admin / Web Login
-      user = await prisma.user.findUnique({
-        where: { email: email.toLowerCase() }
-      });
+    const cleanDigits = searchTerm.replace(/[^0-9]/g, '');
 
-      // Dynamic seeding of admin if not exists
-      if (!user && email.toLowerCase() === 'admin@userlife.com') {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        user = await prisma.user.create({
-          data: {
-            customId: 'ADM-101',
-            name: 'System Admin',
-            email: 'admin@userlife.com',
-            mobileNo: '0000000000',
-            password: hashedPassword,
-            role: 'admin',
-            status: 'Approved',
-            subscriptionDuration: 'Lifetime',
-            amountPaid: '$0.00',
-            paymentStatus: 'Paid',
-            paymentMethod: 'Free Bypass'
-          }
-        });
+    // Flexible search by email, mobileNo (exact or partial digits), or customId
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: searchTerm.toLowerCase() },
+          { mobileNo: searchTerm },
+          { customId: searchTerm },
+          { customId: searchTerm.toUpperCase() },
+          ...(cleanDigits && cleanDigits.length >= 4 ? [{ mobileNo: { contains: cleanDigits } }] : [])
+        ]
       }
-    } else {
-      // Mobile Login
-      user = await prisma.user.findUnique({
-        where: { mobileNo: mobileNo }
+    });
+
+    // Dynamic seeding of admin if not exists
+    if (!user && searchTerm.toLowerCase() === 'admin@userlife.com') {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      user = await prisma.user.create({
+        data: {
+          customId: 'ADM-101',
+          name: 'System Admin',
+          email: 'admin@userlife.com',
+          mobileNo: '0000000000',
+          password: hashedPassword,
+          role: 'admin',
+          status: 'Approved',
+          subscriptionDuration: 'Lifetime',
+          amountPaid: '$0.00',
+          paymentStatus: 'Paid',
+          paymentMethod: 'Free Bypass'
+        }
       });
     }
 
