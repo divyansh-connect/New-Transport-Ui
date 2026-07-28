@@ -1,0 +1,63 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.badge-sm {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+.badge-md {
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+}
+
+.badge-success {
+  background-color: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-warning {
+  background-color: var(--color-warning-subtle);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-danger {
+  background-color: var(--color-danger-subtle);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.badge-info {
+  background-color: var(--color-info-subtle);
+  color: var(--color-info);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.badge-primary {
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.badge-neutral {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.badge-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: pulseGlow 1.5s infinite;
+}
