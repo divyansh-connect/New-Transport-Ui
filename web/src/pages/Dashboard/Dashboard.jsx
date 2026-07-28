@@ -14,45 +14,22 @@ import './Dashboard.css';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const { drivers } = useDrivers();
+  const { drivers, payments } = useDrivers();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
-  const initialRegistrations = [
-    { id: 'REG-101', name: 'Marcus Vance', type: 'Commercial Driver', status: 'Pending', date: '2026-07-20', amount: '$49.99', phone: '+1 (555) 234-5678', driverId: 'DRV-1001' },
-    { id: 'REG-102', name: 'Sarah Connor', type: 'Commercial Driver', status: 'Approved', date: '2026-07-18', amount: '$49.99', phone: '+1 (555) 876-5432', driverId: 'DRV-1002' },
-    { id: 'REG-103', name: 'Alejandro Gomez', type: 'Commercial Driver', status: 'Pending', date: '2026-07-21', amount: '$49.99', phone: '+1 (555) 456-7890', driverId: 'DRV-1003' },
-    { id: 'REG-104', name: 'Elena Rostova', type: 'Commercial Driver', status: 'Rejected', date: '2026-07-15', amount: '$49.99', phone: '+1 (555) 789-0123', driverId: 'DRV-1004' },
-    { id: 'REG-105', name: 'David Beck', type: 'Commercial Driver', status: 'Approved', date: '2026-07-10', amount: '$49.99', phone: '+1 (555) 901-2345', driverId: 'DRV-1005' },
-    { id: 'REG-106', name: 'Leah Vance', type: 'Commercial Driver', status: 'Pending', date: '2026-07-21', amount: '$49.99', phone: '+1 (555) 345-6789', driverId: 'DRV-1006' },
-    { id: 'REG-107', name: 'Apex Workshop Solutions', type: 'Repair Workshop', status: 'Pending', date: '2026-07-23', amount: '$149.00', phone: '+91 94444 55555', driverId: 'WS-201' },
-    { id: 'REG-108', name: 'Rapid Oil Change Inc', type: 'Oil Change Center', status: 'Pending', date: '2026-07-24', amount: '$199.00', phone: '+91 88888 77777', driverId: 'OC-202' },
-    { id: 'REG-109', name: 'Rohan Deshmukh', type: 'Visitor', status: 'Pending', date: '2026-07-25', amount: '$9.99', phone: '+91 99999 11111', driverId: 'VIS-203' }
-  ];
+  const initialRegistrations = [];
 
   const [registrations, setRegistrations] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editFormData, setEditFormData] = useState({ name: '', type: '', amount: '' });
 
   useEffect(() => {
-    const saved = localStorage.getItem('registrations');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Merging logic to ensure our new initial dummy registrations are imported if not present
-      const missing = initialRegistrations.filter(initItem => !parsed.some(item => item.id === initItem.id || item.driverId === initItem.driverId));
-      if (missing.length > 0) {
-        const merged = [...missing, ...parsed];
-        setRegistrations(merged);
-        localStorage.setItem('registrations', JSON.stringify(merged));
-      } else {
-        setRegistrations(parsed);
-      }
-    } else {
-      setRegistrations(initialRegistrations);
-      localStorage.setItem('registrations', JSON.stringify(initialRegistrations));
-    }
+    // Always start fresh from database — clear any cached mock data
+    localStorage.removeItem('registrations');
+    setRegistrations([]);
   }, []);
 
   const syncedRegistrations = registrations.map(reg => {
@@ -165,40 +142,40 @@ export const Dashboard = () => {
       {/* Stats Cards Grid */}
       <div className="stats-grid">
         <StatCard
-          title="Total Registered Drivers"
-          value="1,248"
-          change="+12.4%"
+          title="Total Registered Users"
+          value={drivers.length.toString()}
+          change={drivers.length > 0 ? `${drivers.filter(d => d.status === 'Approved').length} approved` : 'No users yet'}
           trend="up"
           icon={Users}
           color="primary"
-          description="Active verified drivers in system"
+          description="Total users registered in system"
         />
         <StatCard
           title="Pending Approvals Queue"
           value={drivers.filter(d => d.status === 'Pending').length.toString()}
-          change="Requires Review"
-          trend="down"
+          change={drivers.filter(d => d.status === 'Pending').length > 0 ? 'Requires Review' : 'All clear'}
+          trend={drivers.filter(d => d.status === 'Pending').length > 0 ? 'down' : 'up'}
           icon={Clock}
           color="warning"
           description={`${drivers.filter(d => d.status === 'Pending').length} pending user requests`}
         />
         <StatCard
           title="Total Platform Revenue"
-          value="$62,400"
-          change="+8.4%"
+          value={(() => { const total = payments.reduce((sum, p) => { const n = parseFloat((p.amount || '0').replace(/[^0-9.]/g, '')); return sum + (isNaN(n) ? 0 : n); }, 0); return `$${total.toFixed(2)}`; })()}
+          change={payments.length > 0 ? `${payments.length} transactions` : 'No payments yet'}
           trend="up"
           icon={CreditCard}
           color="success"
-          description="Processed payment receipts"
+          description="Total processed payment receipts"
         />
         <StatCard
           title="Active Service Hubs"
-          value="342"
-          change="+3 new today"
+          value={drivers.filter(d => d.status === 'Approved' && (d.type === 'workshop' || d.type === 'oil')).length.toString()}
+          change={drivers.filter(d => d.type === 'workshop' || d.type === 'oil').length > 0 ? 'Registered hubs' : 'No hubs yet'}
           trend="up"
           icon={Wrench}
           color="info"
-          description="Workshops & lube centers"
+          description="Approved workshops & lube centers"
         />
       </div>
 

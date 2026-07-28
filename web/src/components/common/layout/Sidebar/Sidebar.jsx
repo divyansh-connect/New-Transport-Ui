@@ -22,7 +22,8 @@ import './Sidebar.css';
 
 export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   const { activeSettingsTab, setActiveSettingsTab } = useTheme();
-  const { drivers } = useDrivers();
+  const { drivers, notifications } = useDrivers();
+  const unreadCount = notifications.filter(n => !n.read).length;
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -42,7 +43,7 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   ];
 
   const secondaryNavItems = [
-    { title: 'Notifications', path: '/notifications', icon: Bell, badge: '3' },
+    { title: 'Notifications', path: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount.toString() : null },
     { title: 'Opportunity', path: '/opportunity', icon: Briefcase },
     { title: 'Contact', path: '/contact', icon: PhoneCall },
     { title: 'Settings', path: '/settings', icon: Settings },
@@ -177,7 +178,7 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
             </div>
             
             <button 
-              onClick={() => { localStorage.removeItem('isAuthenticated'); window.location.href = '/login'; }} 
+              onClick={() => { localStorage.removeItem('isAuthenticated'); localStorage.removeItem('admin_token'); window.location.href = '/login'; }} 
               style={{
                 display: 'flex', 
                 alignItems: 'center', 

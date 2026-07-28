@@ -73,6 +73,23 @@ export default function EditProfileScreen() {
         email: form.email,
       };
 
+      // Sync profile update to backend database
+      try {
+        const { apiFetch } = require('../src/utils/api');
+        await apiFetch('/users/profile', {
+          method: 'PUT',
+          body: JSON.stringify({
+            name: form.name,
+            lastName: form.lastName,
+            email: form.email,
+            carPlateNumber: form.carPlateNumber,
+          })
+        });
+      } catch (err) {
+        console.log('Profile sync to backend failed:', err);
+        // Still save locally even if backend fails
+      }
+
       await saveUserProfile(updatedProfile);
 
       showAlert(

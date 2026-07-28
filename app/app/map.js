@@ -34,6 +34,7 @@ export default function MapScreen() {
     longitude: 46.6753,
   });
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
+  const [activePins, setActivePins] = useState([]);
 
   // Request Device Live GPS Permission on App Mount
   useEffect(() => {
@@ -52,53 +53,61 @@ export default function MapScreen() {
     })();
   }, []);
 
-  // Services / Places
-  const serviceNodes = [
-    {
-      id: 2,
-      title: 'Workshop Hub',
-      description: 'Commercial Heavy Maintenance & Repair Station',
-      lat: userLocation.latitude + 0.015,
-      lng: userLocation.longitude + 0.012,
-      type: 'workshop',
-      icon: 'wrench',
-      contact: '+966 55 987 6543',
-      address: 'Industrial District Gate 4',
-    },
-    {
-      id: 3,
-      title: 'Oil Change Center',
-      description: 'Quick Lube & Fleet Synthetic Oil Fluids',
-      lat: userLocation.latitude - 0.012,
-      lng: userLocation.longitude - 0.015,
-      type: 'oil',
-      icon: 'fuel',
-      contact: '+966 54 321 0987',
-      address: 'Expressway Service Station Exit 11',
-    },
-    {
-      id: 4,
-      title: 'Active Sedan (Toyota Camry)',
-      description: 'Available for Passenger Transport & City Rides.',
-      lat: userLocation.latitude + 0.020,
-      lng: userLocation.longitude - 0.010,
-      type: 'location',
-      icon: 'car',
-      contact: '+966 51 654 3210',
-      address: 'Northern Ring Road Service Hub',
-    },
-    {
-      id: 5,
-      title: 'Active Recovery Truck (Flatbed)',
-      description: 'Vehicle Towing & Roadside Recovery Service.',
-      lat: userLocation.latitude - 0.015,
-      lng: userLocation.longitude + 0.018,
-      type: 'location',
-      icon: 'car',
-      contact: '+966 50 888 9999',
-      address: 'King Fahd Road Service Hub',
-    },
-  ];
+  // Fetch active pins from MySQL backend
+  useEffect(() => {
+    const fetchPins = async () => {
+      try {
+        const { apiFetch } = require('../src/utils/api');
+        const pins = await apiFetch('/users/pins');
+        const nodes = pins.map((p, idx) => ({
+          id: p.id || idx,
+          title: p.name,
+          description: p.role === 'driver' ? `Active Driver (${p.carPlateNumber || 'N/A'})` : p.role === 'workshop' ? 'Repair Workshop' : 'Oil Change Station',
+          lat: parseFloat(p.latitude),
+          lng: parseFloat(p.longitude),
+          type: p.role === 'driver' ? 'location' : p.role,
+          icon: p.role === 'driver' ? 'car' : p.role === 'workshop' ? 'wrench' : 'fuel',
+          contact: 'Active Node',
+          address: 'Synchronized live GPS coordinates'
+        }));
+        setActivePins(nodes);
+      } catch (err) {
+        console.log('Error fetching active pins:', err);
+      }
+    };
+
+    fetchPins();
+    const interval = setInterval(fetchPins, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Upload own live location coordinates to MySQL backend
+  useEffect(() => {
+    if (!isApprovedDriver || !isLiveTracking) return;
+
+    const uploadLocation = async () => {
+      try {
+        const { apiFetch } = require('../src/utils/api');
+        await apiFetch('/users/coordinates', {
+          method: 'PUT',
+          body: JSON.stringify({
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude
+          })
+        });
+      } catch (err) {
+        console.log('Error uploading coordinates:', err);
+      }
+    };
+
+    uploadLocation();
+    const interval = setInterval(uploadLocation, 10000);
+    return () => clearInterval(interval);
+  }, [isApprovedDriver, isLiveTracking, userLocation]);
+
+  // Use live pins from backend DB — activePins already populated from /api/users/pins
+  // Falls back to empty array if no approved users with coordinates exist yet
+  const serviceNodes = activePins.length > 0 ? activePins : [];
 
   // Live Leaflet HTML Template
   const leafletHTML = `
@@ -221,7 +230,7 @@ export default function MapScreen() {
 
         // 3. Service Hubs & Active Drivers
         var isDriver = '${userRole}' === 'Driver';
-        var services = ${JSON.stringify(serviceNodes)};
+        var services = ${JSON.stringify(activePins.length > 0 ? activePins : serviceNodes)};
         var pinConfig = {
           workshop:  { icon: wrenchSvg, isPOI: true },
           oil:       { icon: oilSvg,    isPOI: true },

@@ -24,6 +24,14 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Clear old mockup localStorage data once to force database sync
+if (!localStorage.getItem('ls_cleared_v2')) {
+  localStorage.removeItem('drivers_data');
+  localStorage.removeItem('services_data');
+  localStorage.removeItem('registrations');
+  localStorage.setItem('ls_cleared_v2', 'true');
+}
+
 export function App() {
   return (
     <ThemeProvider>

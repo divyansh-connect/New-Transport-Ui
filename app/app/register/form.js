@@ -11,6 +11,7 @@ import {
   Keyboard,
   TouchableOpacity,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -40,6 +41,7 @@ export default function RegistrationFormScreen() {
   const [selectedDuration, setSelectedDuration] = useState('1m'); 
   const [trackLocation, setTrackLocation] = useState(true);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -58,20 +60,40 @@ export default function RegistrationFormScreen() {
     const priceLabel = selectedDuration === '1m' ? '$49.99' : selectedDuration === '6m' ? '$199.99' : '$349.99';
     const durationLabel = selectedDuration === '1m' ? '1 Month' : selectedDuration === '6m' ? '6 Months' : '1 Year';
 
-    await saveUserProfile({
-      name: form.name,
-      lastName: form.lastName,
-      mobileNo: form.mobileNo,
-      carPlateNumber: form.carPlateNumber,
-      email: form.email,
-      role: registrationType,
-      status: 'Pending Approval',
-      subscriptionDuration: durationLabel,
-      amountPaid: priceLabel,
-      paymentStatus: 'Unpaid'
-    });
+    setLoading && setLoading(true);
+    try {
+      const { apiFetch } = require('../../src/utils/api');
+      const response = await apiFetch('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: form.name,
+          lastName: form.lastName,
+          mobileNo: form.mobileNo,
+          password: 'password123', // Default credentials
+          carPlateNumber: form.carPlateNumber,
+          email: form.email,
+          role: registrationType,
+          subscriptionDuration: durationLabel,
+          amountPaid: priceLabel,
+          paymentStatus: 'Unpaid',
+          paymentMethod: 'None',
+          trackLocation: trackLocation
+        })
+      });
 
-    router.push('/register/payment');
+      if (response && response.token) {
+        await AsyncStorage.setItem('auth_token', response.token);
+        await saveUserProfile(response.user);
+      }
+      router.push('/register/payment');
+    } catch (e) {
+      showAlert(
+        isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error',
+        e.message || 'Registration failed. Please check connection.'
+      );
+    } finally {
+      setLoading && setLoading(false);
+    }
   };
 
   return (

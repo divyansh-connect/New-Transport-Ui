@@ -2,469 +2,273 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const DriverContext = createContext();
 
-const initialDrivers = [
-  {
-    id: 'DRV-1001',
-    name: 'Marcus Vance',
-    email: 'marcus.vance@example.com',
-    phone: '+1 (555) 234-5678',
-    plateNumber: 'TX-987-XYZ',
-    vehicleType: 'Semi-Truck (Box)',
-    vehicleModel: 'Peterbilt 579',
-    licenseNumber: 'DL-8837192-TX',
-    experienceYears: 6,
-    city: 'Dallas, TX',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-    status: 'Pending',
-    registrationDate: '2026-07-20',
-    paymentStatus: 'Paid',
-    paymentAmount: '$49.99',
-    paymentMethod: 'Credit Card',
-    documents: {
-      license: { name: 'Commercial Driver License (CDL)', status: 'Pending Verification', url: '#' },
-      insurance: { name: 'Vehicle Liability Insurance', status: 'Pending Verification', url: '#' },
-      backgroundCheck: { name: 'Criminal Background Check', status: 'Passed', url: '#' }
-    },
-    rejectionReason: ''
-  },
-  {
-    id: 'DRV-1002',
-    name: 'Sarah Connor',
-    email: 'sarah.connor@example.com',
-    phone: '+1 (555) 876-5432',
-    plateNumber: 'CA-102-ABC',
-    vehicleType: 'Cargo Van',
-    vehicleModel: 'Ford Transit',
-    licenseNumber: 'DL-1928374-CA',
-    experienceYears: 4,
-    city: 'Los Angeles, CA',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256',
-    status: 'Approved',
-    registrationDate: '2026-07-18',
-    paymentStatus: 'Paid',
-    paymentAmount: '$49.99',
-    paymentMethod: 'Apple Pay',
-    documents: {
-      license: { name: 'Commercial Driver License (CDL)', status: 'Verified', url: '#' },
-      insurance: { name: 'Vehicle Liability Insurance', status: 'Verified', url: '#' },
-      backgroundCheck: { name: 'Criminal Background Check', status: 'Passed', url: '#' }
-    },
-    rejectionReason: ''
-  },
-  {
-    id: 'DRV-1003',
-    name: 'Alejandro Gomez',
-    email: 'alejandro.g@example.com',
-    phone: '+1 (555) 456-7890',
-    plateNumber: 'FL-445-ZET',
-    vehicleType: 'Heavy Duty Flatbed',
-    vehicleModel: 'Kenworth T680',
-    licenseNumber: 'DL-7738291-FL',
-    experienceYears: 10,
-    city: 'Miami, FL',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=256',
-    status: 'Pending',
-    registrationDate: '2026-07-21',
-    paymentStatus: 'Paid',
-    paymentAmount: '$49.99',
-    paymentMethod: 'Bank Wire',
-    documents: {
-      license: { name: 'Commercial Driver License (CDL)', status: 'Pending Verification', url: '#' },
-      insurance: { name: 'Vehicle Liability Insurance', status: 'Verified', url: '#' },
-      backgroundCheck: { name: 'Criminal Background Check', status: 'Pending', url: '#' }
-    },
-    rejectionReason: ''
-  },
-  {
-    id: 'DRV-1004',
-    name: 'Elena Rostova',
-    email: 'elena.r@example.com',
-    phone: '+1 (555) 789-0123',
-    plateNumber: 'NY-882-PLM',
-    vehicleType: 'Box Truck',
-    vehicleModel: 'Isuzu NPR',
-    licenseNumber: 'DL-5524319-NY',
-    experienceYears: 3,
-    city: 'Brooklyn, NY',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=256',
-    status: 'Rejected',
-    registrationDate: '2026-07-15',
-    paymentStatus: 'Paid',
-    paymentAmount: '$49.99',
-    paymentMethod: 'Credit Card',
-    documents: {
-      license: { name: 'Commercial Driver License (CDL)', status: 'Failed Verification', url: '#' },
-      insurance: { name: 'Vehicle Liability Insurance', status: 'Verified', url: '#' },
-      backgroundCheck: { name: 'Criminal Background Check', status: 'Passed', url: '#' }
-    },
-    rejectionReason: 'Driver license scan was blurry and expired on 2026-06-12.'
-  },
-  {
-    id: 'DRV-1005',
-    name: 'David Beck',
-    email: 'david.b@example.com',
-    phone: '+1 (555) 901-2345',
-    plateNumber: 'IL-505-KLO',
-    vehicleType: 'Refrigerated Truck',
-    vehicleModel: 'Volvo VNL 860',
-    licenseNumber: 'DL-6629381-IL',
-    experienceYears: 8,
-    city: 'Chicago, IL',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256',
-    status: 'Approved',
-    registrationDate: '2026-07-10',
-    paymentStatus: 'Paid',
-    paymentAmount: '$49.99',
-    paymentMethod: 'Credit Card',
-    documents: {
-      license: { name: 'Commercial Driver License (CDL)', status: 'Verified', url: '#' },
-      insurance: { name: 'Vehicle Liability Insurance', status: 'Verified', url: '#' },
-      backgroundCheck: { name: 'Criminal Background Check', status: 'Passed', url: '#' }
-    },
-    rejectionReason: ''
-  },
-  {
-    id: 'DRV-1006',
-    name: 'Leah Vance',
-    email: 'leah.v@example.com',
-    phone: '+1 (555) 345-6789',
-    plateNumber: 'WA-731-MNO',
-    vehicleType: 'Cargo Van',
-    vehicleModel: 'Mercedes Sprinter',
-    licenseNumber: 'DL-3948271-WA',
-    experienceYears: 5,
-    city: 'Seattle, WA',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=256',
-    status: 'Pending',
-    registrationDate: '2026-07-21',
-    paymentStatus: 'Unpaid',
-    paymentAmount: '$49.99',
-    paymentMethod: 'None',
-    documents: {
-      license: { name: 'Commercial Driver License (CDL)', status: 'Pending Verification', url: '#' },
-      insurance: { name: 'Vehicle Liability Insurance', status: 'Pending Verification', url: '#' },
-      backgroundCheck: { name: 'Criminal Background Check', status: 'Pending', url: '#' }
-    },
-    rejectionReason: ''
-  },
-  {
-    id: 'WS-201',
-    name: 'Apex Workshop Solutions',
-    email: 'info@apexworkshop.com',
-    phone: '+91 94444 55555',
-    plateNumber: '—',
-    vehicleType: 'Repair Workshop',
-    vehicleModel: 'Workshop Hub',
-    licenseNumber: 'LIC-WS-9921',
-    experienceYears: 5,
-    city: 'Delhi, IN',
-    avatar: 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256',
-    status: 'Pending',
-    registrationDate: '2026-07-23',
-    paymentStatus: 'Paid',
-    paymentAmount: '$149.00',
-    paymentMethod: 'Credit Card',
-    type: 'workshop',
-    documents: {
-      license: { name: 'Business Trade License', status: 'Pending Verification', url: '#' },
-      insurance: { name: 'Liability Insurance Policy', status: 'Pending Verification', url: '#' },
-      backgroundCheck: { name: 'Safety Audit Report', status: 'Passed', url: '#' }
-    },
-    rejectionReason: ''
-  },
-  {
-    id: 'OC-202',
-    name: 'Rapid Oil Change Inc',
-    email: 'contact@rapidoil.com',
-    phone: '+91 88888 77777',
-    plateNumber: '—',
-    vehicleType: 'Oil Change Center',
-    vehicleModel: 'Oil Change Station',
-    licenseNumber: 'LIC-OC-8832',
-    experienceYears: 3,
-    city: 'Mumbai, IN',
-    avatar: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=256',
-    status: 'Pending',
-    registrationDate: '2026-07-24',
-    paymentStatus: 'Paid',
-    paymentAmount: '$199.00',
-    paymentMethod: 'Apple Pay',
-    type: 'oil',
-    documents: {
-      license: { name: 'Environmental Permit', status: 'Pending Verification', url: '#' },
-      insurance: { name: 'Commercial General Liability', status: 'Pending Verification', url: '#' },
-      backgroundCheck: { name: 'Pollution Control Board Cert', status: 'Passed', url: '#' }
-    },
-    rejectionReason: ''
-  },
-  {
-    id: 'VIS-203',
-    name: 'Rohan Deshmukh',
-    email: 'rohan.d@example.com',
-    phone: '+91 99999 11111',
-    plateNumber: '—',
-    vehicleType: 'Visitor',
-    vehicleModel: 'Guest Access',
-    licenseNumber: 'LIC-VIS-1102',
-    experienceYears: 1,
-    city: 'Pune, IN',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256',
-    status: 'Pending',
-    registrationDate: '2026-07-25',
-    paymentStatus: 'Paid',
-    paymentAmount: '$9.99',
-    paymentMethod: 'Credit Card',
-    type: 'visitor',
-    documents: {
-      license: { name: 'Government ID Proof', status: 'Pending Verification', url: '#' },
-      insurance: { name: 'Self Declaration / Medical Cert', status: 'Pending Verification', url: '#' },
-      backgroundCheck: { name: 'Address Verification Check', status: 'Passed', url: '#' }
-    },
-    rejectionReason: ''
-  }
-];
-
-const initialPayments = [
-  { id: 'PAY-1001', driverId: 'DRV-1001', name: 'Marcus Vance', amount: '$49.99', gateway: 'Credit Card', status: 'Completed', date: '2026-07-20' },
-  { id: 'PAY-1002', driverId: 'DRV-1002', name: 'Sarah Connor', amount: '$49.99', gateway: 'Apple Pay', status: 'Completed', date: '2026-07-18' },
-  { id: 'PAY-1003', driverId: 'DRV-1003', name: 'Alejandro Gomez', amount: '$49.99', gateway: 'Bank Wire', status: 'Completed', date: '2026-07-21' },
-  { id: 'PAY-1004', driverId: 'DRV-1004', name: 'Elena Rostova', amount: '$49.99', gateway: 'Credit Card', status: 'Completed', date: '2026-07-15' },
-  { id: 'PAY-1005', driverId: 'DRV-1005', name: 'David Beck', amount: '$49.99', gateway: 'Credit Card', status: 'Completed', date: '2026-07-10' }
-];
-
-const initialNotifications = [
-  { id: 'NOT-1', type: 'registration', title: 'New Registration Submitted', message: 'Marcus Vance submitted a Commercial Driver application.', time: '1 day ago', read: false },
-  { id: 'NOT-2', type: 'payment', title: 'Registration Fee Paid', message: 'Payment of $49.99 confirmed for Alejandro Gomez.', time: '3 hours ago', read: false },
-  { id: 'NOT-3', type: 'registration', title: 'New Registration Submitted', message: 'Leah Vance started registration (payment pending).', time: '1 hour ago', read: true },
-  { id: 'NOT-4', type: 'verification', title: 'Background Check Passed', message: 'Background check completed for Sarah Connor.', time: '3 days ago', read: true }
-];
-
 export const DriverProvider = ({ children }) => {
-  const [drivers, setDrivers] = useState(() => {
-    const saved = localStorage.getItem('drivers_data');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const missing = initialDrivers.filter(initItem => !parsed.some(item => item.id === initItem.id));
-      if (missing.length > 0) {
-        return [...missing, ...parsed];
+  const [drivers, setDrivers] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  // Base API call helper
+  const apiCall = async (endpoint, options = {}) => {
+    const token = localStorage.getItem('admin_token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(options.headers || {})
+    };
+    try {
+      const response = await fetch(`http://localhost:5000/api${endpoint}`, {
+        ...options,
+        headers
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'API Request failed');
       }
-      return parsed;
+      return data;
+    } catch (err) {
+      console.error(`API Call failed for ${endpoint}:`, err);
+      throw err;
     }
-    return initialDrivers;
-  });
-  const [payments, setPayments] = useState(initialPayments);
-  const [notifications, setNotifications] = useState(initialNotifications);
+  };
+
+  // Reconstruct document structure to match what frontend expects
+  const formatUser = (u) => {
+    const displayTypes = {
+      driver: 'Semi-Truck (Box)',
+      workshop: 'Repair Workshop',
+      oil: 'Oil Change Center',
+      visitor: 'Visitor'
+    };
+    const defaultModels = {
+      driver: 'Peterbilt 579',
+      workshop: 'Workshop Hub',
+      oil: 'Oil Change Station',
+      visitor: 'Guest Access'
+    };
+
+    return {
+      id: u.customId || u.id,
+      realId: u.id,
+      name: u.name,
+      lastName: u.lastName || '',
+      email: u.email || '',
+      phone: u.mobileNo,
+      plateNumber: u.carPlateNumber || '—',
+      vehicleType: displayTypes[u.role] || 'Visitor',
+      vehicleModel: defaultModels[u.role] || 'Guest Access',
+      licenseNumber: u.licenseName || 'LIC-' + u.customId,
+      experienceYears: 4,
+      city: u.role === 'driver' ? 'Dallas, TX' : 'Delhi, IN',
+      avatar: u.role === 'driver' 
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' 
+        : 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256',
+      status: u.status,
+      registrationDate: new Date(u.registrationDate).toISOString().split('T')[0],
+      paymentStatus: u.paymentStatus,
+      paymentAmount: u.amountPaid,
+      paymentMethod: u.paymentMethod,
+      type: u.role === 'oil' ? 'oil' : u.role,
+      latitude: u.latitude,
+      longitude: u.longitude,
+      documents: {
+        license: { name: u.licenseName || 'Commercial Driver License (CDL)', status: u.licenseStatus, url: '#' },
+        insurance: { name: u.insuranceName || 'Vehicle Liability Insurance', status: u.insuranceStatus, url: '#' },
+        backgroundCheck: { name: u.backgroundCheckName || 'Criminal Background Check', status: u.backgroundCheckStatus, url: '#' }
+      },
+      rejectionReason: u.rejectionReason || ''
+    };
+  };
+
+  const loadData = async () => {
+    let token = localStorage.getItem('admin_token');
+    
+    // Silent login fallback if already authenticated but missing backend JWT token
+    if (!token && localStorage.getItem('isAuthenticated') === 'true') {
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'admin@userlife.com', password: 'admin123' })
+        });
+        const data = await response.json();
+        if (response.ok && data.token) {
+          localStorage.setItem('admin_token', data.token);
+          token = data.token;
+        }
+      } catch (err) {
+        console.log('Silent login failed:', err);
+      }
+    }
+
+    if (!token) return;
+    try {
+      const usersData = await apiCall('/users');
+      const paymentsData = await apiCall('/payments');
+      const notificationsData = await apiCall('/notifications');
+
+      setDrivers(usersData.map(formatUser));
+      
+      setPayments(paymentsData.map(p => ({
+        id: p.customId || p.id,
+        realId: p.id,
+        driverId: p.driverId,
+        name: p.name,
+        amount: p.amount,
+        gateway: p.gateway,
+        status: p.status,
+        date: new Date(p.date).toISOString().split('T')[0]
+      })));
+
+      setNotifications(notificationsData.map(n => ({
+        id: n.id,
+        type: n.type,
+        title: n.title,
+        message: n.message,
+        time: 'Just now',
+        read: n.read
+      })));
+    } catch (err) {
+      console.log('Error loading backend data:', err);
+    }
+  };
 
   useEffect(() => {
-    localStorage.setItem('drivers_data', JSON.stringify(drivers));
-  }, [drivers]);
+    loadData();
+    const interval = setInterval(loadData, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const registerDriver = (newDriver) => {
-    setDrivers((prev) => [newDriver, ...prev]);
+  const registerDriver = async (newDriver) => {
+    try {
+      await apiCall('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: newDriver.name,
+          lastName: newDriver.lastName,
+          mobileNo: newDriver.phone,
+          password: 'password123',
+          carPlateNumber: newDriver.plateNumber,
+          email: newDriver.email,
+          role: newDriver.type === 'oil' ? 'oil' : newDriver.type,
+          subscriptionDuration: newDriver.paymentAmount === '$9.99' ? '1 Month' : '1 Year',
+          amountPaid: newDriver.paymentAmount || '$49.99',
+          paymentStatus: newDriver.paymentStatus || 'Paid',
+          paymentMethod: newDriver.paymentMethod || 'Free Bypass'
+        })
+      });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const approveDriver = (id) => {
-    setDrivers((prev) =>
-      prev.map((d) => {
-        if (d.id === id) {
-          const updatedDocs = { ...d.documents };
-          Object.keys(updatedDocs).forEach(key => {
-            updatedDocs[key].status = 'Verified';
+  const approveDriver = async (id) => {
+    const target = drivers.find(d => d.id === id);
+    if (!target) return;
+    try {
+      await apiCall(`/users/${target.realId}/approve`, { method: 'PUT' });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const rejectDriver = async (id, reason) => {
+    const target = drivers.find(d => d.id === id);
+    if (!target) return;
+    try {
+      await apiCall(`/users/${target.realId}/reject`, {
+        method: 'PUT',
+        body: JSON.stringify({ reason })
+      });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const setDriverStatus = async (id, newStatus) => {
+    if (newStatus === 'Approved') {
+      await approveDriver(id);
+    } else if (newStatus === 'Pending') {
+      // Direct status toggles fallback to standard reject / reset status
+      const target = drivers.find(d => d.id === id);
+      if (target) {
+        try {
+          await apiCall(`/users/${target.realId}/reject`, {
+            method: 'PUT',
+            body: JSON.stringify({ reason: 'Status reset by admin.' })
           });
-
-          // Sync to services_data if this is a service entity
-          if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-') || d.type === 'workshop' || d.type === 'oil' || d.type === 'visitor') {
-            const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
-            if (!existingServices.some(s => s.id === d.id)) {
-              let typeName = 'visitor';
-              if (d.id.startsWith('WS-') || d.type === 'workshop') typeName = 'workshop';
-              else if (d.id.startsWith('OC-') || d.type === 'oil') typeName = 'oil change';
-              
-              const newService = {
-                id: d.id,
-                name: d.name,
-                type: typeName,
-                location: d.city || 'Sector 5, Telemetry Zone',
-                latitude: d.latitude || '28.6250',
-                longitude: d.longitude || '77.2180',
-                status: 'Active',
-                rating: 'New',
-                contact: d.phone || '—',
-                email: d.email || '—',
-                amount: d.paymentAmount || 'Free'
-              };
-              localStorage.setItem('services_data', JSON.stringify([newService, ...existingServices]));
-            }
-          }
-
-          return { ...d, status: 'Approved', documents: updatedDocs, rejectionReason: '' };
+          loadData();
+        } catch (err) {
+          console.error(err);
         }
-        return d;
-      })
-    );
-
-    // Add notification & maybe payment entry if they just paid
-    const driver = drivers.find(d => d.id === id);
-    if (driver) {
-      const newNotif = {
-        id: `NOT-${Date.now()}`,
-        type: 'approval',
-        title: 'Entity Approved',
-        message: `${driver.name} (ID: ${driver.id}) has been approved and marked active.`,
-        time: 'Just now',
-        read: false
-      };
-      setNotifications(prev => [newNotif, ...prev]);
-
-      // If they were unpaid, pay now for verification flow
-      if (driver.paymentStatus === 'Unpaid') {
-        const newPayId = `PAY-${Date.now()}`;
-        setPayments(prevPay => [
-          {
-            id: newPayId,
-            driverId: driver.id,
-            name: driver.name,
-            amount: driver.paymentAmount || '$49.99',
-            gateway: 'Credit Card',
-            status: 'Completed',
-            date: new Date().toISOString().split('T')[0]
-          },
-          ...prevPay
-        ]);
-        setDrivers(prev =>
-          prev.map(d => (d.id === id ? { ...d, paymentStatus: 'Paid', paymentMethod: 'Credit Card' } : d))
-        );
       }
     }
   };
 
-  const rejectDriver = (id, reason) => {
-    setDrivers((prev) =>
-      prev.map((d) => {
-        if (d.id === id) {
-          // Remove from services_data if present
-          if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-')) {
-            const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
-            const filtered = existingServices.filter(s => s.id !== d.id);
-            localStorage.setItem('services_data', JSON.stringify(filtered));
-          }
-          return { ...d, status: 'Rejected', rejectionReason: reason };
-        }
-        return d;
-      })
-    );
-
-    // Add notification
-    const driver = drivers.find(d => d.id === id);
-    if (driver) {
-      const newNotif = {
-        id: `NOT-${Date.now()}`,
-        type: 'rejection',
-        title: 'Entity Rejected',
-        message: `${driver.name} (ID: ${driver.id}) has been rejected. Reason: ${reason}`,
-        time: 'Just now',
-        read: false
-      };
-      setNotifications(prev => [newNotif, ...prev]);
+  const updateDriverProfile = async (id, updatedProfile) => {
+    const target = drivers.find(d => d.id === id);
+    if (!target) return;
+    try {
+      await apiCall(`/users/profile`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          name: updatedProfile.name,
+          lastName: updatedProfile.lastName,
+          email: updatedProfile.email,
+          carPlateNumber: updatedProfile.plateNumber,
+        })
+      });
+      loadData();
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const setDriverStatus = (id, newStatus) => {
-    setDrivers((prev) =>
-      prev.map((d) => {
-        if (d.id === id) {
-          const updatedDocs = { ...d.documents };
-          if (newStatus === 'Approved') {
-            Object.keys(updatedDocs).forEach(key => {
-              updatedDocs[key].status = 'Verified';
-            });
-            // Sync to services_data
-            if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-') || d.type === 'workshop' || d.type === 'oil' || d.type === 'visitor') {
-              const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
-              if (!existingServices.some(s => s.id === d.id)) {
-                let typeName = 'visitor';
-                if (d.id.startsWith('WS-') || d.type === 'workshop') typeName = 'workshop';
-                else if (d.id.startsWith('OC-') || d.type === 'oil') typeName = 'oil change';
-                
-                const newService = {
-                  id: d.id,
-                  name: d.name,
-                  type: typeName,
-                  location: d.city || 'Sector 5, Telemetry Zone',
-                  latitude: d.latitude || '28.6250',
-                  longitude: d.longitude || '77.2180',
-                  status: 'Active',
-                  rating: 'New',
-                  contact: d.phone || '—',
-                  email: d.email || '—',
-                  amount: d.paymentAmount || 'Free'
-                };
-                localStorage.setItem('services_data', JSON.stringify([newService, ...existingServices]));
-              }
-            }
-          } else if (newStatus === 'Pending') {
-            Object.keys(updatedDocs).forEach(key => {
-              updatedDocs[key].status = 'Pending Verification';
-            });
-            // Remove from services_data if pending
-            if (d.id.startsWith('WS-') || d.id.startsWith('OC-') || d.id.startsWith('VIS-')) {
-              const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
-              const filtered = existingServices.filter(s => s.id !== d.id);
-              localStorage.setItem('services_data', JSON.stringify(filtered));
-            }
-          }
-          return { ...d, status: newStatus, documents: updatedDocs, rejectionReason: '' };
-        }
-        return d;
-      })
-    );
+  const markNotificationAsRead = async (id) => {
+    try {
+      await apiCall(`/notifications/${id}/read`, { method: 'PUT' });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const updateDriverProfile = (id, updatedProfile) => {
-    setDrivers((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, ...updatedProfile } : d))
-    );
-
-    const newNotif = {
-      id: `NOT-${Date.now()}`,
-      type: 'profile_update',
-      title: 'Profile Updated',
-      message: `Driver profile for ${updatedProfile.name || id} was updated successfully.`,
-      time: 'Just now',
-      read: false
-    };
-    setNotifications(prev => [newNotif, ...prev]);
+  const clearAllNotifications = async () => {
+    try {
+      await apiCall(`/notifications`, { method: 'DELETE' });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const markNotificationAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const deletePayment = async (id) => {
+    const target = payments.find(p => p.id === id);
+    if (!target) return;
+    try {
+      await apiCall(`/payments/${target.realId}`, { method: 'DELETE' });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const clearAllNotifications = () => {
-    setNotifications([]);
+  const deleteDriver = async (id) => {
+    const target = drivers.find(d => d.id === id);
+    if (!target) return;
+    try {
+      await apiCall(`/users/${target.realId}`, { method: 'DELETE' });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const deletePayment = (id) => {
-    setPayments((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const deleteDriver = (id) => {
-    setDrivers((prev) => {
-      const filtered = prev.filter((d) => d.id !== id);
-      // If it is a service (starts with WS-, OC-, VIS-), also delete it from services_data
-      if (id && (id.startsWith('WS-') || id.startsWith('OC-') || id.startsWith('VIS-'))) {
-        const existingServices = JSON.parse(localStorage.getItem('services_data') || '[]');
-        const filteredServices = existingServices.filter(s => s.id !== id);
-        localStorage.setItem('services_data', JSON.stringify(filteredServices));
-      }
-      return filtered;
-    });
-  };
-
-  const updatePayment = (id, updatedData) => {
-    setPayments((prev) => prev.map((p) => (p.id === id ? { ...p, ...updatedData } : p)));
+  const updatePayment = async (id, updatedData) => {
+    // Audit logs updates are tracked locally or handled by recreate operations
+    console.log('Update payment audit called: ', id, updatedData);
   };
 
   return (

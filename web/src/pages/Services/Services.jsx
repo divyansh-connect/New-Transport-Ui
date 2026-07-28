@@ -28,16 +28,7 @@ export const Services = () => {
     (activeTab === 'oil change' && config.oilchange) ||
     (activeTab === 'visitor' && config.visitor);
 
-  const initialServices = [
-    { id: 'WS-01', name: 'Central Maintenance Garage', type: 'workshop', location: 'Zone 4, Sector B', status: 'Active', rating: '4.8', contact: '+1 (555) 0192', email: 'central.garage@example.com', amount: '$99.99' },
-    { id: 'WS-02', name: 'Heavy Duty Repair Hub', type: 'workshop', location: 'Industrial Park West', status: 'Inactive', rating: '4.2', contact: '+1 (555) 0122', email: 'heavy.duty@example.com', amount: '$99.99' },
-    { id: 'OC-01', name: 'Quick Lube & Oil Express', type: 'oil change', location: 'Zone 1, Highway 9', status: 'Active', rating: '4.9', contact: '+1 (555) 0881', email: 'quick.lube@example.com', amount: '$49.99' },
-    { id: 'OC-02', name: 'Express Fleet Fluids', type: 'oil change', location: 'South Terminal', status: 'Active', rating: '4.5', contact: '+1 (555) 0912', email: 'express.fleet@example.com', amount: '$49.99' },
-    { id: 'CL-01', name: 'North Terminal Fleet Hub', type: 'car location', location: 'North Terminal', status: 'Active', rating: '-', contact: 'Internal', email: 'north.terminal@example.com', amount: '$49.99' },
-    { id: 'CL-02', name: 'Downtown Secure Parking', type: 'car location', location: 'Downtown Hub', status: 'Maintenance', rating: '-', contact: 'Internal', email: 'downtown.parking@example.com', amount: '$49.99' },
-    { id: 'VIS-01', name: 'Aarav Mehta', type: 'visitor', location: 'Zone 2, Sector C', status: 'Active', rating: '-', contact: '+91 98765 43210', email: 'aarav.mehta@example.com', amount: '$9.99' },
-    { id: 'VIS-02', name: 'Neha Sharma', type: 'visitor', location: 'Zone 3, Sector D', status: 'Active', rating: '-', contact: '+91 99999 88888', email: 'neha.sharma@example.com', amount: '$9.99' }
-  ];
+  const initialServices = [];
 
   const [allServices, setAllServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -70,13 +61,9 @@ export const Services = () => {
   const taxFormatted = `${currencySymbol}${taxVal.toFixed(2)}`;
 
   useEffect(() => {
-    const saved = localStorage.getItem('services_data');
-    if (saved) {
-      setAllServices(JSON.parse(saved));
-    } else {
-      setAllServices(initialServices);
-      localStorage.setItem('services_data', JSON.stringify(initialServices));
-    }
+    // Always clear cached mock data — data comes from backend via context
+    localStorage.removeItem('services_data');
+    setAllServices([]);
   }, []);
 
   const getFilteredData = () => {

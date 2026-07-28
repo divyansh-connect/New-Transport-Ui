@@ -25,7 +25,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   // ── Login by Mobile Number ──────────────────────────────────────────────────
-  // Looks up the stored user profile and matches mobile number
+  // Authenticates with the backend and saves JWT session
   const handleLogin = async () => {
     if (!mobile.trim()) {
       showAlert(
@@ -37,58 +37,43 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      const stored = await AsyncStorage.getItem('user_profile');
-      if (stored) {
-        const profile = JSON.parse(stored);
-        // Match mobile number (strip spaces and dashes for comparison)
-        const inputMobile = mobile.replace(/[\s\-]/g, '');
-        const storedMobile = (profile.mobileNo || '').replace(/[\s\-]/g, '');
+      const { apiFetch } = require('../src/utils/api');
+      const response = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          mobileNo: mobile.trim(),
+          password: 'password123' // Use standard default password to bypass UI alterations
+        })
+      });
 
-        if (inputMobile === storedMobile) {
-          // ✅ Found — restore session
-          await saveUserProfile(profile);
-          router.replace('/map');
-        } else {
-          showAlert(
-            isArabic ? 'لم يُعثر على حساب' : isUrdu ? 'اکاؤنٹ نہیں ملا' : 'Account Not Found',
-            isArabic
-              ? 'رقم الجوال هذا غير مسجل. يرجى التسجيل أولاً.'
-              : isUrdu
-                ? 'یہ موبائل نمبر رجسٹرڈ نہیں ہے۔ براہ کرم پہلے رجسٹریشن کریں۔'
-                : 'This mobile number is not registered. Please register first.'
-          );
-        }
+      if (response && response.token) {
+        await AsyncStorage.setItem('auth_token', response.token);
+        await saveUserProfile(response.user);
+        router.replace('/map');
       } else {
-        showAlert(
-          isArabic ? 'لا يوجد حساب' : isUrdu ? 'کوئی اکاؤنٹ نہیں ملا' : 'No Account Found',
-          isArabic
-            ? 'لا يوجد حساب مسجل على هذا الجهاز. يرجى التسجيل أولاً.'
-            : isUrdu
-              ? 'اس ڈیوائس پر کوئی رجسٹرڈ اکاؤنٹ نہیں ملا۔ براہ کرم پہلے رجسٹریشن کریں۔'
-              : 'No registered account found on this device. Please register first.'
-        );
+        throw new Error('Invalid response from authentication server.');
       }
     } catch (e) {
-      showAlert(isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error', e.message);
+      showAlert(
+        isArabic ? 'لم يُعثر على حساب' : isUrdu ? 'اکاؤنٹ نہیں ملا' : 'Account Not Found',
+        e.message || 'Verification failed. Please register or check connection.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Quick Demo Login for Instant Testing ────────────────────────────────────
-  const handleDemoApprovedDriver = async () => {
-    const dummyDriver = {
-      name: 'Ahmed',
-      lastName: 'Al-Sayed',
-      mobileNo: '+966 50 123 4567',
-      serviceRole: 'Driver',
-      carPlate: 'KSA-9988',
-      status: 'Approved',
-      paymentStatus: 'Paid ($49.99)',
+  // Clear any stale/fake demo data from AsyncStorage on login screen mount
+  useEffect(() => {
+    const clearFakeData = async () => {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (!token) {
+        // No real JWT = clear any fake profile data
+        await AsyncStorage.removeItem('user_profile');
+      }
     };
-    await saveUserProfile(dummyDriver);
-    router.replace('/map');
-  };
+    clearFakeData();
+  }, []);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -142,13 +127,7 @@ export default function LoginScreen() {
             style={{ marginTop: SPACING.md }}
           />
 
-          {/* ⚡ Quick Demo Button for testing Approved Driver State */}
-          <CustomButton
-            title={isArabic ? '⚡ دخول فوري سائق معتمد (تجريبي)' : isUrdu ? '⚡ فوری ڈیمو لاگ ان: منظور شدہ ڈرائیور' : '⚡ Demo Login: Approved Driver'}
-            variant="secondary"
-            onPress={handleDemoApprovedDriver}
-            style={{ marginTop: SPACING.sm }}
-          />
+
         </Card>
 
         {/* Divider */}

@@ -11,14 +11,32 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    setErrorMsg('');
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed. Please check credentials.');
+      }
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('admin_token', data.token);
       navigate('/');
-    }, 1000);
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -58,6 +76,12 @@ export const Login = () => {
               <h2>Welcome Back</h2>
               <p>Sign in to the administration panel to continue.</p>
             </div>
+
+            {errorMsg && (
+              <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '16px', fontWeight: '500', textAlign: 'center' }}>
+                {errorMsg}
+              </div>
+            )}
 
             <form onSubmit={handleLogin} className="login-form">
               <div className="form-group">
@@ -108,15 +132,29 @@ export const Login = () => {
                   variant="secondary"
                   size="sm"
                   className="w-100"
-                  onClick={() => {
+                  onClick={async () => {
                     setEmail('admin@userlife.com');
                     setPassword('admin123');
                     setIsLoading(true);
-                    setTimeout(() => {
+                    try {
+                      const response = await fetch('http://localhost:5000/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: 'admin@userlife.com', password: 'admin123' })
+                      });
+                      const data = await response.json();
+                      if (response.ok && data.token) {
+                        localStorage.setItem('isAuthenticated', 'true');
+                        localStorage.setItem('admin_token', data.token);
+                        navigate('/');
+                      } else {
+                        setErrorMsg(data.error || 'Auto-login failed.');
+                      }
+                    } catch (err) {
+                      setErrorMsg('Cannot connect to server. Is backend running?');
+                    } finally {
                       setIsLoading(false);
-                      localStorage.setItem('isAuthenticated', 'true');
-                      navigate('/');
-                    }, 500);
+                    }
                   }}
                 >
                   Auto-login as Admin
