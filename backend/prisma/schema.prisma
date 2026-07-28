@@ -1,0 +1,110 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  driver
+  workshop
+  oil
+  visitor
+  admin
+}
+
+enum UserStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum PaymentStatus {
+  Paid
+  Unpaid
+  Trial
+}
+
+model User {
+  id                   String        @id @default(uuid())
+  customId             String        @unique // e.g., DRV-1001, WS-201, mapped to avoid exposing internal DB UUIDs
+  name                 String        @db.VarChar(100)
+  lastName             String?       @db.VarChar(100)
+  mobileNo             String        @unique @db.VarChar(20)
+  password             String        @db.VarChar(255) // Hashed password for JWT login
+  carPlateNumber       String?       @db.VarChar(30)
+  email                String?       @unique @db.VarChar(150)
+  role                 Role          @default(visitor)
+  status               UserStatus    @default(Pending)
+  registrationDate     DateTime      @default(now())
+  subscriptionDuration String        @db.VarChar(50) // e.g., "1 Month", "6 Months", "1 Year"
+  amountPaid           String        @db.VarChar(20) // e.g., "$49.99"
+  paymentStatus        PaymentStatus @default(Unpaid)
+  paymentMethod        String        @default("None") @db.VarChar(50)
+
+  // GPS Coordinates (latitude and longitude)
+  latitude        Decimal? @db.Decimal(10, 8)
+  longitude       Decimal? @db.Decimal(11, 8)
+  trackLocation   Boolean  @default(true)
+  rejectionReason String?  @db.Text
+
+  // Document URLs and verification statuses
+  licenseName   String? @db.VarChar(255)
+  licenseStatus String  @default("Pending Verification") @db.VarChar(50)
+  licenseUrl    String? @db.Text
+
+  insuranceName   String? @db.VarChar(255)
+  insuranceStatus String  @default("Pending Verification") @db.VarChar(50)
+  insuranceUrl    String? @db.Text
+
+  backgroundCheckName   String? @db.VarChar(255)
+  backgroundCheckStatus String  @default("Pending Verification") @db.VarChar(50)
+  backgroundCheckUrl    String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  payments      Payment[]
+  notifications Notification[]
+
+  @@index([role])
+  @@index([status])
+  @@index([mobileNo])
+}
+
+model Payment {
+  id       String   @id @default(uuid())
+  customId String   @unique // e.g. PAY-1001
+  driverId String
+  user     User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  name     String   @db.VarChar(150) // Payer Name
+  amount   String   @db.VarChar(20) // Transaction amount, e.g. "$49.99"
+  gateway  String   @db.VarChar(50) // Payment gateway, e.g. "Credit Card"
+  status   String   @db.VarChar(30) // e.g. "Completed", "Failed"
+  date     DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  @@index([driverId])
+  @@index([customId])
+}
+
+model Notification {
+  id       String  @id @default(uuid())
+  customId String  @unique // e.g. NOT-1
+  type     String  @db.VarChar(50) // e.g., "registration", "payment"
+  title    String  @db.VarChar(255)
+  message  String  @db.Text
+  read     Boolean @default(false)
+
+  // Optional linkage to user
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
