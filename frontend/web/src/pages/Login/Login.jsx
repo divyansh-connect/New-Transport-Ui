@@ -29,6 +29,9 @@ export const Login = () => {
       if (!response.ok) {
         throw new Error(data.error || 'Login failed. Please check credentials.');
       }
+      if (data.user?.role !== 'admin') {
+        throw new Error('Access Denied: This Web Panel is exclusively for System Administrators. Driver & Workshop partners must use the Mobile App.');
+      }
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('admin_token', data.token);
       navigate('/');

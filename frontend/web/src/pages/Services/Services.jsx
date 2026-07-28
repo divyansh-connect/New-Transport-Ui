@@ -67,15 +67,19 @@ export const Services = () => {
   }, []);
 
   const getFilteredData = () => {
-    if (activeTab === 'driver') {
-      return drivers
-        .filter(d => d.status === 'Approved')
-        .filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-    return allServices.filter(s =>
-      s.type === activeTab.replace('-', ' ') &&
-      s.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return drivers.filter(d => {
+      if (d.status !== 'Approved') return false;
+      const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (d.email && d.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                            (d.phone && d.phone.includes(searchTerm));
+      if (!matchesSearch) return false;
+
+      if (activeTab === 'driver') return d.type === 'driver';
+      if (activeTab === 'workshop') return d.type === 'workshop';
+      if (activeTab === 'oil change') return d.type === 'oil' || d.type === 'oil change';
+      if (activeTab === 'visitor') return d.type === 'visitor';
+      return false;
+    });
   };
   const filteredServices = getFilteredData();
 
@@ -298,6 +302,7 @@ export const Services = () => {
       paymentAmount: planPrice,
       paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
       type: addFormType === 'oil change' ? 'oil' : addFormType,
+      password: formData.password || 'password123',
       documents: {
         license: { name: 'License / ID', status: 'Pending Verification', url: '#' },
         insurance: { name: 'Insurance Policy', status: 'Pending Verification', url: '#' },
@@ -327,9 +332,14 @@ export const Services = () => {
       <div className="services-tabs">
         {tabs.map(tab => {
           const Icon = tab.icon;
-          const count = tab.id === 'driver'
-            ? drivers.filter(d => d.status === 'Approved').length
-            : allServices.filter(s => s.type === tab.id).length;
+          const count = drivers.filter(d => {
+            if (d.status !== 'Approved') return false;
+            if (tab.id === 'driver') return d.type === 'driver';
+            if (tab.id === 'workshop') return d.type === 'workshop';
+            if (tab.id === 'oil change') return d.type === 'oil' || d.type === 'oil change';
+            if (tab.id === 'visitor') return d.type === 'visitor';
+            return false;
+          }).length;
           return (
             <button
               key={tab.id}

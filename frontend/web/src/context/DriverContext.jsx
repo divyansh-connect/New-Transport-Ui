@@ -146,7 +146,7 @@ export const DriverProvider = ({ children }) => {
           name: newDriver.name,
           lastName: newDriver.lastName,
           mobileNo: newDriver.phone,
-          password: 'password123',
+          password: newDriver.password || 'password123',
           carPlateNumber: newDriver.plateNumber,
           email: newDriver.email,
           role: newDriver.type === 'oil' ? 'oil' : newDriver.type,
