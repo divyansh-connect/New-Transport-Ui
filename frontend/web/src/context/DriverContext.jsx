@@ -118,7 +118,9 @@ export const DriverProvider = ({ children }) => {
         amount: p.amount,
         gateway: p.gateway,
         status: p.status,
-        date: new Date(p.date).toISOString().split('T')[0]
+        date: new Date(p.date).toISOString().split('T')[0],
+        mobileNo: p.user?.mobileNo || p.mobileNo || '',
+        email: p.user?.email || p.email || ''
       })));
 
       setNotifications(notificationsData.map(n => ({

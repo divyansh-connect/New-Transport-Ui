@@ -47,11 +47,12 @@ export const Payments = () => {
   };
 
   const handleExport = () => {
+  const handleExport = () => {
     const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Email Address", "Amount", "Payment Gateway", "Status", "Date"];
     const rows = payments.map(e => {
-      const driverObj = drivers.find(d => d.id === e.driverId);
-      const mobileNumber = driverObj ? driverObj.phone : '—';
-      const email = driverObj ? driverObj.email : '—';
+      const driverObj = drivers.find(d => d.id === e.driverId || d.realId === e.driverId);
+      const mobileNumber = e.mobileNo || e.phone || (driverObj ? driverObj.phone || driverObj.contact : '—');
+      const email = e.email || (driverObj ? driverObj.email : '—');
       return [
         e.id,
         e.driverId,
@@ -69,9 +70,9 @@ export const Payments = () => {
 
   const handleExportSingle = (record) => {
     const headers = ["Transaction ID", "User ID", "Payer Name", "Mobile Number", "Email Address", "Amount", "Payment Gateway", "Status", "Date"];
-    const driverObj = drivers.find(d => d.id === record.driverId);
-    const mobileNumber = driverObj ? driverObj.phone : '—';
-    const email = driverObj ? driverObj.email : '—';
+    const driverObj = drivers.find(d => d.id === record.driverId || d.realId === record.driverId);
+    const mobileNumber = record.mobileNo || record.phone || (driverObj ? driverObj.phone || driverObj.contact : '—');
+    const email = record.email || (driverObj ? driverObj.email : '—');
     const rows = [[
       record.id,
       record.driverId,
@@ -94,15 +95,15 @@ export const Payments = () => {
 
   const handleEdit = (record) => {
     setSelectedRecord(record);
-    const dObj = drivers.find(d => d.id === record.driverId);
+    const dObj = drivers.find(d => d.id === record.driverId || d.realId === record.driverId);
     setEditFormData({
       name: record.name,
       amount: record.amount,
       gateway: record.gateway,
       status: record.status,
       driverId: record.driverId,
-      phone: dObj ? dObj.phone : '',
-      email: dObj ? dObj.email : '',
+      phone: record.mobileNo || record.phone || (dObj ? dObj.phone : ''),
+      email: record.email || (dObj ? dObj.email : ''),
       userType: dObj ? dObj.type : (record.driverId?.startsWith('DRV-') ? 'driver' : record.driverId?.startsWith('WS-') ? 'workshop' : record.driverId?.startsWith('OC-') ? 'oil' : record.driverId?.startsWith('VIS-') ? 'visitor' : 'driver')
     });
     setIsEditMode(true);
@@ -124,7 +125,7 @@ export const Payments = () => {
       driverId: editFormData.driverId
     });
 
-    const dObj = drivers.find(d => d.id === editFormData.driverId);
+    const dObj = drivers.find(d => d.id === editFormData.driverId || d.realId === editFormData.driverId);
     if (dObj) {
       updateDriverProfile(editFormData.driverId, {
         ...dObj,
@@ -155,9 +156,9 @@ export const Payments = () => {
           headers={['Transaction ID', 'User ID', 'Payer Name', 'Mobile Number', 'Email', 'Amount', 'Payment Gateway', 'Status', 'Date', 'Actions']}
           data={payments}
           renderRow={(row) => {
-            const driverObj = drivers.find(d => d.id === row.driverId);
-            const mobileNumber = driverObj ? driverObj.phone : '—';
-            const email = driverObj ? driverObj.email : '—';
+            const driverObj = drivers.find(d => d.id === row.driverId || d.realId === row.driverId);
+            const mobileNumber = row.mobileNo || row.phone || (driverObj ? driverObj.phone || driverObj.contact : '—');
+            const email = row.email || (driverObj ? driverObj.email : '—');
             return (
               <tr key={row.id}>
                 <td><code>{row.id}</code></td>

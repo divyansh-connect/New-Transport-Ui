@@ -6,11 +6,9 @@ import { useTheme } from '../../context/ThemeContext';
 
 const formBoxStyle = {
   width: '100%',
-  minHeight: '440px',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between',
-  gap: '16px',
+  gap: '20px',
   boxSizing: 'border-box'
 };
 
@@ -18,6 +16,18 @@ const gridStyle = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
   gap: '16px'
+};
+
+const sectionBadgeStyle = {
+  fontSize: '11px',
+  fontWeight: '700',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: '#3b82f6',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  marginBottom: '4px'
 };
 
 export const DriverRegistrationForm = ({
@@ -68,9 +78,9 @@ export const DriverRegistrationForm = ({
             required
           />
           <Input
-            label="Email Address"
+            label="Email Address (Optional)"
             type="email"
-            placeholder="email@example.com"
+            placeholder="email@example.com (Optional)"
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
@@ -210,9 +220,9 @@ export const WorkshopRegistrationForm = ({
             required
           />
           <Input
-            label="Email Address"
+            label="Email Address (Optional)"
             type="email"
-            placeholder="email@example.com"
+            placeholder="email@example.com (Optional)"
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
@@ -358,9 +368,9 @@ export const OilChangeRegistrationForm = ({
             required
           />
           <Input
-            label="Email Address"
+            label="Email Address (Optional)"
             type="email"
-            placeholder="email@example.com"
+            placeholder="email@example.com (Optional)"
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
@@ -507,9 +517,9 @@ export const VisitorRegistrationForm = ({
             required
           />
           <Input
-            label="Email Address"
+            label="Email Address (Optional)"
             type="email"
-            placeholder="email@example.com"
+            placeholder="email@example.com (Optional)"
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
