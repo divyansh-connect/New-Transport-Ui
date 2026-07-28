@@ -117,6 +117,34 @@ const register = async (req, res) => {
       }
     });
 
+    // If registered with Paid or Free status, auto-create Payment audit ledger entry & payment notification
+    const isPaidRegistration = newUser.paymentStatus === 'Paid' || newUser.paymentStatus === 'Free' || newUser.paymentStatus.includes('Paid') || newUser.paymentStatus.includes('Free');
+    if (isPaidRegistration) {
+      const isFree = newUser.paymentStatus === 'Free' || newUser.paymentStatus.includes('Free');
+      await prisma.payment.create({
+        data: {
+          customId: `PAY-${Date.now()}`,
+          driverId: newUser.id,
+          name: `${newUser.name} ${newUser.lastName || ''}`.trim(),
+          amount: isFree ? '$0.00' : (newUser.amountPaid || '$49.99'),
+          gateway: isFree ? 'Free Bypass (Office Counter)' : (newUser.paymentMethod || 'Credit Card'),
+          status: 'Completed'
+        }
+      });
+
+      await prisma.notification.create({
+        data: {
+          customId: `NOT-${Date.now() + 1}`,
+          type: 'payment',
+          title: isFree ? 'Free Access Granted' : 'Payment Received',
+          message: isFree
+            ? `Admin granted Free Access to ${newUser.name}.`
+            : `Payment of ${newUser.amountPaid || '$49.99'} (${newUser.paymentMethod || 'Credit Card'}) confirmed for ${newUser.name}.`,
+          userId: newUser.id
+        }
+      });
+    }
+
     return res.status(201).json({
       message: 'Registration successful.',
       user: userWithoutPassword,

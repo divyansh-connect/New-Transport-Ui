@@ -102,15 +102,13 @@ export const DriverRegistrationForm = ({
           {subscriptionPlans.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
-                Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
+                Subscription Plan
               </label>
               <Select
                 value={formData.selectedPlanId || subscriptionPlans[0]?.id}
                 onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
                 options={subscriptionPlans.map(plan => ({
-                  label: freeTrialEnabled
-                    ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
-                    : `${plan.name} (${plan.duration}) - $${plan.price}`,
+                  label: `${plan.name} (${plan.duration}) - $${plan.price}`,
                   value: plan.id
                 }))}
               />
