@@ -13,6 +13,7 @@ frontend/app/dist/
 frontend/web/dist/
 
 # OS/System exclusions
+node_modules/
 .DS_Store
 Thumbs.db
 .idea/
