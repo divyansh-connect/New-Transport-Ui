@@ -35,6 +35,7 @@ export default function RegistrationFormScreen() {
     mobileNo: '',
     carPlateNumber: '',
     email: '',
+    password: '',
   });
 
   // Dynamic pricing option state (1 Month, 6 Months, 1 Year)
@@ -69,7 +70,7 @@ export default function RegistrationFormScreen() {
           name: form.name,
           lastName: form.lastName,
           mobileNo: form.mobileNo,
-          password: 'password123', // Default credentials
+          password: form.password || 'password123',
           carPlateNumber: form.carPlateNumber,
           email: form.email,
           role: registrationType,
@@ -153,6 +154,15 @@ export default function RegistrationFormScreen() {
                 keyboardType="email-address"
                 value={form.email}
                 onChangeText={(val) => handleChange('email', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
+              />
+
+              <CustomInput
+                label={isArabic ? 'كلمة المرور' : isUrdu ? 'پاس ورڈ' : 'Password'}
+                placeholder={isArabic ? 'أدخل كلمة المرور' : isUrdu ? 'اپنا پاس ورڈ بنائیں' : 'Create your password'}
+                secureTextEntry={true}
+                value={form.password}
+                onChangeText={(val) => handleChange('password', val)}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 

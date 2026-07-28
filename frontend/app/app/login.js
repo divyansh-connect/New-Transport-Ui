@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert
 } from 'react-native';
@@ -22,15 +22,16 @@ export default function LoginScreen() {
   const isRTL = isArabic || isUrdu;
   const router = useRouter();
   const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   // ── Login by Mobile Number ──────────────────────────────────────────────────
   // Authenticates with the backend and saves JWT session
   const handleLogin = async () => {
-    if (!mobile.trim()) {
+    if (!mobile.trim() || !password.trim()) {
       showAlert(
         isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error',
-        isArabic ? 'يرجى إدخال رقم الجوال' : isUrdu ? 'براہ کرم اپنا موبائل نمبر درج کریں' : 'Please enter your mobile number'
+        isArabic ? 'يرجى إدخال رقم الجوال وكلمة المرور' : isUrdu ? 'براہ کرم موبائل نمبر اور پاس ورڈ درج کریں' : 'Please enter your mobile number and password'
       );
       return;
     }
@@ -42,7 +43,7 @@ export default function LoginScreen() {
         method: 'POST',
         body: JSON.stringify({
           mobileNo: mobile.trim(),
-          password: 'password123' // Use standard default password to bypass UI alterations
+          password: password.trim()
         })
       });
 
@@ -116,6 +117,15 @@ export default function LoginScreen() {
             value={mobile}
             onChangeText={setMobile}
             keyboardType="phone-pad"
+            style={{ textAlign: isRTL ? 'right' : 'left' }}
+          />
+
+          <CustomInput
+            label={isArabic ? 'كلمة المرور' : isUrdu ? 'پاس ورڈ' : 'Password'}
+            placeholder={isArabic ? 'أدخل كلمة المرور' : isUrdu ? 'اپنا پاس ورڈ درج کریں' : 'Enter your password'}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={true}
             style={{ textAlign: isRTL ? 'right' : 'left' }}
           />
 

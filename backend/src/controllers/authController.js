@@ -183,6 +183,20 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials. Password verification failed.' });
     }
 
+    // Enforce Approval Gating for non-admin accounts
+    if (user.role !== 'admin') {
+      if (user.status === 'Pending') {
+        return res.status(403).json({
+          error: 'Your account is pending admin approval. Please wait for an administrator to review and approve your registration.'
+        });
+      }
+      if (user.status === 'Rejected') {
+        return res.status(403).json({
+          error: `Your registration request was rejected by admin. Reason: ${user.rejectionReason || 'Contact support for details.'}`
+        });
+      }
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { id: user.id, role: user.role },

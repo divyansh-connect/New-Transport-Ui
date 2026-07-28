@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input, Select } from './Input/Input';
 import { Button } from './Button/Button';
-import { User, Phone, Mail, Car, MapPin } from 'lucide-react';
+import { User, Phone, Mail, Car, MapPin, Lock } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 const formBoxStyle = {
@@ -36,6 +36,7 @@ export const DriverRegistrationForm = ({
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Name Row */}
         <div style={gridStyle}>
           <Input
             label="First Name"
@@ -55,6 +56,7 @@ export const DriverRegistrationForm = ({
           />
         </div>
 
+        {/* Mobile + Email Row */}
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
@@ -74,6 +76,19 @@ export const DriverRegistrationForm = ({
           />
         </div>
 
+        {/* Password Row */}
+        <div style={gridStyle}>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Assign password (or default: password123)"
+            leftIcon={Lock}
+            value={formData.password || ''}
+            onChange={(e) => onChange({ ...formData, password: e.target.value })}
+          />
+        </div>
+
+        {/* Plate Number + Subscription Row */}
         <div style={gridStyle}>
           <Input
             label="Plate Number"
@@ -93,7 +108,7 @@ export const DriverRegistrationForm = ({
                   value={formData.selectedPlanId || subscriptionPlans[0]?.id}
                   onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
                   options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled 
+                    label: freeTrialEnabled
                       ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
                       : `${plan.name} (${plan.duration}) - $${plan.price}`,
                     value: plan.id
@@ -132,8 +147,6 @@ export const DriverRegistrationForm = ({
             />
           </div>
         )}
-
-
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)' }}>
@@ -181,6 +194,7 @@ export const WorkshopRegistrationForm = ({
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Business Name + Contact Row */}
         <div style={gridStyle}>
           <Input
             label="Entity / Business Name"
@@ -199,6 +213,7 @@ export const WorkshopRegistrationForm = ({
           />
         </div>
 
+        {/* Mobile + Email Row */}
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
@@ -218,6 +233,19 @@ export const WorkshopRegistrationForm = ({
           />
         </div>
 
+        {/* Password Row */}
+        <div style={gridStyle}>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Assign password (or default: password123)"
+            leftIcon={Lock}
+            value={formData.password || ''}
+            onChange={(e) => onChange({ ...formData, password: e.target.value })}
+          />
+        </div>
+
+        {/* Location + Coordinates Row */}
         <div style={gridStyle}>
           <Input
             label="Location Name / Zone"
@@ -281,7 +309,7 @@ export const WorkshopRegistrationForm = ({
                   value={formData.selectedPlanId || subscriptionPlans[0]?.id}
                   onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
                   options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled 
+                    label: freeTrialEnabled
                       ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
                       : `${plan.name} (${plan.duration}) - $${plan.price}`,
                     value: plan.id
@@ -327,6 +355,7 @@ export const OilChangeRegistrationForm = ({
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Business Name + Contact Row */}
         <div style={gridStyle}>
           <Input
             label="Entity / Business Name"
@@ -345,6 +374,7 @@ export const OilChangeRegistrationForm = ({
           />
         </div>
 
+        {/* Mobile + Email Row */}
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
@@ -364,6 +394,19 @@ export const OilChangeRegistrationForm = ({
           />
         </div>
 
+        {/* Password Row */}
+        <div style={gridStyle}>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Assign password (or default: password123)"
+            leftIcon={Lock}
+            value={formData.password || ''}
+            onChange={(e) => onChange({ ...formData, password: e.target.value })}
+          />
+        </div>
+
+        {/* Location + Coordinates Row */}
         <div style={gridStyle}>
           <Input
             label="Location Name / Zone"
@@ -427,7 +470,7 @@ export const OilChangeRegistrationForm = ({
                   value={formData.selectedPlanId || subscriptionPlans[0]?.id}
                   onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
                   options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled 
+                    label: freeTrialEnabled
                       ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
                       : `${plan.name} (${plan.duration}) - $${plan.price}`,
                     value: plan.id
@@ -473,6 +516,7 @@ export const VisitorRegistrationForm = ({
   return (
     <form onSubmit={onSubmit} style={formBoxStyle}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Name Row */}
         <div style={gridStyle}>
           <Input
             label="First Name"
@@ -492,6 +536,7 @@ export const VisitorRegistrationForm = ({
           />
         </div>
 
+        {/* Mobile + Email Row */}
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
@@ -508,6 +553,18 @@ export const VisitorRegistrationForm = ({
             leftIcon={Mail}
             value={formData.email || ''}
             onChange={(e) => onChange({ ...formData, email: e.target.value })}
+          />
+        </div>
+
+        {/* Password Row */}
+        <div style={gridStyle}>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Assign password (or default: password123)"
+            leftIcon={Lock}
+            value={formData.password || ''}
+            onChange={(e) => onChange({ ...formData, password: e.target.value })}
           />
         </div>
 
@@ -549,7 +606,7 @@ export const VisitorRegistrationForm = ({
                   value={formData.selectedPlanId || subscriptionPlans[0]?.id}
                   onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
                   options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled 
+                    label: freeTrialEnabled
                       ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
                       : `${plan.name} (${plan.duration}) - $${plan.price}`,
                     value: plan.id
