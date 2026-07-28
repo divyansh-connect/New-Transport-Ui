@@ -58,10 +58,18 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Map role type string to Prisma Enum Role
-    const userRole = role ? role.toLowerCase() : 'visitor';
-    if (!['driver', 'workshop', 'oil', 'visitor', 'admin'].includes(userRole)) {
-      return res.status(400).json({ error: 'Invalid user role specified.' });
+    // Map role type string to Prisma Enum Role safely
+    let userRole = 'visitor';
+    if (role) {
+      const lower = String(role).toLowerCase().replace(/\s+/g, '');
+      if (lower.includes('driver')) userRole = 'driver';
+      else if (lower.includes('workshop')) userRole = 'workshop';
+      else if (lower.includes('oil')) userRole = 'oil';
+      else if (lower.includes('visitor')) userRole = 'visitor';
+      else if (lower.includes('admin')) userRole = 'admin';
+      else {
+        return res.status(400).json({ error: 'Invalid user role specified.' });
+      }
     }
 
     const customId = await generateCustomId(userRole);

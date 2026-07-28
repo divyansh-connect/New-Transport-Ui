@@ -28,43 +28,43 @@ enum PaymentStatus {
 }
 
 model User {
-  id                   String        @id @default(uuid())
-  customId             String        @unique // e.g., DRV-1001, WS-201, mapped to avoid exposing internal DB UUIDs
-  name                 String        @db.VarChar(100)
-  lastName             String?       @db.VarChar(100)
-  mobileNo             String        @unique @db.VarChar(20)
-  password             String        @db.VarChar(255) // Hashed password for JWT login
-  carPlateNumber       String?       @db.VarChar(30)
-  email                String?       @unique @db.VarChar(150)
-  role                 Role          @default(visitor)
-  status               UserStatus    @default(Pending)
-  registrationDate     DateTime      @default(now())
-  subscriptionDuration String        @db.VarChar(50) // e.g., "1 Month", "6 Months", "1 Year"
-  amountPaid           String        @db.VarChar(20) // e.g., "$49.99"
-  paymentStatus        PaymentStatus @default(Unpaid)
-  paymentMethod        String        @default("None") @db.VarChar(50)
+  id                   String        @id @default(uuid()) @map("id")
+  customId             String        @unique @map("custom_id")
+  name                 String        @db.VarChar(100) @map("name")
+  lastName             String?       @db.VarChar(100) @map("last_name")
+  mobileNo             String        @unique @db.VarChar(20) @map("mobile_no")
+  password             String        @db.VarChar(255) @map("password")
+  carPlateNumber       String?       @db.VarChar(30) @map("car_plate_number")
+  email                String?       @unique @db.VarChar(150) @map("email")
+  role                 Role          @default(visitor) @map("role")
+  status               UserStatus    @default(Pending) @map("status")
+  registrationDate     DateTime      @default(now()) @map("registration_date")
+  subscriptionDuration String        @db.VarChar(50) @map("subscription_duration")
+  amountPaid           String        @db.VarChar(20) @map("amount_paid")
+  paymentStatus        PaymentStatus @default(Unpaid) @map("payment_status")
+  paymentMethod        String        @default("None") @db.VarChar(50) @map("payment_method")
 
   // GPS Coordinates (latitude and longitude)
-  latitude        Decimal? @db.Decimal(10, 8)
-  longitude       Decimal? @db.Decimal(11, 8)
-  trackLocation   Boolean  @default(true)
-  rejectionReason String?  @db.Text
+  latitude        Decimal? @db.Decimal(10, 8) @map("latitude")
+  longitude       Decimal? @db.Decimal(11, 8) @map("longitude")
+  trackLocation   Boolean  @default(true) @map("track_location")
+  rejectionReason String?  @db.Text @map("rejection_reason")
 
   // Document URLs and verification statuses
-  licenseName   String? @db.VarChar(255)
-  licenseStatus String  @default("Pending Verification") @db.VarChar(50)
-  licenseUrl    String? @db.Text
+  licenseName   String? @db.VarChar(255) @map("license_name")
+  licenseStatus String  @default("Pending Verification") @db.VarChar(50) @map("license_status")
+  licenseUrl    String? @db.Text @map("license_url")
 
-  insuranceName   String? @db.VarChar(255)
-  insuranceStatus String  @default("Pending Verification") @db.VarChar(50)
-  insuranceUrl    String? @db.Text
+  insuranceName   String? @db.VarChar(255) @map("insurance_name")
+  insuranceStatus String  @default("Pending Verification") @db.VarChar(50) @map("insurance_status")
+  insuranceUrl    String? @db.Text @map("insurance_url")
 
-  backgroundCheckName   String? @db.VarChar(255)
-  backgroundCheckStatus String  @default("Pending Verification") @db.VarChar(50)
-  backgroundCheckUrl    String? @db.Text
+  backgroundCheckName   String? @db.VarChar(255) @map("background_check_name")
+  backgroundCheckStatus String  @default("Pending Verification") @db.VarChar(50) @map("background_check_status")
+  backgroundCheckUrl    String? @db.Text @map("background_check_url")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relationships
   payments      Payment[]
@@ -73,38 +73,41 @@ model User {
   @@index([role])
   @@index([status])
   @@index([mobileNo])
+  @@map("users")
 }
 
 model Payment {
-  id       String   @id @default(uuid())
-  customId String   @unique // e.g. PAY-1001
-  driverId String
+  id       String   @id @default(uuid()) @map("id")
+  customId String   @unique @map("custom_id")
+  driverId String   @map("driver_id")
   user     User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  name     String   @db.VarChar(150) // Payer Name
-  amount   String   @db.VarChar(20) // Transaction amount, e.g. "$49.99"
-  gateway  String   @db.VarChar(50) // Payment gateway, e.g. "Credit Card"
-  status   String   @db.VarChar(30) // e.g. "Completed", "Failed"
-  date     DateTime @default(now())
+  name     String   @db.VarChar(150) @map("name")
+  amount   String   @db.VarChar(20) @map("amount")
+  gateway  String   @db.VarChar(50) @map("gateway")
+  status   String   @db.VarChar(30) @map("status")
+  date     DateTime @default(now()) @map("date")
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([driverId])
   @@index([customId])
+  @@map("payments")
 }
 
 model Notification {
-  id       String  @id @default(uuid())
-  customId String  @unique // e.g. NOT-1
-  type     String  @db.VarChar(50) // e.g., "registration", "payment"
-  title    String  @db.VarChar(255)
-  message  String  @db.Text
-  read     Boolean @default(false)
+  id       String  @id @default(uuid()) @map("id")
+  customId String  @unique @map("custom_id")
+  type     String  @db.VarChar(50) @map("type")
+  title    String  @db.VarChar(255) @map("title")
+  message  String  @db.Text @map("message")
+  read     Boolean @default(false) @map("read")
 
   // Optional linkage to user
-  userId String?
+  userId String? @map("user_id")
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
+  @@map("notifications")
 }

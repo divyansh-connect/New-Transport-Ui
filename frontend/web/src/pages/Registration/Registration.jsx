@@ -46,7 +46,7 @@ export const Registration = () => {
     (formData.type === 'oil' && config.oilchange) ||
     (formData.type === 'visitor' && config.visitor);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.firstName.trim()) {
       setAlertMessage('Name / Entity Name is required.');
@@ -117,90 +117,98 @@ export const Registration = () => {
       driverId: targetEntityId
     };
     
-    // Propagate to respective menus
-    if (formData.type === 'driver') {
-      const newDriver = {
-        id: targetEntityId,
-        name: fullName,
-        email: formData.email,
-        phone: formData.phone || '—',
-        plateNumber: formData.plateNumber || '—',
-        vehicleType: 'Commercial Driver',
-        vehicleModel: 'Standard Cargo',
-        licenseNumber: 'DL-TEMP-' + Math.floor(100000 + Math.random() * 900000),
-        experienceYears: 1,
-        city: 'Delhi, IN',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
-        status: 'Pending',
-        registrationDate: new Date().toISOString().split('T')[0],
-        paymentStatus: payRequired ? (formData.paymentStatus === 'Free' ? 'Paid' : (freeTrialEnabled ? 'Trial' : 'Unpaid')) : 'Paid',
-        paymentAmount: planPrice,
-        paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
-        documents: {
-          license: { name: 'Commercial Driver License (CDL)', status: 'Pending Verification', url: '#' },
-          insurance: { name: 'Vehicle Liability Insurance', status: 'Pending Verification', url: '#' },
-          backgroundCheck: { name: 'Criminal Background Check', status: 'Pending', url: '#' }
-        },
-        rejectionReason: ''
-      };
-      registerDriver(newDriver);
-    } else if (formData.type === 'workshop' || formData.type === 'oil' || formData.type === 'visitor') {
-      let displayType;
-      if (formData.type === 'workshop') {
-        displayType = 'Repair Workshop';
-      } else if (formData.type === 'oil') {
-        displayType = 'Oil Change Center';
-      } else {
-        displayType = 'Visitor';
+    try {
+      // Propagate to respective menus
+      if (formData.type === 'driver') {
+        const newDriver = {
+          id: targetEntityId,
+          name: fullName,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone || '—',
+          plateNumber: formData.plateNumber || '—',
+          vehicleType: 'Commercial Driver',
+          vehicleModel: 'Standard Cargo',
+          licenseNumber: 'DL-TEMP-' + Math.floor(100000 + Math.random() * 900000),
+          experienceYears: 1,
+          city: 'Delhi, IN',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
+          status: 'Pending',
+          registrationDate: new Date().toISOString().split('T')[0],
+          paymentStatus: formData.paymentStatus || 'Paid',
+          paymentAmount: planPrice,
+          paymentMethod: formData.paymentMethod || 'Free Bypass',
+          documents: {
+            license: { name: 'Commercial Driver License (CDL)', status: 'Pending Verification', url: '#' },
+            insurance: { name: 'Vehicle Liability Insurance', status: 'Pending Verification', url: '#' },
+            backgroundCheck: { name: 'Criminal Background Check', status: 'Pending', url: '#' }
+          },
+          rejectionReason: ''
+        };
+        await registerDriver(newDriver);
+      } else if (formData.type === 'workshop' || formData.type === 'oil' || formData.type === 'visitor') {
+        let displayType;
+        if (formData.type === 'workshop') {
+          displayType = 'Repair Workshop';
+        } else if (formData.type === 'oil') {
+          displayType = 'Oil Change Center';
+        } else {
+          displayType = 'Visitor';
+        }
+        const newEntityRequest = {
+          id: targetEntityId,
+          name: fullName,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone || '—',
+          plateNumber: '—',
+          vehicleType: displayType,
+          vehicleModel: formData.type === 'workshop' ? 'Workshop Hub' : formData.type === 'oil' ? 'Oil Change Station' : 'Guest Access',
+          licenseNumber: 'LIC-' + targetEntityId + '-' + Math.floor(1000 + Math.random() * 9000),
+          experienceYears: 1,
+          city: formData.location || 'Delhi, IN',
+          avatar: formData.type === 'workshop'
+            ? 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256'
+            : formData.type === 'oil'
+              ? 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=256'
+              : 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256',
+          status: 'Pending',
+          registrationDate: new Date().toISOString().split('T')[0],
+          paymentStatus: formData.paymentStatus || 'Paid',
+          paymentAmount: planPrice,
+          paymentMethod: formData.paymentMethod || 'Free Bypass',
+          type: formData.type,
+          documents: {
+            license: { 
+              name: formData.type === 'workshop' ? 'Business Trade License' : formData.type === 'oil' ? 'Environmental Permit' : 'Government ID Proof', 
+              status: 'Pending Verification', 
+              url: '#' 
+            },
+            insurance: { 
+              name: formData.type === 'workshop' ? 'Liability Insurance Policy' : formData.type === 'oil' ? 'Commercial General Liability' : 'Self Declaration / Medical Cert', 
+              status: 'Pending Verification', 
+              url: '#' 
+            },
+            backgroundCheck: { 
+              name: formData.type === 'workshop' ? 'Safety Audit Report' : formData.type === 'oil' ? 'Pollution Control Board Cert' : 'Address Verification Check', 
+              status: 'Pending', 
+              url: '#' 
+            }
+          },
+          rejectionReason: ''
+        };
+        await registerDriver(newEntityRequest);
       }
-      const newEntityRequest = {
-        id: targetEntityId,
-        name: fullName,
-        email: formData.email,
-        phone: formData.phone || '—',
-        plateNumber: '—',
-        vehicleType: displayType,
-        vehicleModel: formData.type === 'workshop' ? 'Workshop Hub' : formData.type === 'oil' ? 'Oil Change Station' : 'Guest Access',
-        licenseNumber: 'LIC-' + targetEntityId + '-' + Math.floor(1000 + Math.random() * 9000),
-        experienceYears: 1,
-        city: formData.location || 'Delhi, IN',
-        avatar: formData.type === 'workshop'
-          ? 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256'
-          : formData.type === 'oil'
-            ? 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=256'
-            : 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=256',
-        status: 'Pending',
-        registrationDate: new Date().toISOString().split('T')[0],
-        paymentStatus: payRequired ? (formData.paymentStatus === 'Free' ? 'Paid' : (freeTrialEnabled ? 'Trial' : 'Unpaid')) : 'Paid',
-        paymentAmount: planPrice,
-        paymentMethod: payRequired ? (formData.paymentStatus === 'Free' ? 'Free Bypass' : (freeTrialEnabled ? 'Trial Activation' : 'None')) : 'Free Bypass',
-        type: formData.type,
-        documents: {
-          license: { 
-            name: formData.type === 'workshop' ? 'Business Trade License' : formData.type === 'oil' ? 'Environmental Permit' : 'Government ID Proof', 
-            status: 'Pending Verification', 
-            url: '#' 
-          },
-          insurance: { 
-            name: formData.type === 'workshop' ? 'Liability Insurance Policy' : formData.type === 'oil' ? 'Commercial General Liability' : 'Self Declaration / Medical Cert', 
-            status: 'Pending Verification', 
-            url: '#' 
-          },
-          backgroundCheck: { 
-            name: formData.type === 'workshop' ? 'Safety Audit Report' : formData.type === 'oil' ? 'Pollution Control Board Cert' : 'Address Verification Check', 
-            status: 'Pending', 
-            url: '#' 
-          }
-        },
-        rejectionReason: ''
-      };
-      registerDriver(newEntityRequest);
-    }
 
-    // Save and redirect
-    registrations.unshift(newRecord);
-    localStorage.setItem('registrations', JSON.stringify(registrations));
-    navigate('/');
+      // Save and redirect
+      registrations.unshift(newRecord);
+      localStorage.setItem('registrations', JSON.stringify(registrations));
+      navigate('/');
+    } catch (err) {
+      setAlertMessage(err.message || 'Mobile number is already registered.');
+    }
   };
 
   return (

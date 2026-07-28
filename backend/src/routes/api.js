@@ -4,6 +4,7 @@ const router = express.Router();
 const { register, login } = require('../controllers/authController');
 const {
   getAllUsers,
+  getProfile,
   updateProfile,
   updateCoordinates,
   getActivePins,
@@ -32,6 +33,7 @@ router.post('/auth/login', login);
 router.get('/users/pins', getActivePins);
 
 // ── User Profile & GPS Telemetry Sync - Authorized ───────────────────────────
+router.get('/users/profile', authenticateJWT, getProfile);
 router.put('/users/profile', authenticateJWT, updateProfile);
 router.put('/users/coordinates', authenticateJWT, updateCoordinates);
 

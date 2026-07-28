@@ -36,6 +36,8 @@ export default function EditProfileScreen() {
     mobileNo: '',
     carPlateNumber: '',
     email: '',
+    licenseName: '',
+    insuranceName: '',
   });
 
   useEffect(() => {
@@ -46,6 +48,8 @@ export default function EditProfileScreen() {
         mobileNo: registeredUser.mobileNo || '',
         carPlateNumber: registeredUser.carPlateNumber || '',
         email: registeredUser.email || '',
+        licenseName: registeredUser.licenseName || '',
+        insuranceName: registeredUser.insuranceName || '',
       });
     }
   }, [registeredUser]);
@@ -71,6 +75,8 @@ export default function EditProfileScreen() {
         mobileNo: form.mobileNo,
         carPlateNumber: form.carPlateNumber,
         email: form.email,
+        licenseName: form.licenseName,
+        insuranceName: form.insuranceName,
       };
 
       // Sync profile update to backend database
@@ -83,6 +89,8 @@ export default function EditProfileScreen() {
             lastName: form.lastName,
             email: form.email,
             carPlateNumber: form.carPlateNumber,
+            licenseName: form.licenseName,
+            insuranceName: form.insuranceName,
           })
         });
       } catch (err) {
@@ -183,6 +191,22 @@ export default function EditProfileScreen() {
                 keyboardType="email-address"
                 value={form.email}
                 onChangeText={(val) => handleChange('email', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
+              />
+
+              <CustomInput
+                label={isArabic ? 'رقم رخصة القيادة (CDL)' : isUrdu ? 'ڈرائیونگ لائسنس نمبر (CDL)' : 'Commercial Driver License (CDL #)'}
+                placeholder={isArabic ? 'أدخل رقم الرخصة' : isUrdu ? 'لائسنس نمبر درج کریں' : 'e.g. CDL-9874520'}
+                value={form.licenseName}
+                onChangeText={(val) => handleChange('licenseName', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
+              />
+
+              <CustomInput
+                label={isArabic ? 'وثيقة التأمين على المركبة' : isUrdu ? 'گاڑی کی انشورنس پالیسی' : 'Vehicle Insurance Policy Details'}
+                placeholder={isArabic ? 'أدخل رقم/اسم التأمين' : isUrdu ? 'انشورنس کی تفصیلات درج کریں' : 'e.g. Liability Policy #INS-44910'}
+                value={form.insuranceName}
+                onChangeText={(val) => handleChange('insuranceName', val)}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
             </Card>

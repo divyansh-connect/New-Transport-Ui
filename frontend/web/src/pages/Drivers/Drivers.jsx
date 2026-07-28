@@ -379,7 +379,7 @@ export const Drivers = () => {
 
             {/* Drivers Table */}
             <Table
-              headers={['User', 'Contact & Region', 'Details', 'Status', 'Registration Date', 'Actions']}
+              headers={['User', 'Contact & Region', 'Details', 'Payment Info', 'Status', 'Registration Date', 'Actions']}
               data={paginatedList}
               renderRow={(row) => (
                 <tr key={row.id}>
@@ -402,6 +402,14 @@ export const Drivers = () => {
                     <div>{row.vehicleModel}</div>
                     <small style={{ color: 'var(--color-text-muted)' }}>
                       {row.type === 'visitor' ? row.vehicleType : <><code style={{ marginRight: '4px' }}>{row.plateNumber}</code> • {row.vehicleType}</>}
+                    </small>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: '600', color: row.paymentStatus === 'Paid' ? '#10b981' : row.paymentStatus === 'Trial' ? '#3b82f6' : '#f59e0b' }}>
+                      {row.paymentStatus || 'Unpaid'} ({row.paymentAmount || '$49.99'})
+                    </div>
+                    <small style={{ color: 'var(--color-text-muted)' }}>
+                      💳 {row.paymentMethod || 'Free Bypass'}
                     </small>
                   </td>
                   <td>

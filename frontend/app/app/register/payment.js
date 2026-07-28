@@ -39,9 +39,21 @@ export default function PaymentGatewayScreen() {
               const updated = { 
                 ...registeredUser, 
                 paymentMethod: 'Online Payment',
-                paymentStatus: `Paid (${selectedPrice})`
+                paymentStatus: 'Paid'
               };
               await saveUserProfile(updated);
+              try {
+                const { apiFetch } = require('../../src/utils/api');
+                await apiFetch('/users/profile', {
+                  method: 'PUT',
+                  body: JSON.stringify({
+                    paymentStatus: 'Paid',
+                    paymentMethod: 'Online Payment'
+                  })
+                });
+              } catch (e) {
+                console.log('Payment backend sync warning:', e);
+              }
             }
             router.replace('/register/success');
           }

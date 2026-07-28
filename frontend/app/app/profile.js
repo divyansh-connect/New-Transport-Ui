@@ -11,12 +11,16 @@ import { useRouter } from 'expo-router';
 import { translations } from '../src/constants/translations';
 
 export default function ProfileScreen() {
-  const { theme, registeredUser, language } = useTheme();
+  const { theme, registeredUser, language, refreshUserProfile } = useTheme();
   const router = useRouter();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
   const isUrdu = language === 'Urdu';
   const isRTL = isArabic || isUrdu;
+
+  React.useEffect(() => {
+    refreshUserProfile();
+  }, []);
 
   // If user is not registered / logged in yet
   if (!registeredUser) {

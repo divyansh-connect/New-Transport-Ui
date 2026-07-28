@@ -49,28 +49,6 @@ export default function ContactUsScreen() {
       const stored = await AsyncStorage.getItem('support_inquiries');
       if (stored) {
         ticketsList = JSON.parse(stored);
-      } else {
-        // Pre-seed tickets for initial experience if none exist
-        ticketsList = [
-          {
-            id: 'TK-1209',
-            subject: 'Map Latency',
-            date: '2023-10-15',
-            status: 'Closed',
-            user: 'System Admin',
-            mobileNo: 'N/A',
-            details: 'Initial configuration load optimization.'
-          },
-          {
-            id: 'TK-1490',
-            subject: 'Payment Issue',
-            date: '2023-10-18',
-            status: 'Open',
-            user: registeredUser ? `${registeredUser.name} ${registeredUser.lastName}` : 'Guest Driver',
-            mobileNo: registeredUser ? registeredUser.mobileNo : 'N/A',
-            details: 'Payout for last week trip has not credited.'
-          }
-        ];
       }
 
       ticketsList = [newTicket, ...ticketsList];

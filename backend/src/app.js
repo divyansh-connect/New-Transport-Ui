@@ -35,6 +35,11 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// Catch-all 404 JSON handler
+app.use((req, res) => {
+  return res.status(404).json({ error: `Route ${req.originalUrl} not found` });
+});
+
 // Centralized error handling middleware
 app.use((err, req, res, next) => {
   console.error('Unhandled Server Error:', err);

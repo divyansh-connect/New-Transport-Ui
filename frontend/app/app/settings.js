@@ -268,7 +268,7 @@ export default function SettingsScreen() {
             icon="phone"
             iconBg="#1e3a5f"
             label={isArabic ? 'اتصل بنا' : isUrdu ? 'ہم سے رابطہ کریں' : 'Contact Us'}
-            sublabel="+966 000 000 000"
+            sublabel="+91 1800 123 4567"
             isRTL={isRTL}
             isLast={false}
             onPress={() => router.push('/contact-us')}

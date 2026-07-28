@@ -3,50 +3,18 @@ import { Card } from '../../components/common/Cards/Card';
 import { Table } from '../../components/common/Tables/Table';
 import { Modal } from '../../components/common/Modal/Modal';
 import { Badge } from '../../components/common/Badge/Badge';
-import { Phone, MessageSquare, Mail, ExternalLink, Clock, User, CheckCircle2, Send } from 'lucide-react';
+import { EmptyState } from '../../components/common/EmptyState/EmptyState';
+import { Phone, MessageSquare, Mail, ExternalLink, Clock, User, CheckCircle2, Send, Inbox } from 'lucide-react';
 import './Contact.css';
 
 export const Contact = () => {
-  const initialInquiries = [
-    {
-      id: 'TKT-101',
-      user: 'Rajesh Kumar',
-      role: 'Driver',
-      phone: '+91 98765 43210',
-      subject: 'Payment Delay',
-      status: 'Open',
-      time: '10 mins ago',
-      details: 'Payout for last week trip #TRP-8821 has not credited to bank account yet. Requesting urgent verification.'
-    },
-    {
-      id: 'TKT-102',
-      user: 'North Fleet Hub',
-      role: 'Workshop',
-      phone: '+91 98123 45678',
-      subject: 'API Sync Issue',
-      status: 'In Progress',
-      time: '1 hr ago',
-      details: 'Automatic workshop dispatch requests are timing out on mobile client node. Need API key status re-check.'
-    },
-    {
-      id: 'TKT-103',
-      user: 'Amit Singh',
-      role: 'Driver',
-      phone: '+91 97654 32109',
-      subject: 'App Crashing on Login',
-      status: 'Resolved',
-      time: '3 hrs ago',
-      details: 'App shuts down immediately after entering OTP on Android 14. Issue fixed after cache clearing.'
-    }
-  ];
-
   const [inquiries, setInquiries] = React.useState([]);
 
   const defaultContactInfo = {
-    emergency1: '+1 (800) 555-0199',
-    emergency2: '+1 (800) 555-0200',
-    whatsapp: '+1 (800) 555-0199',
-    partner: 'partners@herologistics.com'
+    emergency1: '+91 1800 123 4567',
+    emergency2: '+91 98765 43210',
+    whatsapp: '+91 98765 43210',
+    partner: 'partners@userlife.com'
   };
 
   const [contactInfo, setContactInfo] = React.useState(defaultContactInfo);
@@ -55,10 +23,17 @@ export const Contact = () => {
   React.useEffect(() => {
     const saved = localStorage.getItem('support_inquiries');
     if (saved) {
-      setInquiries(JSON.parse(saved));
+      try {
+        const parsed = JSON.parse(saved);
+        // Filter out old seed dummy tickets (TKT-101, TKT-102, TKT-103)
+        const realOnly = parsed.filter(item => !['TKT-101', 'TKT-102', 'TKT-103'].includes(item.id));
+        setInquiries(realOnly);
+        localStorage.setItem('support_inquiries', JSON.stringify(realOnly));
+      } catch (e) {
+        setInquiries([]);
+      }
     } else {
-      setInquiries(initialInquiries);
-      localStorage.setItem('support_inquiries', JSON.stringify(initialInquiries));
+      setInquiries([]);
     }
 
     const savedContact = localStorage.getItem('support_contact_info');
@@ -256,56 +231,64 @@ export const Contact = () => {
       </div>
 
       <Card title="Recent Support Inquiries" subtitle="Latest tickets from the mobile app and partner portal. Click icon to inspect.">
-        <Table
-          headers={['Ticket ID', 'User Details', 'Subject', 'Status', 'Time', 'Inspect']}
-          data={inquiries}
-          renderRow={(row) => (
-            <tr key={row.id}>
-              <td><span className="id-badge">{row.id}</span></td>
-              <td>
-                <div className="d-flex flex-column">
-                  <strong>{row.user}</strong>
-                  <span className="text-muted text-sm">{row.role}</span>
-                </div>
-              </td>
-              <td>{row.subject}</td>
-              <td>
-                <Badge
-                  variant={
-                    row.status === 'Resolved'
-                      ? 'success'
-                      : row.status === 'In Progress'
-                        ? 'info'
-                        : 'warning'
-                  }
-                >
-                  {row.status}
-                </Badge>
-              </td>
-              <td>
-                <span className="d-flex align-center gap-xs text-muted text-sm">
-                  <Clock size={12} /> {row.time}
-                </span>
-              </td>
-              <td>
-                <button
-                  className="btn-icon"
-                  onClick={() => handleOpenTicket(row)}
-                  title="Inspect Ticket Details"
-                  style={{
-                    cursor: 'pointer',
-                    padding: '6px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border)',
-                    backgroundColor: 'var(--color-surface)'
-                  }}
-                >
-                  <ExternalLink size={16} color="var(--color-primary)" />
-                </button>
-              </td>
-            </tr>
-          )}
-        />
+        {inquiries.length === 0 ? (
+          <EmptyState
+            icon={Inbox}
+            title="No Support Inquiries Yet"
+            description="Support tickets raised from the mobile app will appear here automatically."
+          />
+        ) : (
+          <Table
+            headers={['Ticket ID', 'User Details', 'Subject', 'Status', 'Time', 'Inspect']}
+            data={inquiries}
+            renderRow={(row) => (
+              <tr key={row.id}>
+                <td><span className="id-badge">{row.id}</span></td>
+                <td>
+                  <div className="d-flex flex-column">
+                    <strong>{row.user}</strong>
+                    <span className="text-muted text-sm">{row.role}</span>
+                  </div>
+                </td>
+                <td>{row.subject}</td>
+                <td>
+                  <Badge
+                    variant={
+                      row.status === 'Resolved'
+                        ? 'success'
+                        : row.status === 'In Progress'
+                          ? 'info'
+                          : 'warning'
+                    }
+                  >
+                    {row.status}
+                  </Badge>
+                </td>
+                <td>
+                  <span className="d-flex align-center gap-xs text-muted text-sm">
+                    <Clock size={12} /> {row.time}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    className="btn-icon"
+                    onClick={() => handleOpenTicket(row)}
+                    title="Inspect Ticket Details"
+                    style={{
+                      cursor: 'pointer',
+                      padding: '6px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-surface)'
+                    }}
+                  >
+                    <ExternalLink size={16} color="var(--color-primary)" />
+                  </button>
+                </td>
+              </tr>
+            )}
+          />
+        )}
       </Card>
 
       {/* Interactive Ticket Details Modal */}

@@ -19,6 +19,21 @@ export const ThemeProvider = ({ children }) => {
   const [registeredUser, setRegisteredUser] = useState(null);
   const [opportunityNotice, setOpportunityNotice] = useState(defaultNotice);
 
+  const refreshUserProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (!token) return;
+      const { apiFetch } = require('../utils/api');
+      const data = await apiFetch('/users/profile');
+      if (data && data.user) {
+        setRegisteredUser(data.user);
+        await AsyncStorage.setItem('user_profile', JSON.stringify(data.user));
+      }
+    } catch (e) {
+      console.log('Error refreshing user profile:', e);
+    }
+  };
+
   useEffect(() => {
     // Load registered user profile & admin notice from storage
     AsyncStorage.getItem('user_profile').then((data) => {
@@ -29,6 +44,7 @@ export const ThemeProvider = ({ children }) => {
           console.log('Error parsing user profile:', e);
         }
       }
+      refreshUserProfile();
     }).catch(err => console.log('AsyncStorage error:', err));
 
     AsyncStorage.getItem('opportunity_notice').then((data) => {
@@ -86,6 +102,7 @@ export const ThemeProvider = ({ children }) => {
         setLanguage,
         registeredUser,
         saveUserProfile,
+        refreshUserProfile,
         opportunityNotice,
         saveOpportunityNotice,
         alertConfig,
@@ -109,6 +126,7 @@ export const useTheme = () => {
       setLanguage: () => {},
       registeredUser: null,
       saveUserProfile: () => {},
+      refreshUserProfile: () => {},
       opportunityNotice: defaultNotice,
       saveOpportunityNotice: () => {},
       alertConfig: null,

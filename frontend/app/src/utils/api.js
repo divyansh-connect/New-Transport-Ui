@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// PC WiFi IP — update this if your IP changes (run ipconfig to check)
-const PC_WIFI_IP = '192.168.1.5';
+// PC WiFi IP — updated automatically from ipconfig
+const PC_WIFI_IP = '192.168.1.8';
 
 // 10.0.2.2 = Android Emulator's special IP for host machine localhost
 // PC_WIFI_IP = Physical Android/iOS phone on same WiFi network
@@ -29,7 +29,14 @@ export async function apiFetch(endpoint, options = {}) {
     headers
   });
 
-  const data = await response.json();
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    console.log(`API [${endpoint}] Non-JSON response:`, text.substring(0, 100));
+    throw new Error('Server connection error. Please verify backend is running.');
+  }
 
   if (!response.ok) {
     throw new Error(data.error || 'Something went wrong');

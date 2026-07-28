@@ -43,7 +43,7 @@ export const DriverRegistrationForm = ({
             placeholder="First name"
             leftIcon={User}
             value={formData.firstName || ''}
-            onChange={(e) => onChange({ ...formData, firstName: e.target.value })}
+            onChange={(e) => onChange({ ...formData, firstName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
             required
           />
           <Input
@@ -51,7 +51,7 @@ export const DriverRegistrationForm = ({
             placeholder="Last name"
             leftIcon={User}
             value={formData.lastName || ''}
-            onChange={(e) => onChange({ ...formData, lastName: e.target.value })}
+            onChange={(e) => onChange({ ...formData, lastName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
             required
           />
         </div>
@@ -60,10 +60,11 @@ export const DriverRegistrationForm = ({
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
-            placeholder="+1 (555) 000-0000"
+            type="tel"
+            placeholder="e.g. +91 98765 43210"
             leftIcon={Phone}
             value={formData.phone || ''}
-            onChange={(e) => onChange({ ...formData, phone: e.target.value })}
+            onChange={(e) => onChange({ ...formData, phone: e.target.value.replace(/[^0-9+]/g, '') })}
             required
           />
           <Input
@@ -72,7 +73,7 @@ export const DriverRegistrationForm = ({
             placeholder="email@example.com"
             leftIcon={Mail}
             value={formData.email || ''}
-            onChange={(e) => onChange({ ...formData, email: e.target.value })}
+            onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
           />
         </div>
 
@@ -98,55 +99,53 @@ export const DriverRegistrationForm = ({
             onChange={(e) => onChange({ ...formData, plateNumber: e.target.value })}
             required
           />
-          {payRequired && !isFreeSelected ? (
-            subscriptionPlans.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
-                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
-                </label>
-                <Select
-                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
-                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
-                  options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled
-                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
-                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
-                    value: plan.id
-                  }))}
-                />
-              </div>
-            ) : null
-          ) : payRequired && isFreeSelected ? null : (
-            <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
-              <div style={{
-                padding: '12px',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid #10b981',
-                borderRadius: '6px',
-                color: '#10b981',
-                fontSize: '13px',
-                fontWeight: '600',
-                width: '100%'
-              }}>
-                ✨ Registration is FREE
-              </div>
+          {subscriptionPlans.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
+              </label>
+              <Select
+                value={formData.selectedPlanId || subscriptionPlans[0]?.id}
+                onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
+                options={subscriptionPlans.map(plan => ({
+                  label: freeTrialEnabled
+                    ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
+                    : `${plan.name} (${plan.duration}) - $${plan.price}`,
+                  value: plan.id
+                }))}
+              />
             </div>
           )}
         </div>
 
-        {payRequired && (
+        {/* Payment Mode & Method Selection */}
+        <div style={gridStyle}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
             <Select
               value={formData.paymentStatus || 'Paid'}
               onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
               options={[
-                { label: 'Paid', value: 'Paid' },
-                { label: 'Free', value: 'Free' }
+                { label: 'Paid (Full Access)', value: 'Paid' },
+                { label: 'Free (Admin Bypass)', value: 'Free' },
+                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
               ]}
             />
           </div>
-        )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
+            <Select
+              value={formData.paymentMethod || 'Free Bypass'}
+              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
+              options={[
+                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
+                { label: 'Cash Receipt', value: 'Cash' },
+                { label: 'Credit / Debit Card', value: 'Credit Card' },
+                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
+              ]}
+            />
+          </div>
+        </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)' }}>
@@ -209,7 +208,7 @@ export const WorkshopRegistrationForm = ({
             placeholder="Contact person name"
             leftIcon={User}
             value={formData.lastName || ''}
-            onChange={(e) => onChange({ ...formData, lastName: e.target.value })}
+            onChange={(e) => onChange({ ...formData, lastName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
           />
         </div>
 
@@ -217,10 +216,11 @@ export const WorkshopRegistrationForm = ({
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
-            placeholder="+1 (555) 000-0000"
+            type="tel"
+            placeholder="e.g. +91 98765 43210"
             leftIcon={Phone}
             value={formData.phone || ''}
-            onChange={(e) => onChange({ ...formData, phone: e.target.value })}
+            onChange={(e) => onChange({ ...formData, phone: e.target.value.replace(/[^0-9+]/g, '') })}
             required
           />
           <Input
@@ -229,7 +229,7 @@ export const WorkshopRegistrationForm = ({
             placeholder="email@example.com"
             leftIcon={Mail}
             value={formData.email || ''}
-            onChange={(e) => onChange({ ...formData, email: e.target.value })}
+            onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
           />
         </div>
 
@@ -273,52 +273,34 @@ export const WorkshopRegistrationForm = ({
           </div>
         </div>
 
-        {!payRequired && (
-          <div style={{
-            padding: '12px',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid #10b981',
-            borderRadius: '6px',
-            color: '#10b981',
-            fontSize: '13px',
-            fontWeight: '600'
-          }}>
-            ✨ Registration is FREE for this category (Payment requirement disabled by Admin).
+        {/* Payment Mode & Method Selection */}
+        <div style={gridStyle}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+            <Select
+              value={formData.paymentStatus || 'Paid'}
+              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+              options={[
+                { label: 'Paid (Full Access)', value: 'Paid' },
+                { label: 'Free (Admin Bypass)', value: 'Free' },
+                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
+              ]}
+            />
           </div>
-        )}
-
-        {payRequired && (
-          <div style={gridStyle}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
-              <Select
-                value={formData.paymentStatus || 'Paid'}
-                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
-                options={[
-                  { label: 'Paid', value: 'Paid' },
-                  { label: 'Free', value: 'Free' }
-                ]}
-              />
-            </div>
-            {!isFreeSelected && subscriptionPlans.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
-                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
-                </label>
-                <Select
-                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
-                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
-                  options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled
-                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
-                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
-                    value: plan.id
-                  }))}
-                />
-              </div>
-            ) : null}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
+            <Select
+              value={formData.paymentMethod || 'Free Bypass'}
+              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
+              options={[
+                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
+                { label: 'Cash Receipt', value: 'Cash' },
+                { label: 'Credit / Debit Card', value: 'Credit Card' },
+                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
+              ]}
+            />
           </div>
-        )}
+        </div>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
           <input
@@ -370,7 +352,7 @@ export const OilChangeRegistrationForm = ({
             placeholder="Contact person name"
             leftIcon={User}
             value={formData.lastName || ''}
-            onChange={(e) => onChange({ ...formData, lastName: e.target.value })}
+            onChange={(e) => onChange({ ...formData, lastName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
           />
         </div>
 
@@ -378,10 +360,11 @@ export const OilChangeRegistrationForm = ({
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
-            placeholder="+1 (555) 000-0000"
+            type="tel"
+            placeholder="e.g. +91 98765 43210"
             leftIcon={Phone}
             value={formData.phone || ''}
-            onChange={(e) => onChange({ ...formData, phone: e.target.value })}
+            onChange={(e) => onChange({ ...formData, phone: e.target.value.replace(/[^0-9+]/g, '') })}
             required
           />
           <Input
@@ -390,7 +373,7 @@ export const OilChangeRegistrationForm = ({
             placeholder="email@example.com"
             leftIcon={Mail}
             value={formData.email || ''}
-            onChange={(e) => onChange({ ...formData, email: e.target.value })}
+            onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
           />
         </div>
 
@@ -434,52 +417,34 @@ export const OilChangeRegistrationForm = ({
           </div>
         </div>
 
-        {!payRequired && (
-          <div style={{
-            padding: '12px',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid #10b981',
-            borderRadius: '6px',
-            color: '#10b981',
-            fontSize: '13px',
-            fontWeight: '600'
-          }}>
-            ✨ Registration is FREE for this category (Payment requirement disabled by Admin).
+        {/* Payment Mode & Method Selection */}
+        <div style={gridStyle}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+            <Select
+              value={formData.paymentStatus || 'Paid'}
+              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+              options={[
+                { label: 'Paid (Full Access)', value: 'Paid' },
+                { label: 'Free (Admin Bypass)', value: 'Free' },
+                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
+              ]}
+            />
           </div>
-        )}
-
-        {payRequired && (
-          <div style={gridStyle}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
-              <Select
-                value={formData.paymentStatus || 'Paid'}
-                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
-                options={[
-                  { label: 'Paid', value: 'Paid' },
-                  { label: 'Free', value: 'Free' }
-                ]}
-              />
-            </div>
-            {!isFreeSelected && subscriptionPlans.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
-                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
-                </label>
-                <Select
-                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
-                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
-                  options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled
-                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
-                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
-                    value: plan.id
-                  }))}
-                />
-              </div>
-            ) : null}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
+            <Select
+              value={formData.paymentMethod || 'Free Bypass'}
+              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
+              options={[
+                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
+                { label: 'Cash Receipt', value: 'Cash' },
+                { label: 'Credit / Debit Card', value: 'Credit Card' },
+                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
+              ]}
+            />
           </div>
-        )}
+        </div>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
           <input
@@ -523,7 +488,7 @@ export const VisitorRegistrationForm = ({
             placeholder="First name"
             leftIcon={User}
             value={formData.firstName || ''}
-            onChange={(e) => onChange({ ...formData, firstName: e.target.value })}
+            onChange={(e) => onChange({ ...formData, firstName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
             required
           />
           <Input
@@ -531,7 +496,7 @@ export const VisitorRegistrationForm = ({
             placeholder="Last name"
             leftIcon={User}
             value={formData.lastName || ''}
-            onChange={(e) => onChange({ ...formData, lastName: e.target.value })}
+            onChange={(e) => onChange({ ...formData, lastName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
             required
           />
         </div>
@@ -540,10 +505,11 @@ export const VisitorRegistrationForm = ({
         <div style={gridStyle}>
           <Input
             label="Mobile Number"
-            placeholder="+1 (555) 000-0000"
+            type="tel"
+            placeholder="e.g. +91 98765 43210"
             leftIcon={Phone}
             value={formData.phone || ''}
-            onChange={(e) => onChange({ ...formData, phone: e.target.value })}
+            onChange={(e) => onChange({ ...formData, phone: e.target.value.replace(/[^0-9+]/g, '') })}
             required
           />
           <Input
@@ -552,7 +518,7 @@ export const VisitorRegistrationForm = ({
             placeholder="email@example.com"
             leftIcon={Mail}
             value={formData.email || ''}
-            onChange={(e) => onChange({ ...formData, email: e.target.value })}
+            onChange={(e) => onChange({ ...formData, email: e.target.value.toLowerCase() })}
           />
         </div>
 
@@ -568,54 +534,34 @@ export const VisitorRegistrationForm = ({
           />
         </div>
 
-        {!payRequired && (
-          <div style={{
-            padding: '12px',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid #10b981',
-            borderRadius: '6px',
-            color: '#10b981',
-            fontSize: '13px',
-            fontWeight: '600',
-            width: '100%',
-            boxSizing: 'border-box'
-          }}>
-            ✨ Registration is FREE
+        {/* Payment Mode & Method Selection */}
+        <div style={gridStyle}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
+            <Select
+              value={formData.paymentStatus || 'Paid'}
+              onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
+              options={[
+                { label: 'Paid (Full Access)', value: 'Paid' },
+                { label: 'Free (Admin Bypass)', value: 'Free' },
+                { label: 'Unpaid (Pending Payment)', value: 'Unpaid' }
+              ]}
+            />
           </div>
-        )}
-
-        {payRequired && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', width: '100%' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Status Selection</label>
-              <Select
-                value={formData.paymentStatus || 'Paid'}
-                onChange={(e) => onChange({ ...formData, paymentStatus: e.target.value })}
-                options={[
-                  { label: 'Paid', value: 'Paid' },
-                  { label: 'Free', value: 'Free' }
-                ]}
-              />
-            </div>
-            {!isFreeSelected && subscriptionPlans.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>
-                  Subscription Plan {freeTrialEnabled && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '11px', marginLeft: '6px' }}>🎁 {freeTrialDuration} Free Trial Active!</span>}
-                </label>
-                <Select
-                  value={formData.selectedPlanId || subscriptionPlans[0]?.id}
-                  onChange={(e) => onChange({ ...formData, selectedPlanId: e.target.value })}
-                  options={subscriptionPlans.map(plan => ({
-                    label: freeTrialEnabled
-                      ? `${plan.name} (${plan.duration}) - ${freeTrialDuration} Free Trial, then $${plan.price}`
-                      : `${plan.name} (${plan.duration}) - $${plan.price}`,
-                    value: plan.id
-                  }))}
-                />
-              </div>
-            ) : null}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Payment Method</label>
+            <Select
+              value={formData.paymentMethod || 'Free Bypass'}
+              onChange={(e) => onChange({ ...formData, paymentMethod: e.target.value })}
+              options={[
+                { label: 'Free Bypass / Admin Counter', value: 'Free Bypass' },
+                { label: 'Cash Receipt', value: 'Cash' },
+                { label: 'Credit / Debit Card', value: 'Credit Card' },
+                { label: 'Bank Transfer / UPI', value: 'Bank Transfer' }
+              ]}
+            />
           </div>
-        )}
+        </div>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>
           <input

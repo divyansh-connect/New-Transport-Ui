@@ -49,10 +49,10 @@ export default function RegistrationFormScreen() {
   };
 
   const handleNext = async () => {
-    if (!form.name.trim() || !form.mobileNo.trim()) {
+    if (!form.name.trim() || !form.mobileNo.trim() || !form.password.trim()) {
       showAlert(
         isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error',
-        isArabic ? 'الرجاء ملء الحقول المطلوبة (الاسم ورقم الجوال).' : isUrdu ? 'براہ کرم مطلوبہ فیلڈز (نام اور موبائل نمبر) پُر کریں۔' : 'Please fill in required fields (Name and Mobile Number).'
+        isArabic ? 'الرجاء ملء جميع الحقول المطلوبة (الاسم، رقم الجوال، وكلمة المرور).' : isUrdu ? 'براہ کرم تمام مطلوبہ فیلڈز (نام، موبائل نمبر، اور پاس ورڈ) پُر کریں۔' : 'Please fill in all required fields (Name, Mobile Number, and Password).'
       );
       return;
     }
@@ -70,7 +70,7 @@ export default function RegistrationFormScreen() {
           name: form.name,
           lastName: form.lastName,
           mobileNo: form.mobileNo,
-          password: form.password || 'password123',
+          password: form.password,
           carPlateNumber: form.carPlateNumber,
           email: form.email,
           role: registrationType,
@@ -117,7 +117,7 @@ export default function RegistrationFormScreen() {
                 label={isArabic ? 'الاسم الاول' : isUrdu ? 'پہلا نام' : 'Name'}
                 placeholder={isArabic ? 'أدخل الاسم الأول' : isUrdu ? 'پہلا نام درج کریں' : 'Enter Name'}
                 value={form.name}
-                onChangeText={(val) => handleChange('name', val)}
+                onChangeText={(val) => handleChange('name', val.replace(/[^a-zA-Z\s]/g, ''))}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
@@ -125,7 +125,7 @@ export default function RegistrationFormScreen() {
                 label={isArabic ? 'الكنية / اسم العائلة' : isUrdu ? 'خاندان کا نام' : 'Last Name'}
                 placeholder={isArabic ? 'أدخل اسم العائلة' : isUrdu ? 'خاندان کا نام درج کریں' : 'Enter Last Name'}
                 value={form.lastName}
-                onChangeText={(val) => handleChange('lastName', val)}
+                onChangeText={(val) => handleChange('lastName', val.replace(/[^a-zA-Z\s]/g, ''))}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
@@ -134,7 +134,7 @@ export default function RegistrationFormScreen() {
                 placeholder={isArabic ? 'أدخل رقم الجوال' : isUrdu ? 'موبائل نمبر درج کریں' : 'Enter Mobile Number'}
                 keyboardType="phone-pad"
                 value={form.mobileNo}
-                onChangeText={(val) => handleChange('mobileNo', val)}
+                onChangeText={(val) => handleChange('mobileNo', val.replace(/[^0-9+]/g, ''))}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
@@ -152,8 +152,9 @@ export default function RegistrationFormScreen() {
                 label={isArabic ? 'البريد الإلكتروني (اختياري)' : isUrdu ? 'ای میل (اختیاری)' : 'Email Option'}
                 placeholder={isArabic ? 'أدخل البريد الإلكتروني' : isUrdu ? 'ای میل ایڈریس درج کریں' : 'Enter Email Address'}
                 keyboardType="email-address"
+                autoCapitalize="none"
                 value={form.email}
-                onChangeText={(val) => handleChange('email', val)}
+                onChangeText={(val) => handleChange('email', val.toLowerCase())}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 

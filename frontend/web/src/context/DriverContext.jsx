@@ -159,14 +159,16 @@ export const DriverProvider = ({ children }) => {
       loadData();
     } catch (err) {
       console.error(err);
+      throw err;
     }
   };
 
   const approveDriver = async (id) => {
-    const target = drivers.find(d => d.id === id);
+    const target = drivers.find(d => d.id === id || d.realId === id);
     if (!target) return;
     try {
-      await apiCall(`/users/${target.realId}/approve`, { method: 'PUT' });
+      const targetId = target.realId || target.id;
+      await apiCall(`/users/${targetId}/approve`, { method: 'PUT' });
       loadData();
     } catch (err) {
       console.error(err);
@@ -174,10 +176,11 @@ export const DriverProvider = ({ children }) => {
   };
 
   const rejectDriver = async (id, reason) => {
-    const target = drivers.find(d => d.id === id);
+    const target = drivers.find(d => d.id === id || d.realId === id);
     if (!target) return;
     try {
-      await apiCall(`/users/${target.realId}/reject`, {
+      const targetId = target.realId || target.id;
+      await apiCall(`/users/${targetId}/reject`, {
         method: 'PUT',
         body: JSON.stringify({ reason })
       });
@@ -256,10 +259,11 @@ export const DriverProvider = ({ children }) => {
   };
 
   const deleteDriver = async (id) => {
-    const target = drivers.find(d => d.id === id);
+    const target = drivers.find(d => d.id === id || d.realId === id);
     if (!target) return;
     try {
-      await apiCall(`/users/${target.realId}`, { method: 'DELETE' });
+      const targetId = target.realId || target.id;
+      await apiCall(`/users/${targetId}`, { method: 'DELETE' });
       loadData();
     } catch (err) {
       console.error(err);
