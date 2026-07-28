@@ -31,14 +31,14 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
 
   const searchableItems = [
     { title: 'Dashboard Overview', category: 'Page Navigation', path: '/' },
-    { title: 'Driver Requests & Approvals', category: 'Page Navigation', path: '/drivers' },
+    { title: 'User Requests & Approvals', category: 'Page Navigation', path: '/users' },
     { title: 'Payments & Revenue History', category: 'Page Navigation', path: '/payments' },
-    { title: 'Services & Workshop Hubs', category: 'Page Navigation', path: '/services' },
+    { title: 'User Services & Workshop Hubs', category: 'Page Navigation', path: '/services' },
     { title: 'Notifications & System Alerts', category: 'Page Navigation', path: '/notifications' },
     { title: 'Opportunity & Broadcast Notices', category: 'Page Navigation', path: '/opportunity' },
     { title: 'Support & Contact Hub', category: 'Page Navigation', path: '/contact' },
     { title: 'Admin Settings & Appearance', category: 'Page Navigation', path: '/settings' },
-    { title: 'John Doe (Commercial Driver REG-101)', category: 'Driver Record', path: '/drivers' },
+    { title: 'John Doe (Commercial Driver REG-101)', category: 'Driver Record', path: '/users' },
     { title: 'Metro Workshop Hub (Station REG-102)', category: 'Service Partner', path: '/services' },
     { title: 'Payout Receipt #TRP-8821 ($62,400)', category: 'Payment Record', path: '/payments' },
   ];
@@ -126,7 +126,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search dashboard, drivers, payments..."
+              placeholder="Search dashboard, user requests, payments..."
               className="navbar-search-input"
               value={searchQuery}
               onChange={(e) => {
