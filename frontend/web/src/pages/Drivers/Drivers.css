@@ -374,6 +374,7 @@
 .document-status.verified { color: var(--color-success); }
 .document-status.pending { color: var(--color-warning); }
 .document-status.failed { color: var(--color-danger); }
+.document-status.missing { color: var(--color-text-muted); }
 
 .drawer-footer {
   padding: 20px 24px;

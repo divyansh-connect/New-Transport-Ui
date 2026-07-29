@@ -36,7 +36,19 @@ export const Services = () => {
   const [modalMode, setModalMode] = useState('add'); // 'add', 'edit', 'view'
   const [addFormType, setAddFormType] = useState('driver');
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [formData, setFormData] = useState({ name: '', location: '', latitude: '', longitude: '', contact: '', email: '', status: 'Active', amount: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    location: '', 
+    latitude: '', 
+    longitude: '', 
+    contact: '', 
+    email: '', 
+    status: 'Active', 
+    amount: '',
+    licenseName: '',
+    insuranceName: '',
+    backgroundCheckName: ''
+  });
 
   const payRequiredForType = 
     (addFormType === 'driver' && config.driver) ||
@@ -154,7 +166,21 @@ export const Services = () => {
   const handleAddClick = () => {
     setModalMode('add');
     setAddFormType(activeTab);
-    setFormData({ type: activeTab, firstName: '', lastName: '', phone: '', email: '', plateNumber: '', location: '', latitude: '28.6250', longitude: '77.2180', termsAccepted: false });
+    setFormData({ 
+      type: activeTab, 
+      firstName: '', 
+      lastName: '', 
+      phone: '', 
+      email: '', 
+      plateNumber: '', 
+      location: '', 
+      latitude: '28.6250', 
+      longitude: '77.2180', 
+      termsAccepted: false,
+      licenseName: '',
+      insuranceName: '',
+      backgroundCheckName: ''
+    });
     setIsModalOpen(true);
   };
 
@@ -169,7 +195,10 @@ export const Services = () => {
       contact: record.contact || record.phone || '',
       email: record.email || '',
       status: record.status,
-      amount: record.amount || record.paymentAmount || '$49.99'
+      amount: record.amount || record.paymentAmount || '$49.99',
+      licenseName: record.licenseName || (record.documents?.license?.name !== 'Commercial Driver License (CDL)' && record.documents?.license?.name !== 'License / ID' ? record.documents?.license?.name : '') || '',
+      insuranceName: record.insuranceName || (record.documents?.insurance?.name !== 'Vehicle Liability Insurance' && record.documents?.insurance?.name !== 'Insurance Policy' ? record.documents?.insurance?.name : '') || '',
+      backgroundCheckName: record.backgroundCheckName || (record.documents?.backgroundCheck?.name !== 'Criminal Background Check' && record.documents?.backgroundCheck?.name !== 'Safety/Background Check' ? record.documents?.backgroundCheck?.name : '') || ''
     });
     setIsModalOpen(true);
   };
@@ -219,7 +248,10 @@ export const Services = () => {
         contact: formData.contact,
         email: formData.email,
         status: formData.status,
-        amount: formData.amount
+        amount: formData.amount,
+        licenseName: formData.licenseName,
+        insuranceName: formData.insuranceName,
+        backgroundCheckName: formData.backgroundCheckName
       });
     }
     setIsModalOpen(false);
@@ -320,7 +352,12 @@ export const Services = () => {
         insurance: { name: 'Insurance Policy', status: 'Pending Verification', url: '#' },
         backgroundCheck: { name: 'Safety/Background Check', status: 'Pending', url: '#' }
       },
-      rejectionReason: ''
+      rejectionReason: '',
+      latitude: formData.latitude,
+      longitude: formData.longitude,
+      licenseName: formData.licenseName,
+      insuranceName: formData.insuranceName,
+      backgroundCheckName: formData.backgroundCheckName
     };
 
     registerDriver(newEntityRequest);
@@ -406,7 +443,11 @@ export const Services = () => {
                 <td>{row.email || '—'}</td>
                 {!isPeopleTab && (
                   <td>
-                    <code>{row.latitude || '28.6250'}, {row.longitude || '77.2180'}</code>
+                    <code>
+                      {row.latitude && row.longitude 
+                        ? `${row.latitude}, ${row.longitude}` 
+                        : 'Not Set'}
+                    </code>
                   </td>
                 )}
                 <td>{row.phone || row.contact || row.mobileNo || '—'}</td>
@@ -477,7 +518,11 @@ export const Services = () => {
             {activeTab !== 'driver' && activeTab !== 'visitor' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Coordinates</span>
-                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)', fontFamily: 'monospace' }}>{selectedRecord.latitude || '28.6250'}, {selectedRecord.longitude || '77.2180'}</div>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)', fontFamily: 'monospace' }}>
+                  {selectedRecord.latitude && selectedRecord.longitude 
+                    ? `${selectedRecord.latitude}, ${selectedRecord.longitude}` 
+                    : 'Not Set'}
+                </div>
               </div>
             )}
 

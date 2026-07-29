@@ -52,7 +52,10 @@ const register = async (req, res) => {
       paymentMethod,
       trackLocation,
       latitude,
-      longitude
+      longitude,
+      licenseName,
+      insuranceName,
+      backgroundCheckName
     } = req.body;
 
     if (!name || !mobileNo || !password) {
@@ -106,7 +109,10 @@ const register = async (req, res) => {
         paymentMethod: paymentMethod || 'None',
         trackLocation: trackLocation !== undefined ? trackLocation : true,
         latitude: latitude ? parseFloat(latitude) : null,
-        longitude: longitude ? parseFloat(longitude) : null
+        longitude: longitude ? parseFloat(longitude) : null,
+        licenseName: licenseName || null,
+        insuranceName: insuranceName || null,
+        backgroundCheckName: backgroundCheckName || null
       }
     });
 

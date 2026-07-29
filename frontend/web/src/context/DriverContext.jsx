@@ -74,9 +74,16 @@ export const DriverProvider = ({ children }) => {
       latitude: u.latitude,
       longitude: u.longitude,
       documents: {
-        license: { name: u.licenseName || 'Commercial Driver License (CDL)', status: u.licenseStatus, url: '#' },
-        insurance: { name: u.insuranceName || 'Vehicle Liability Insurance', status: u.insuranceStatus, url: '#' },
-        backgroundCheck: { name: u.backgroundCheckName || 'Criminal Background Check', status: u.backgroundCheckStatus, url: '#' }
+        license: { 
+          name: u.licenseName || 'Commercial Driver License (CDL)', 
+          status: u.licenseName ? u.licenseStatus : 'Not Provided', 
+          url: u.licenseUrl || '#' 
+        },
+        insurance: { 
+          name: u.insuranceName || 'Vehicle Liability Insurance', 
+          status: u.insuranceName ? u.insuranceStatus : 'Not Provided', 
+          url: u.insuranceUrl || '#' 
+        }
       },
       rejectionReason: u.rejectionReason || ''
     };
@@ -145,6 +152,10 @@ export const DriverProvider = ({ children }) => {
 
   const registerDriver = async (newDriver) => {
     try {
+      const locationVal = newDriver.plateNumber && newDriver.plateNumber !== '—'
+        ? newDriver.plateNumber
+        : (newDriver.city || newDriver.location || '');
+
       await apiCall('/auth/register', {
         method: 'POST',
         body: JSON.stringify({
@@ -152,13 +163,18 @@ export const DriverProvider = ({ children }) => {
           lastName: newDriver.lastName,
           mobileNo: newDriver.phone,
           password: newDriver.password || 'password123',
-          carPlateNumber: newDriver.plateNumber,
+          carPlateNumber: locationVal || null,
           email: newDriver.email,
           role: newDriver.type === 'oil' ? 'oil' : newDriver.type,
           subscriptionDuration: newDriver.paymentAmount === '$9.99' ? '1 Month' : '1 Year',
           amountPaid: newDriver.paymentAmount || '$49.99',
           paymentStatus: newDriver.paymentStatus || 'Paid',
-          paymentMethod: newDriver.paymentMethod || 'Free Bypass'
+          paymentMethod: newDriver.paymentMethod || 'Free Bypass',
+          latitude: newDriver.latitude ? parseFloat(newDriver.latitude) : null,
+          longitude: newDriver.longitude ? parseFloat(newDriver.longitude) : null,
+          licenseName: newDriver.licenseName || null,
+          insuranceName: newDriver.insuranceName || null,
+          backgroundCheckName: newDriver.backgroundCheckName || null
         })
       });
       loadData();

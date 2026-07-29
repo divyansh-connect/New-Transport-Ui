@@ -97,6 +97,7 @@ const updateProfile = async (req, res) => {
       carPlateNumber,
       licenseName,
       insuranceName,
+      backgroundCheckName,
       paymentStatus,
       paymentMethod,
       amountPaid,
@@ -113,6 +114,7 @@ const updateProfile = async (req, res) => {
     if (carPlateNumber !== undefined) dataToUpdate.carPlateNumber = carPlateNumber;
     if (licenseName !== undefined) dataToUpdate.licenseName = licenseName;
     if (insuranceName !== undefined) dataToUpdate.insuranceName = insuranceName;
+    if (backgroundCheckName !== undefined) dataToUpdate.backgroundCheckName = backgroundCheckName;
     if (paymentStatus !== undefined) dataToUpdate.paymentStatus = paymentStatus;
     if (paymentMethod !== undefined) dataToUpdate.paymentMethod = paymentMethod;
     if (amountPaid !== undefined) dataToUpdate.amountPaid = amountPaid;

@@ -32,7 +32,10 @@ export const Registration = () => {
     longitude: '77.2180',
     trackingEnabled: true,
     termsAccepted: false,
-    selectedPlanId: subscriptionPlans?.[0]?.id || ''
+    selectedPlanId: subscriptionPlans?.[0]?.id || '',
+    licenseName: '',
+    insuranceName: '',
+    backgroundCheckName: ''
   });
 
   // Automatically fetch current browser location coordinates to populate Lat/Lng fields
@@ -166,7 +169,12 @@ export const Registration = () => {
             insurance: { name: 'Vehicle Liability Insurance', status: 'Pending Verification', url: '#' },
             backgroundCheck: { name: 'Criminal Background Check', status: 'Pending', url: '#' }
           },
-          rejectionReason: ''
+          rejectionReason: '',
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          licenseName: formData.licenseName,
+          insuranceName: formData.insuranceName,
+          backgroundCheckName: formData.backgroundCheckName
         };
         await registerDriver(newDriver);
       } else if (formData.type === 'workshop' || formData.type === 'oil' || formData.type === 'visitor') {
@@ -219,7 +227,12 @@ export const Registration = () => {
               url: '#' 
             }
           },
-          rejectionReason: ''
+          rejectionReason: '',
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          licenseName: formData.licenseName,
+          insuranceName: formData.insuranceName,
+          backgroundCheckName: formData.backgroundCheckName
         };
         await registerDriver(newEntityRequest);
       }

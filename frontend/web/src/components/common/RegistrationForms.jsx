@@ -110,6 +110,21 @@ export const DriverRegistrationForm = ({
             required
           />
         </div>
+        <div style={{ ...sectionBadgeStyle, marginTop: '8px' }}>Credentials & Documents</div>
+        <div style={gridStyle}>
+          <Input
+            label="Commercial Driver License (CDL #)"
+            placeholder="e.g. CDL-9874520"
+            value={formData.licenseName || ''}
+            onChange={(e) => onChange({ ...formData, licenseName: e.target.value })}
+          />
+          <Input
+            label="Vehicle Liability Insurance"
+            placeholder="e.g. Policy #INS-44910"
+            value={formData.insuranceName || ''}
+            onChange={(e) => onChange({ ...formData, insuranceName: e.target.value })}
+          />
+        </div>
         {/* Payment Status Selection & Subscription Plan */}
         {payRequired && (
           <div style={gridStyle}>
@@ -269,6 +284,22 @@ export const WorkshopRegistrationForm = ({
           </div>
         </div>
 
+        <div style={{ ...sectionBadgeStyle, marginTop: '8px' }}>Credentials & Documents</div>
+        <div style={gridStyle}>
+          <Input
+            label="Business Trade License"
+            placeholder="e.g. LIC-WS-998811"
+            value={formData.licenseName || ''}
+            onChange={(e) => onChange({ ...formData, licenseName: e.target.value })}
+          />
+          <Input
+            label="Liability Insurance Policy"
+            placeholder="e.g. Policy #LIAB-99201"
+            value={formData.insuranceName || ''}
+            onChange={(e) => onChange({ ...formData, insuranceName: e.target.value })}
+          />
+        </div>
+
         {/* Payment Status Selection & Subscription Plan */}
         {payRequired && (
           <div style={gridStyle}>
@@ -415,6 +446,22 @@ export const OilChangeRegistrationForm = ({
               required
             />
           </div>
+        </div>
+
+        <div style={{ ...sectionBadgeStyle, marginTop: '8px' }}>Credentials & Documents</div>
+        <div style={gridStyle}>
+          <Input
+            label="Environmental Permit Details"
+            placeholder="e.g. Permit #ENV-99882"
+            value={formData.licenseName || ''}
+            onChange={(e) => onChange({ ...formData, licenseName: e.target.value })}
+          />
+          <Input
+            label="Commercial General Liability"
+            placeholder="e.g. Policy #GLIB-1102"
+            value={formData.insuranceName || ''}
+            onChange={(e) => onChange({ ...formData, insuranceName: e.target.value })}
+          />
         </div>
 
         {/* Payment Status Selection & Subscription Plan */}

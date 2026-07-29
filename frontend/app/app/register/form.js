@@ -36,6 +36,9 @@ export default function RegistrationFormScreen() {
     carPlateNumber: '',
     email: '',
     password: '',
+    licenseName: '',
+    insuranceName: '',
+    backgroundCheckName: '',
   });
 
   // Dynamic pricing option state (1 Month, 6 Months, 1 Year)
@@ -78,7 +81,10 @@ export default function RegistrationFormScreen() {
           amountPaid: priceLabel,
           paymentStatus: 'Unpaid',
           paymentMethod: 'None',
-          trackLocation: trackLocation
+          trackLocation: trackLocation,
+          licenseName: form.licenseName,
+          insuranceName: form.insuranceName,
+          backgroundCheckName: form.backgroundCheckName
         })
       });
 
@@ -158,12 +164,45 @@ export default function RegistrationFormScreen() {
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
-              <CustomInput
+               <CustomInput
                 label={isArabic ? 'كلمة المرور' : isUrdu ? 'پاس ورڈ' : 'Password'}
                 placeholder={isArabic ? 'أدخل كلمة المرور' : isUrdu ? 'اپنا پاس ورڈ بنائیں' : 'Create your password'}
                 secureTextEntry={true}
                 value={form.password}
                 onChangeText={(val) => handleChange('password', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
+              />
+
+              {/* Document Fields Section */}
+              <Text style={{ fontSize: 13, fontWeight: '700', color: theme.textSecondary, marginTop: SPACING.md, marginBottom: SPACING.xs, textAlign: isRTL ? 'right' : 'left' }}>
+                {isArabic ? 'الوثائق والشهادات' : isUrdu ? 'دستاویزات اور سرٹیفکیٹس' : 'Credentials & Documents'}
+              </Text>
+              
+              <CustomInput
+                label={
+                  registrationType === 'Driver' 
+                    ? (isArabic ? 'رقم رخصة القيادة (CDL)' : isUrdu ? 'ڈرائیونگ لائسنس نمبر (CDL)' : 'Commercial Driver License (CDL #)')
+                    : registrationType === 'Workshop'
+                      ? (isArabic ? 'رخصة التجارة التجارية' : isUrdu ? 'بزنس ٹریڈ لائسنس' : 'Business Trade License')
+                      : (isArabic ? 'تصريح بيئي' : isUrdu ? 'انوائرمنٹل پرمٹ' : 'Environmental Permit Details')
+                }
+                placeholder={isArabic ? 'أدخل التفاصيل' : isUrdu ? 'تفصیلات درج کریں' : 'Enter details'}
+                value={form.licenseName}
+                onChangeText={(val) => handleChange('licenseName', val)}
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
+              />
+
+              <CustomInput
+                label={
+                  registrationType === 'Driver'
+                    ? (isArabic ? 'وثيقة التأمين على المركبة' : isUrdu ? 'گاڑی کی انشورنس پالیسی' : 'Vehicle Insurance Policy Details')
+                    : registrationType === 'Workshop'
+                      ? (isArabic ? 'تأمين المسؤولية' : isUrdu ? 'لائبلٹی انشورنس پالیسی' : 'Liability Insurance Policy')
+                      : (isArabic ? 'المسؤولية العامة التجارية' : isUrdu ? 'کمرشل جنرل لائبلٹی' : 'Commercial General Liability Details')
+                }
+                placeholder={isArabic ? 'أدخل التفاصيل' : isUrdu ? 'تفصیلات درج کریں' : 'Enter details'}
+                value={form.insuranceName}
+                onChangeText={(val) => handleChange('insuranceName', val)}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 

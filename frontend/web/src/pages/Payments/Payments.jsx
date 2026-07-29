@@ -31,14 +31,14 @@ export const Payments = () => {
   const vatFormatted = `${currencySymbol}${vatVal.toFixed(2)}`;
   const taxFormatted = `${currencySymbol}${taxVal.toFixed(2)}`;
 
-  const currentDriverObj = selectedRecord ? drivers.find(d => d.id === selectedRecord.driverId) : null;
+  const currentDriverObj = selectedRecord ? drivers.find(d => d.id === selectedRecord.driverId || d.realId === selectedRecord.driverId) : null;
 
   const getUserType = (driverId) => {
     if (driverId?.startsWith('DRV-')) return 'Driver';
     if (driverId?.startsWith('WS-')) return 'Workshop';
     if (driverId?.startsWith('OC-')) return 'Oil Change';
     if (driverId?.startsWith('VIS-')) return 'Visitor';
-    const d = drivers.find(drv => drv.id === driverId);
+    const d = drivers.find(drv => drv.id === driverId || drv.realId === driverId);
     if (d?.type === 'driver') return 'Driver';
     if (d?.type === 'workshop') return 'Workshop';
     if (d?.type === 'oil') return 'Oil Change';
@@ -161,7 +161,7 @@ export const Payments = () => {
             return (
               <tr key={row.id}>
                 <td><code>{row.id}</code></td>
-                <td><code>{row.driverId}</code></td>
+                <td><code>{driverObj ? driverObj.id : row.driverId}</code></td>
                 <td><strong>{row.name}</strong></td>
                 <td>{mobileNumber}</td>
                 <td>{email}</td>
@@ -201,7 +201,7 @@ export const Payments = () => {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>User ID</span>
-                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.driverId}</div>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{currentDriverObj ? currentDriverObj.id : selectedRecord.driverId}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>User Type</span>

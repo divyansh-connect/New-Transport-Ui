@@ -38,6 +38,7 @@ export default function EditProfileScreen() {
     email: '',
     licenseName: '',
     insuranceName: '',
+    backgroundCheckName: '',
   });
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function EditProfileScreen() {
         email: registeredUser.email || '',
         licenseName: registeredUser.licenseName || '',
         insuranceName: registeredUser.insuranceName || '',
+        backgroundCheckName: registeredUser.backgroundCheckName || '',
       });
     }
   }, [registeredUser]);
@@ -77,6 +79,7 @@ export default function EditProfileScreen() {
         email: form.email,
         licenseName: form.licenseName,
         insuranceName: form.insuranceName,
+        backgroundCheckName: form.backgroundCheckName,
       };
 
       // Sync profile update to backend database
@@ -91,6 +94,7 @@ export default function EditProfileScreen() {
             carPlateNumber: form.carPlateNumber,
             licenseName: form.licenseName,
             insuranceName: form.insuranceName,
+            backgroundCheckName: form.backgroundCheckName,
           })
         });
       } catch (err) {
@@ -209,6 +213,7 @@ export default function EditProfileScreen() {
                 onChangeText={(val) => handleChange('insuranceName', val)}
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
+
             </Card>
 
             <CustomButton

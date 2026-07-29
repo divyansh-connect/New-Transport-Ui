@@ -795,7 +795,9 @@ export const Drivers = () => {
                               ? 'verified'
                               : doc.status === 'Pending Verification' || doc.status === 'Pending'
                                 ? 'pending'
-                                : 'failed'
+                                : doc.status === 'Not Provided'
+                                  ? 'missing'
+                                  : 'failed'
                             }`}
                         >
                           {doc.status}
