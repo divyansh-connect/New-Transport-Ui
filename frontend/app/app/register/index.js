@@ -18,7 +18,12 @@ export default function RegisterIndexScreen() {
 
   React.useEffect(() => {
     if (registeredUser) {
-      router.replace('/map');
+      const isPaid = registeredUser.paymentStatus === 'Paid' || registeredUser.paymentStatus === 'Trial' || registeredUser.paymentStatus === 'Free Bypass';
+      if (!isPaid) {
+        router.replace('/register/payment');
+      } else {
+        router.replace('/map');
+      }
     }
   }, [registeredUser]);
 

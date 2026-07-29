@@ -92,7 +92,7 @@ export default function RegistrationFormScreen() {
         await AsyncStorage.setItem('auth_token', response.token);
         await saveUserProfile(response.user);
       }
-      router.push('/register/payment');
+      router.replace('/register/payment');
     } catch (e) {
       showAlert(
         isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error',
