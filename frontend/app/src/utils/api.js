@@ -1,21 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// =========================================================
-// SWITCH BACKEND HERE (Comment / Uncomment the lines below)
-// =========================================================
-
-// 1. LOCAL BACKEND (WiFi IP so physical phone can connect too)
+// This reads the active backend URL directly from your app's .env file:
 const PC_WIFI_IP = '192.168.1.8';
-export const API_BASE_URL = `http://${PC_WIFI_IP}:5000/api`;
-
-// 2. LIVE PRODUCTION BACKEND (Railway)
-// export const API_BASE_URL = 'https://user-logistic-production.up.railway.app/api';
-
-// 3. (Optional) Load from Expo .env file
-// export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || `http://${PC_WIFI_IP}:5000/api`;
-
-// =========================================================
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || `http://${PC_WIFI_IP}:5000/api`;
 
 /**
  * Custom fetch wrapper to handle secure API calls to the backend
