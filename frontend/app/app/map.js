@@ -8,6 +8,7 @@ import { useTheme } from '../src/context/ThemeContext';
 import { Icon } from '../src/components/common/Icon';
 import { RADIUS, SPACING } from '../src/constants/theme';
 import { translations } from '../src/constants/translations';
+import { API_BASE_URL } from '../src/utils/api';
 
 export default function MapScreen() {
   const { theme, language, registeredUser, showAlert } = useTheme();
@@ -18,6 +19,24 @@ export default function MapScreen() {
   const isRTL = isArabic || isUrdu;
   const [isLiveTracking, setIsLiveTracking] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
+
+  // ── Platform Settings from Admin DB ──────────────────────────────────────────
+  const [platformSettings, setPlatformSettings] = useState({
+    showVisitorServices: true,
+    paymentRequiredFor: { driver: true, workshop: false, visitor: false, oilchange: false },
+    freeTrialEnabled: false,
+  });
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/settings`)
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.paymentRequiredFor !== undefined) {
+          setPlatformSettings(data);
+        }
+      })
+      .catch(err => console.log('Could not load platform settings:', err));
+  }, []);
 
   // ── Auto-detect role from stored profile ──────────────────────────────────
   // Visitor  = no registeredUser
@@ -230,6 +249,7 @@ export default function MapScreen() {
 
         // 3. Service Hubs & Active Drivers
         var isDriver = '${userRole}' === 'Driver';
+        var showVisitorServices = ${platformSettings.showVisitorServices ? 'true' : 'false'};
         var services = ${JSON.stringify(activePins.length > 0 ? activePins : serviceNodes)};
         var pinConfig = {
           workshop:  { icon: wrenchSvg, isPOI: true },
@@ -238,8 +258,11 @@ export default function MapScreen() {
         };
         var usedCoords = {};
         services.forEach(function(s) {
-          // Visitors see Active Drivers (type === 'location'). Approved Drivers see everything (workshops, oil, location).
-          if (s.type === 'location' || isDriver) {
+          // Approved Drivers see everything. Visitors see drivers always.
+          // Visitors see POIs (workshop/oil) only if admin has enabled showVisitorServices.
+          var isPOI = (s.type === 'workshop' || s.type === 'oil');
+          var shouldShow = isDriver || s.type === 'location' || (isPOI && showVisitorServices);
+          if (!shouldShow) return;
             var lat = parseFloat(s.lat);
             var lng = parseFloat(s.lng);
             if (isNaN(lat) || isNaN(lng)) return;
@@ -280,7 +303,6 @@ export default function MapScreen() {
             sMarker.on('click', function() {
               window.ReactNativeWebView.postMessage(JSON.stringify(s));
             });
-          }
         });
       </script>
     </body>
@@ -345,7 +367,9 @@ export default function MapScreen() {
             ? t.allServicesVisible
             : isPending
               ? (isArabic ? 'بانتظار موافقة المدير — الخدمات غير مفعّلة بعد' : isUrdu ? 'ایڈمن کی منظوری کا انتظار ہے — سروسز مقفل ہیں' : 'Pending Admin Approval — Services locked')
-              : (isArabic ? 'وضع الزائر — عرض السائقين المتاحين' : isUrdu ? 'وزیٹر موڈ — دستیاب ڈرائیورز دکھائے جا رہے ہیں' : 'Visitor Mode — Viewing Active Drivers')}
+              : platformSettings.showVisitorServices
+                ? (isArabic ? 'وضع الزائر — عرض السائقين والخدمات المتاحة' : isUrdu ? 'وزیٹر موڈ — ڈرائیورز و سروسز دکھائی جا رہی ہیں' : 'Visitor Mode — Viewing Drivers & Service Hubs')
+                : (isArabic ? 'وضع الزائر — عرض السائقين المتاحين فقط' : isUrdu ? 'وزیٹر موڈ — صرف ڈرائیورز دکھائے جا رہے ہیں' : 'Visitor Mode — Viewing Active Drivers Only')}
         </Text>
       </View>
 
@@ -392,6 +416,26 @@ export default function MapScreen() {
             </Text>
           </TouchableOpacity>
         )}
+
+        {/* Payment Required Banner — admin has enabled payment for this user's role */}
+        {isApprovedDriver && registeredUser?.paymentStatus === 'Unpaid' && (() => {
+          const role = registeredUser?.role;
+          const needsPay = role === 'driver' ? platformSettings.paymentRequiredFor?.driver
+            : role === 'workshop' ? platformSettings.paymentRequiredFor?.workshop
+            : role === 'oil' ? platformSettings.paymentRequiredFor?.oilchange
+            : platformSettings.paymentRequiredFor?.visitor;
+          if (!needsPay) return null;
+          return (
+            <TouchableOpacity
+              style={[styles.pendingBanner, { backgroundColor: '#1d4ed8', bottom: isPending ? 60 : 12 }]}
+              onPress={() => router.push('/register/payment')}
+            >
+              <Text style={styles.pendingText}>
+                {isArabic ? '💳 حسابك معتمد — أكمل الدفع لتفعيل التتبع المباشر' : isUrdu ? '💳 اکاؤنٹ منظور — لائیو ٹریکنگ کے لیے ادائیگی مکمل کریں' : '💳 Account Approved — Complete Payment to Activate Live Tracking'}
+              </Text>
+            </TouchableOpacity>
+          );
+        })()}
       </View>
 
       {/* Custom Service Details Popup Modal */}

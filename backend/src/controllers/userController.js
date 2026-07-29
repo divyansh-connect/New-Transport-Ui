@@ -106,11 +106,27 @@ const updateProfile = async (req, res) => {
       longitude
     } = req.body;
 
+    const finalEmail = (email !== undefined) 
+      ? ((email && email.trim()) ? email.trim().toLowerCase() : null)
+      : undefined;
+
+    if (finalEmail) {
+      const existingEmail = await prisma.user.findFirst({
+        where: {
+          email: finalEmail,
+          NOT: { id: userId }
+        }
+      });
+      if (existingEmail) {
+        return res.status(400).json({ error: 'Email is already registered by another user.' });
+      }
+    }
+
     const dataToUpdate = {};
     if (name !== undefined) dataToUpdate.name = name;
     if (lastName !== undefined) dataToUpdate.lastName = lastName;
     if (mobileNo !== undefined) dataToUpdate.mobileNo = mobileNo;
-    if (email !== undefined) dataToUpdate.email = email;
+    if (finalEmail !== undefined) dataToUpdate.email = finalEmail;
     if (carPlateNumber !== undefined) dataToUpdate.carPlateNumber = carPlateNumber;
     if (licenseName !== undefined) dataToUpdate.licenseName = licenseName;
     if (insuranceName !== undefined) dataToUpdate.insuranceName = insuranceName;
@@ -359,11 +375,27 @@ const updateUserProfileAdmin = async (req, res) => {
       return res.status(404).json({ error: 'User entity not found.' });
     }
 
+    const finalEmail = (email !== undefined) 
+      ? ((email && email.trim()) ? email.trim().toLowerCase() : null)
+      : undefined;
+
+    if (finalEmail) {
+      const existingEmail = await prisma.user.findFirst({
+        where: {
+          email: finalEmail,
+          NOT: { id: user.id }
+        }
+      });
+      if (existingEmail) {
+        return res.status(400).json({ error: 'Email is already registered by another user.' });
+      }
+    }
+
     const dataToUpdate = {};
     if (name !== undefined) dataToUpdate.name = name;
     if (lastName !== undefined) dataToUpdate.lastName = lastName;
     if (mobileNo !== undefined) dataToUpdate.mobileNo = mobileNo;
-    if (email !== undefined) dataToUpdate.email = email;
+    if (finalEmail !== undefined) dataToUpdate.email = finalEmail;
     if (carPlateNumber !== undefined) dataToUpdate.carPlateNumber = carPlateNumber;
     if (licenseName !== undefined) dataToUpdate.licenseName = licenseName;
     if (insuranceName !== undefined) dataToUpdate.insuranceName = insuranceName;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Button } from '../../components/common/Button/Button';
 import { Input } from '../../components/common/Input/Input';
@@ -86,6 +86,34 @@ export const Settings = () => {
   const [freeTrialEnabled, setFreeTrialEnabled] = useState(subscriptionConfig.freeTrialEnabled);
   const [freeTrialDuration, setFreeTrialDuration] = useState(subscriptionConfig.freeTrialDuration);
 
+  const API_BASE = 'http://localhost:5000/api';
+  const adminToken = localStorage.getItem('admin_token');
+
+  // Load live settings from DB on mount
+  useEffect(() => {
+    fetch(`${API_BASE}/settings`)
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.paymentRequiredFor) {
+          setAccessToggles(prev => ({
+            ...prev,
+            paymentRequiredFor: data.paymentRequiredFor,
+            showVisitorServices: data.showVisitorServices,
+          }));
+          setFreeTrialEnabled(data.freeTrialEnabled);
+          setFreeTrialDuration(data.freeTrialDuration);
+          updateSubscriptionConfig({
+            paymentRequiredFor: data.paymentRequiredFor,
+            showVisitorServices: data.showVisitorServices,
+            freeTrialEnabled: data.freeTrialEnabled,
+            freeTrialDuration: data.freeTrialDuration,
+          });
+        }
+      })
+      .catch(err => console.warn('Could not load platform settings:', err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSaveProfile = () => {
     setIsSaving(true);
     setTimeout(() => {
@@ -96,24 +124,40 @@ export const Settings = () => {
     }, 500);
   };
 
-  const handleSaveFreeTrial = () => {
+  const handleSaveFreeTrial = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      await fetch(`${API_BASE}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+        body: JSON.stringify({ freeTrialEnabled, freeTrialDuration })
+      });
       updateSubscriptionConfig({ freeTrialEnabled, freeTrialDuration });
-      setIsSaving(false);
       setSuccessBanner('Free Trial settings saved successfully!');
+    } catch (err) {
+      setSuccessBanner('Error: Could not save Free Trial settings.');
+    } finally {
+      setIsSaving(false);
       setTimeout(() => setSuccessBanner(''), 3000);
-    }, 500);
+    }
   };
 
-  const handleSaveAccessConfig = () => {
+  const handleSaveAccessConfig = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      await fetch(`${API_BASE}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+        body: JSON.stringify(accessToggles)
+      });
       updateSubscriptionConfig(accessToggles);
+      setSuccessBanner('✅ Access & visibility config saved to database!');
+    } catch (err) {
+      setSuccessBanner('❌ Error: Could not save access config.');
+    } finally {
       setIsSaving(false);
-      setSuccessBanner('Access & visibility config saved successfully!');
       setTimeout(() => setSuccessBanner(''), 3000);
-    }, 500);
+    }
   };
 
   const handleAddAdminSubmit = (e) => {

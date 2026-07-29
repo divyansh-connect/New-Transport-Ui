@@ -156,11 +156,20 @@ export const DriverProvider = ({ children }) => {
         ? newDriver.plateNumber
         : (newDriver.city || newDriver.location || '');
 
+      let parsedFirstName = newDriver.firstName;
+      let parsedLastName = newDriver.lastName;
+
+      if (!parsedFirstName && newDriver.name) {
+        const parts = newDriver.name.trim().split(/\s+/);
+        parsedFirstName = parts[0];
+        parsedLastName = parts.slice(1).join(' ') || '';
+      }
+
       await apiCall('/auth/register', {
         method: 'POST',
         body: JSON.stringify({
-          name: newDriver.name,
-          lastName: newDriver.lastName,
+          name: parsedFirstName || newDriver.name,
+          lastName: parsedLastName || '',
           mobileNo: newDriver.phone,
           password: newDriver.password || 'password123',
           carPlateNumber: locationVal || null,
@@ -252,7 +261,9 @@ export const DriverProvider = ({ children }) => {
           latitude: updatedProfile.latitude,
           longitude: updatedProfile.longitude,
           status: updatedProfile.status,
-          amountPaid: updatedProfile.amountPaid || updatedProfile.amount
+          amountPaid: updatedProfile.amountPaid || updatedProfile.amount,
+          licenseName: updatedProfile.licenseName,
+          insuranceName: updatedProfile.insuranceName
         })
       });
       loadData();
@@ -264,6 +275,18 @@ export const DriverProvider = ({ children }) => {
   const markNotificationAsRead = async (id) => {
     try {
       await apiCall(`/notifications/${id}/read`, { method: 'PUT' });
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const markAllNotificationsAsRead = async () => {
+    try {
+      const unread = notifications.filter(n => !n.read);
+      await Promise.all(
+        unread.map(n => apiCall(`/notifications/${n.id}/read`, { method: 'PUT' }))
+      );
       loadData();
     } catch (err) {
       console.error(err);
@@ -330,6 +353,7 @@ export const DriverProvider = ({ children }) => {
         setDriverStatus,
         updateDriverProfile,
         markNotificationAsRead,
+        markAllNotificationsAsRead,
         clearAllNotifications,
         deletePayment,
         deleteDriver,

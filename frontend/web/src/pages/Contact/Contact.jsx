@@ -20,21 +20,41 @@ export const Contact = () => {
   const [contactInfo, setContactInfo] = React.useState(defaultContactInfo);
   const [isEditing, setIsEditing] = React.useState(false);
 
-  React.useEffect(() => {
+  const fetchInquiries = async () => {
+    let apiData = [];
+    try {
+      const res = await fetch('http://localhost:5000/api/inquiries');
+      if (res.ok) {
+        apiData = await res.json();
+      }
+    } catch (e) {
+      console.log('Backend inquiry fetch error:', e);
+    }
+
+    let localData = [];
     const saved = localStorage.getItem('support_inquiries');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        // Filter out old seed dummy tickets (TKT-101, TKT-102, TKT-103)
-        const realOnly = parsed.filter(item => !['TKT-101', 'TKT-102', 'TKT-103'].includes(item.id));
-        setInquiries(realOnly);
-        localStorage.setItem('support_inquiries', JSON.stringify(realOnly));
-      } catch (e) {
-        setInquiries([]);
-      }
-    } else {
-      setInquiries([]);
+        localData = JSON.parse(saved).filter(item => !['TKT-101', 'TKT-102', 'TKT-103'].includes(item.id));
+      } catch (e) {}
     }
+
+    // Merge API data and local data seamlessly
+    const mergedMap = new Map();
+    [...apiData, ...localData].forEach(item => {
+      if (item && item.id) {
+        mergedMap.set(item.id, item);
+      }
+    });
+
+    const finalInquiries = Array.from(mergedMap.values());
+    setInquiries(finalInquiries);
+    localStorage.setItem('support_inquiries', JSON.stringify(finalInquiries));
+  };
+
+  React.useEffect(() => {
+    fetchInquiries();
+    const interval = setInterval(fetchInquiries, 8000);
 
     const savedContact = localStorage.getItem('support_contact_info');
     if (savedContact) {
@@ -44,6 +64,7 @@ export const Contact = () => {
         console.error(e);
       }
     }
+    return () => clearInterval(interval);
   }, []);
 
   const handleSaveContactInfo = () => {
@@ -65,8 +86,20 @@ export const Contact = () => {
     setIsModalOpen(true);
   };
 
-  const handleUpdateTicket = () => {
+  const handleUpdateTicket = async () => {
     if (!selectedTicket) return;
+
+    // Send update to backend API
+    try {
+      const targetId = selectedTicket.realId || selectedTicket.id;
+      await fetch(`http://localhost:5000/api/inquiries/${targetId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: ticketStatus, replyMessage })
+      });
+    } catch (e) {
+      console.log('Update ticket API error:', e);
+    }
 
     const updated = inquiries.map((item) =>
       item.id === selectedTicket.id ? { ...item, status: ticketStatus } : item

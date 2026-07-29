@@ -1,11 +1,13 @@
 import React from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { useDrivers } from '../../context/DriverContext';
-import { Check, Trash2 } from 'lucide-react';
+import { Check, CheckCheck, Trash2 } from 'lucide-react';
 import './Notifications.css';
 
 export const Notifications = () => {
-  const { notifications, markNotificationAsRead, clearAllNotifications } = useDrivers();
+  const { notifications, markNotificationAsRead, markAllNotificationsAsRead, clearAllNotifications } = useDrivers();
+
+  const hasUnread = notifications.some(n => !n.read);
 
   return (
     <div className="page-container notifications-page">
@@ -14,14 +16,37 @@ export const Notifications = () => {
           <h1>Notification Panel</h1>
           <p>Admin notifications and system alerts.</p>
         </div>
-        {notifications.length > 0 && (
-          <button 
-            onClick={clearAllNotifications}
-            className="clear-all-btn"
-          >
-            <Trash2 size={16} /> Clear All
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {hasUnread && (
+            <button 
+              onClick={markAllNotificationsAsRead}
+              className="mark-all-read-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: 'var(--radius-md, 6px)',
+                backgroundColor: 'var(--color-primary, #2563eb)',
+                color: '#ffffff',
+                border: 'none',
+                fontWeight: '600',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              <CheckCheck size={16} /> Mark All Read
+            </button>
+          )}
+          {notifications.length > 0 && (
+            <button 
+              onClick={clearAllNotifications}
+              className="clear-all-btn"
+            >
+              <Trash2 size={16} /> Clear All
+            </button>
+          )}
+        </div>
       </div>
 
       <Card title={`Recent Activity Logs (${notifications.length})`}>

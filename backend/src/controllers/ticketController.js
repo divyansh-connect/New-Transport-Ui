@@ -93,7 +93,7 @@ const createTicket = async (req, res) => {
 const updateTicketStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, replyMessage } = req.body;
 
     let updated = null;
     try {
@@ -108,6 +108,26 @@ const updateTicketStatus = async (req, res) => {
         inMemoryTickets[idx].status = status;
         updated = inMemoryTickets[idx];
       }
+    }
+
+    // Automatically create a notification for the mobile app
+    const ticketTag = updated ? (updated.customId || updated.id) : id;
+    const notifTitle = `Support Ticket ${status} (${ticketTag})`;
+    const notifMsg = replyMessage && replyMessage.trim()
+      ? `Admin Response: "${replyMessage.trim()}" (Status: ${status})`
+      : `Your ticket (${ticketTag}) status has been updated to ${status}.`;
+
+    try {
+      await prisma.notification.create({
+        data: {
+          customId: `NOT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          type: 'support',
+          title: notifTitle,
+          message: notifMsg
+        }
+      });
+    } catch (notifErr) {
+      console.log('Error creating ticket notification:', notifErr.message);
     }
 
     return res.json({ message: 'Ticket updated successfully', ticket: updated });
