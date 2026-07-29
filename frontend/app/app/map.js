@@ -361,17 +361,25 @@ export default function MapScreen() {
       </View>
 
       {/* Notice Banner */}
-      <View style={[styles.noticeBanner, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+      <TouchableOpacity
+        activeOpacity={isPending ? 0.7 : 1}
+        onPress={() => {
+          if (isPending) {
+            router.push('/register/pending');
+          }
+        }}
+        style={[styles.noticeBanner, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+      >
         <Text style={[styles.noticeText, { color: theme.textPrimary }]}>
           {isApprovedDriver
             ? t.allServicesVisible
             : isPending
-              ? (isArabic ? 'بانتظار موافقة المدير — الخدمات غير مفعّلة بعد' : isUrdu ? 'ایڈمن کی منظوری کا انتظار ہے — سروسز مقفل ہیں' : 'Pending Admin Approval — Services locked')
+              ? (isArabic ? 'بانتظار موافقة المدير — اضغط للتحقق ➔' : isUrdu ? 'ایڈمن کی منظوری کا انتظار ہے — چیک کرنے کے لیے کلک کریں ➔' : 'Pending Admin Approval — Services locked (tap to check)')
               : platformSettings.showVisitorServices
                 ? (isArabic ? 'وضع الزائر — عرض السائقين والخدمات المتاحة' : isUrdu ? 'وزیٹر موڈ — ڈرائیورز و سروسز دکھائی جا رہی ہیں' : 'Visitor Mode — Viewing Drivers & Service Hubs')
                 : (isArabic ? 'وضع الزائر — عرض السائقين المتاحين فقط' : isUrdu ? 'وزیٹر موڈ — صرف ڈرائیورز دکھائے جا رہے ہیں' : 'Visitor Mode — Viewing Active Drivers Only')}
         </Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Live Map Canvas */}
       <View style={styles.mapCanvas}>
@@ -408,7 +416,8 @@ export default function MapScreen() {
         {/* Pending Banner — shown while waiting for approval */}
         {isPending && (
           <TouchableOpacity
-            style={[styles.pendingBanner, { backgroundColor: '#92400e' }]}
+            activeOpacity={0.7}
+            style={[styles.pendingBanner, { backgroundColor: '#92400e', zIndex: 999, elevation: 20 }]}
             onPress={() => router.push('/register/pending')}
           >
             <Text style={styles.pendingText}>
