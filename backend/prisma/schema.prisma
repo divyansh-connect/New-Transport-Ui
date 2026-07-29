@@ -111,3 +111,22 @@ model Notification {
   @@index([userId])
   @@map("notifications")
 }
+
+// Singleton platform-level settings controlled by admin
+model PlatformSettings {
+  id                    Int     @id @default(autoincrement())
+  // Payment control — which roles must pay
+  payDriverPayment      Boolean @default(true)  @map("pay_driver")
+  payWorkshopPayment    Boolean @default(false) @map("pay_workshop")
+  payVisitorPayment     Boolean @default(false) @map("pay_visitor")
+  payOilChangePayment   Boolean @default(false) @map("pay_oilchange")
+  // Visitor visibility control
+  showVisitorServices   Boolean @default(true)  @map("show_visitor_services")
+  // Free trial settings
+  freeTrialEnabled      Boolean @default(false) @map("free_trial_enabled")
+  freeTrialDuration     String  @default("1 Month") @db.VarChar(50) @map("free_trial_duration")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
+}

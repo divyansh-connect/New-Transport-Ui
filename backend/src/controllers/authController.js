@@ -62,6 +62,8 @@ const register = async (req, res) => {
       return res.status(400).json({ error: 'Name, mobileNo, and password are required fields.' });
     }
 
+    const finalEmail = (email && email.trim()) ? email.trim().toLowerCase() : null;
+
     // Check if user already exists with mobile number
     const existingUser = await prisma.user.findUnique({
       where: { mobileNo: mobileNo }
@@ -69,6 +71,15 @@ const register = async (req, res) => {
 
     if (existingUser) {
       return res.status(400).json({ error: 'Mobile number is already registered.' });
+    }
+
+    if (finalEmail) {
+      const existingEmail = await prisma.user.findUnique({
+        where: { email: finalEmail }
+      });
+      if (existingEmail) {
+        return res.status(400).json({ error: 'Email is already registered.' });
+      }
     }
 
     // Hash password
@@ -100,7 +111,7 @@ const register = async (req, res) => {
         mobileNo,
         password: hashedPassword,
         carPlateNumber: carPlateNumber || null,
-        email,
+        email: finalEmail,
         role: userRole,
         status: userRole === 'admin' ? 'Approved' : 'Pending',
         subscriptionDuration: subscriptionDuration || '1 Month',

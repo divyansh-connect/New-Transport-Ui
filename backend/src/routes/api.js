@@ -24,6 +24,7 @@ const {
   clearAll,
   createNotification
 } = require('../controllers/notificationController');
+const { getSettings, updateSettings } = require('../controllers/settingsController');
 
 const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
 
@@ -58,5 +59,9 @@ router.get('/notifications', authenticateJWT, getAllNotifications);
 router.post('/notifications', authenticateJWT, authorizeRoles('admin'), createNotification);
 router.put('/notifications/:id/read', authenticateJWT, markAsRead);
 router.delete('/notifications', authenticateJWT, clearAll);
+
+// ── Platform Settings (public GET, admin PUT) ────────────────────────────────
+router.get('/settings', getSettings);
+router.put('/settings', authenticateJWT, authorizeRoles('admin'), updateSettings);
 
 module.exports = router;

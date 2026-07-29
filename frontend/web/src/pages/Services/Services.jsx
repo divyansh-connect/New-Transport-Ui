@@ -435,7 +435,7 @@ export const Services = () => {
                 </td>
                 <td>
                   <div className="d-flex flex-column">
-                    <strong>{row.name}</strong>
+                    <strong>{row.name} {row.lastName || ''}</strong>
                     {!isPeopleTab && <span className="text-muted text-sm">{row.location}</span>}
                     {activeTab === 'driver' && row.city && <span className="text-muted text-sm">{row.city}</span>}
                   </div>
@@ -487,8 +487,10 @@ export const Services = () => {
           <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Name</span>
-                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>{selectedRecord.name}</div>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Name / Contact Person</span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>
+                  {selectedRecord.name} {selectedRecord.lastName || ''}
+                </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>Email</span>
@@ -525,6 +527,37 @@ export const Services = () => {
                 </div>
               </div>
             )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                  {activeTab === 'driver' 
+                    ? 'Commercial Driver License (CDL #)'
+                    : activeTab === 'workshop'
+                      ? 'Business Trade License'
+                      : activeTab === 'oil change'
+                        ? 'Environmental Permit'
+                        : 'License / ID Details'}
+                </span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>
+                  {selectedRecord.licenseName || selectedRecord.documents?.license?.name || 'Not Provided'}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                  {activeTab === 'driver'
+                    ? 'Vehicle Liability Insurance'
+                    : activeTab === 'workshop'
+                       ? 'Liability Insurance Policy'
+                       : activeTab === 'oil change'
+                         ? 'Commercial General Liability'
+                         : 'Insurance Policy Details'}
+                </span>
+                <div style={{ fontSize: '14px', fontWeight: '600', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-main)' }}>
+                  {selectedRecord.insuranceName || selectedRecord.documents?.insurance?.name || 'Not Provided'}
+                </div>
+              </div>
+            </div>
 
             <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '16px', background: 'rgba(255, 255, 255, 0.02)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed var(--color-border)' }}>
@@ -570,6 +603,16 @@ export const Services = () => {
             )}
             <Input label="Contact" value={formData.contact} onChange={e => setFormData({ ...formData, contact: e.target.value })} />
             <Input label="Email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+            <Input 
+              label={activeTab === 'driver' ? 'Commercial Driver License (CDL #)' : activeTab === 'workshop' ? 'Business Trade License' : activeTab === 'oil change' ? 'Environmental Permit' : 'License / ID Details'} 
+              value={formData.licenseName || ''} 
+              onChange={e => setFormData({ ...formData, licenseName: e.target.value })} 
+            />
+            <Input 
+              label={activeTab === 'driver' ? 'Vehicle Liability Insurance' : activeTab === 'workshop' ? 'Liability Insurance Policy' : activeTab === 'oil change' ? 'Commercial General Liability' : 'Insurance Policy Details'} 
+              value={formData.insuranceName || ''} 
+              onChange={e => setFormData({ ...formData, insuranceName: e.target.value })} 
+            />
             <Input label="Status" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} />
             <Input label="Amount" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} />
           </div>

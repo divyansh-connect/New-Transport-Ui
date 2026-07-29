@@ -387,7 +387,7 @@ export const Drivers = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={row.avatar} alt={row.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div>
-                        <div style={{ fontWeight: '600' }}>{row.name}</div>
+                        <div style={{ fontWeight: '600' }}>{row.name} {row.lastName || ''}</div>
                         <small style={{ color: 'var(--color-text-muted)' }}><code>{row.id}</code></small>
                       </div>
                     </div>
@@ -661,7 +661,7 @@ export const Drivers = () => {
               <div className="profile-card-header">
                 <img src={selectedDriver.avatar} alt={selectedDriver.name} className="profile-avatar-large" />
                 <div className="profile-name-title">
-                  <h4>{selectedDriver.name}</h4>
+                  <h4>{selectedDriver.name} {selectedDriver.lastName || ''}</h4>
                   <p>
                     ID: <code>{selectedDriver.id}</code> • Status:{' '}
                     <span className={`status-pill ${selectedDriver.status.toLowerCase()}`}>
