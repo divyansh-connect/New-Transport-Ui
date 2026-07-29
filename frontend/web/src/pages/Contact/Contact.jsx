@@ -6,6 +6,7 @@ import { Badge } from '../../components/common/Badge/Badge';
 import { EmptyState } from '../../components/common/EmptyState/EmptyState';
 import { Phone, MessageSquare, Mail, ExternalLink, Clock, User, CheckCircle2, Send, Inbox } from 'lucide-react';
 import './Contact.css';
+import { API_BASE_URL } from '../../config';
 
 export const Contact = () => {
   const [inquiries, setInquiries] = React.useState([]);
@@ -23,7 +24,7 @@ export const Contact = () => {
   const fetchInquiries = async () => {
     let apiData = [];
     try {
-      const res = await fetch('http://localhost:5000/api/inquiries');
+      const res = await fetch(`${API_BASE_URL}/inquiries`);
       if (res.ok) {
         apiData = await res.json();
       }
@@ -92,7 +93,7 @@ export const Contact = () => {
     // Send update to backend API
     try {
       const targetId = selectedTicket.realId || selectedTicket.id;
-      await fetch(`http://localhost:5000/api/inquiries/${targetId}`, {
+      await fetch(`${API_BASE_URL}/inquiries/${targetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: ticketStatus, replyMessage })

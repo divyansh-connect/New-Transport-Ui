@@ -4,6 +4,7 @@ import { Car, Mail, Lock } from 'lucide-react';
 import { Input } from '../../components/common/Input/Input';
 import { Button } from '../../components/common/Button/Button';
 import './Login.css';
+import { API_BASE_URL } from '../../config';
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export const Login = () => {
     setIsLoading(true);
     setErrorMsg('');
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -140,7 +141,7 @@ export const Login = () => {
                     setPassword('admin123');
                     setIsLoading(true);
                     try {
-                      const response = await fetch('http://localhost:5000/api/auth/login', {
+                      const response = await fetch(`${API_BASE_URL}/auth/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: 'admin@userlife.com', password: 'admin123' })

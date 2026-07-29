@@ -25,6 +25,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import './Settings.css';
+import { API_BASE_URL } from '../../config';
 
 export const Settings = () => {
   const {
@@ -86,7 +87,7 @@ export const Settings = () => {
   const [freeTrialEnabled, setFreeTrialEnabled] = useState(subscriptionConfig.freeTrialEnabled);
   const [freeTrialDuration, setFreeTrialDuration] = useState(subscriptionConfig.freeTrialDuration);
 
-  const API_BASE = 'http://localhost:5000/api';
+  const API_BASE = API_BASE_URL;
   const adminToken = localStorage.getItem('admin_token');
 
   // Load live settings from DB on mount

@@ -1,14 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// PC WiFi IP — updated automatically from ipconfig
-const PC_WIFI_IP = '192.168.1.8';
+// =========================================================
+// SWITCH BACKEND HERE (Comment / Uncomment the lines below)
+// =========================================================
 
-// 10.0.2.2 = Android Emulator's special IP for host machine localhost
-// PC_WIFI_IP = Physical Android/iOS phone on same WiFi network
-export const API_BASE_URL = Platform.OS === 'android'
-  ? `http://${PC_WIFI_IP}:5000/api`   // works for both emulator & physical phone
-  : `http://${PC_WIFI_IP}:5000/api`;  // iOS / Web
+// 1. LOCAL BACKEND (WiFi IP so physical phone can connect too)
+const PC_WIFI_IP = '192.168.1.8';
+export const API_BASE_URL = `http://${PC_WIFI_IP}:5000/api`;
+
+// 2. LIVE PRODUCTION BACKEND (Railway)
+// export const API_BASE_URL = 'https://user-logistic-production.up.railway.app/api';
+
+// 3. (Optional) Load from Expo .env file
+// export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || `http://${PC_WIFI_IP}:5000/api`;
+
+// =========================================================
 
 /**
  * Custom fetch wrapper to handle secure API calls to the backend

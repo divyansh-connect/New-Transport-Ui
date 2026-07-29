@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 const DriverContext = createContext();
 
@@ -16,7 +17,7 @@ export const DriverProvider = ({ children }) => {
       ...(options.headers || {})
     };
     try {
-      const response = await fetch(`http://localhost:5000/api${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers
       });
@@ -95,7 +96,7 @@ export const DriverProvider = ({ children }) => {
     // Silent login fallback if already authenticated but missing backend JWT token
     if (!token && localStorage.getItem('isAuthenticated') === 'true') {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: 'admin@userlife.com', password: 'admin123' })
