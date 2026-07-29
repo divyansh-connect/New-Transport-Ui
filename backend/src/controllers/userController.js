@@ -326,6 +326,70 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// Admin operation: Update any user's profile details
+const updateUserProfileAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      lastName,
+      mobileNo,
+      email,
+      carPlateNumber,
+      licenseName,
+      insuranceName,
+      paymentStatus,
+      paymentMethod,
+      amountPaid,
+      trackLocation,
+      latitude,
+      longitude,
+      status
+    } = req.body;
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ id: id }, { customId: id }]
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User entity not found.' });
+    }
+
+    const dataToUpdate = {};
+    if (name !== undefined) dataToUpdate.name = name;
+    if (lastName !== undefined) dataToUpdate.lastName = lastName;
+    if (mobileNo !== undefined) dataToUpdate.mobileNo = mobileNo;
+    if (email !== undefined) dataToUpdate.email = email;
+    if (carPlateNumber !== undefined) dataToUpdate.carPlateNumber = carPlateNumber;
+    if (licenseName !== undefined) dataToUpdate.licenseName = licenseName;
+    if (insuranceName !== undefined) dataToUpdate.insuranceName = insuranceName;
+    if (paymentStatus !== undefined) dataToUpdate.paymentStatus = paymentStatus;
+    if (paymentMethod !== undefined) dataToUpdate.paymentMethod = paymentMethod;
+    if (amountPaid !== undefined) dataToUpdate.amountPaid = amountPaid;
+    if (trackLocation !== undefined) dataToUpdate.trackLocation = trackLocation;
+    if (latitude !== undefined) dataToUpdate.latitude = parseFloat(latitude);
+    if (longitude !== undefined) dataToUpdate.longitude = parseFloat(longitude);
+    if (status !== undefined) dataToUpdate.status = status;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: dataToUpdate
+    });
+
+    const { password: _, ...userWithoutPassword } = updatedUser;
+
+    return res.json({
+      message: 'User profile updated by admin successfully.',
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    console.error('Admin Update Profile Error:', error);
+    return res.status(500).json({ error: 'Failed to update user profile.' });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getProfile,
@@ -334,5 +398,6 @@ module.exports = {
   getActivePins,
   approveUser,
   rejectUser,
-  deleteUser
+  deleteUser,
+  updateUserProfileAdmin
 };

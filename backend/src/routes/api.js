@@ -10,7 +10,8 @@ const {
   getActivePins,
   approveUser,
   rejectUser,
-  deleteUser
+  deleteUser,
+  updateUserProfileAdmin
 } = require('../controllers/userController');
 const {
   getAllPayments,
@@ -20,7 +21,8 @@ const {
 const {
   getAllNotifications,
   markAsRead,
-  clearAll
+  clearAll,
+  createNotification
 } = require('../controllers/notificationController');
 
 const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
@@ -39,8 +41,11 @@ router.put('/users/coordinates', authenticateJWT, updateCoordinates);
 
 // ── Admin Operations (User Management) - Admins Only ──────────────────────────
 router.get('/users', authenticateJWT, authorizeRoles('admin'), getAllUsers);
+// Specific sub-paths MUST come before generic /:id to avoid Express route conflict
 router.put('/users/:id/approve', authenticateJWT, authorizeRoles('admin'), approveUser);
 router.put('/users/:id/reject', authenticateJWT, authorizeRoles('admin'), rejectUser);
+// Generic user update (must be AFTER specific sub-paths)
+router.put('/users/:id', authenticateJWT, authorizeRoles('admin'), updateUserProfileAdmin);
 router.delete('/users/:id', authenticateJWT, authorizeRoles('admin'), deleteUser);
 
 // ── Admin Operations (Payments Auditing) - Admins Only ────────────────────────
@@ -48,9 +53,10 @@ router.get('/payments', authenticateJWT, authorizeRoles('admin'), getAllPayments
 router.post('/payments', authenticateJWT, authorizeRoles('admin'), createPaymentRecord);
 router.delete('/payments/:id', authenticateJWT, authorizeRoles('admin'), deletePaymentRecord);
 
-// ── Admin Operations (System Notifications) - Admins Only ─────────────────────
-router.get('/notifications', authenticateJWT, authorizeRoles('admin'), getAllNotifications);
-router.put('/notifications/:id/read', authenticateJWT, authorizeRoles('admin'), markAsRead);
-router.delete('/notifications', authenticateJWT, authorizeRoles('admin'), clearAll);
+// ── System Notifications (Admins manage all, users manage their own) ──────────
+router.get('/notifications', authenticateJWT, getAllNotifications);
+router.post('/notifications', authenticateJWT, authorizeRoles('admin'), createNotification);
+router.put('/notifications/:id/read', authenticateJWT, markAsRead);
+router.delete('/notifications', authenticateJWT, clearAll);
 
 module.exports = router;

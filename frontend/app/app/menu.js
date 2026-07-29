@@ -113,6 +113,7 @@ export default function MenuScreen() {
                     style: 'destructive',
                     onPress: async () => {
                       await AsyncStorage.removeItem('user_profile');
+                      await AsyncStorage.removeItem('auth_token');
                       saveUserProfile(null);
                       router.replace('/map');
                     }

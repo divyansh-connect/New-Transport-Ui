@@ -56,6 +56,10 @@ export const Registration = () => {
       setAlertMessage('Last Name is required.');
       return;
     }
+    if (!formData.phone || !formData.phone.trim()) {
+      setAlertMessage('Mobile number is required.');
+      return;
+    }
     if (!formData.termsAccepted) {
       setAlertMessage('You must accept the Terms and Conditions to proceed.');
       return;

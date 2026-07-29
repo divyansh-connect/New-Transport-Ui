@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Modal } from '../../components/common/Modal/Modal';
+import { useDrivers } from '../../context/DriverContext';
 import './Opportunity.css';
 
 export const Opportunity = () => {
+  const { broadcastNotification } = useDrivers();
   const [validationAlert, setValidationAlert] = useState('');
   const [opportunities, setOpportunities] = useState([
     {
@@ -75,7 +77,7 @@ export const Opportunity = () => {
     });
   };
 
-  const handlePublish = (e) => {
+  const handlePublish = async (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.description.trim()) {
       setValidationAlert('Please fill out Notice Title and Detailed Description.');
@@ -84,7 +86,7 @@ export const Opportunity = () => {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
       if (editingId) {
         setOpportunities((prev) =>
           prev.map((item) =>
@@ -116,6 +118,13 @@ export const Opportunity = () => {
           description: formData.description.trim()
         };
 
+        // Broadcast notification to database to sync with mobile app
+        await broadcastNotification(
+          `[${formData.type}] ${formData.title.trim()}`,
+          formData.description.trim(),
+          formData.type.toLowerCase()
+        );
+
         setOpportunities((prev) => [newNotice, ...prev]);
         setSuccessMessage('Notice successfully published & live broadcasted to Driver App!');
       }
@@ -127,12 +136,14 @@ export const Opportunity = () => {
         location: '',
         description: ''
       });
+    } catch (err) {
+      console.error('Publish error:', err);
+    } finally {
       setIsSubmitting(false);
-
       setTimeout(() => {
         setSuccessMessage('');
       }, 4000);
-    }, 800);
+    }
   };
 
   const handleDelete = (id) => {

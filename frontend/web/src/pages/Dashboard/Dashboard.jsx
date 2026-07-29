@@ -14,35 +14,29 @@ import './Dashboard.css';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const { drivers, payments } = useDrivers();
+  const { drivers, payments, approveDriver, deleteDriver, updateDriverProfile } = useDrivers();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-
-  const initialRegistrations = [];
-
-  const [registrations, setRegistrations] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editFormData, setEditFormData] = useState({ name: '', type: '', amount: '' });
+  const [editFormData, setEditFormData] = useState({ name: '', type: '', amount: '', status: '' });
+  const [deleteRegId, setDeleteRegId] = useState(null);
 
-  useEffect(() => {
-    // Always start fresh from database — clear any cached mock data
-    localStorage.removeItem('registrations');
-    setRegistrations([]);
-  }, []);
-
-  const syncedRegistrations = registrations.map(reg => {
-    const matchedDriver = drivers.find(d => 
-      d.id === reg.driverId || 
-      d.id === reg.id || 
-      d.name.toLowerCase() === reg.name.toLowerCase()
-    );
-    if (matchedDriver) {
-      return { ...reg, status: matchedDriver.status };
-    }
-    return reg;
-  });
+  // Map database drivers to registration view model
+  const syncedRegistrations = drivers.map(d => ({
+    id: d.id,
+    realId: d.realId,
+    name: `${d.name} ${d.lastName}`.trim(),
+    type: d.type === 'driver' ? 'Driver' : d.type === 'workshop' ? 'Workshop' : d.type === 'oil' ? 'Oil Change' : d.type === 'visitor' ? 'Visitor' : 'Driver',
+    rawType: d.type,
+    phone: d.phone,
+    status: d.status,
+    date: d.registrationDate,
+    amount: d.paymentAmount || 'Free',
+    email: d.email || '',
+    lastName: d.lastName || ''
+  }));
 
   const filteredRegistrations = syncedRegistrations.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -63,33 +57,26 @@ export const Dashboard = () => {
     setIsModalOpen(true);
   };
 
-  const [deleteRegId, setDeleteRegId] = useState(null);
-
   const handleDelete = (id) => {
     setDeleteRegId(id);
   };
 
   const handleSaveEdit = () => {
-    const updated = registrations.map(r => {
-      if (r.id === selectedRecord.id) {
-        return { ...r, name: editFormData.name, type: editFormData.type, amount: editFormData.amount, status: editFormData.status };
-      }
-      return r;
+    const spaceIdx = editFormData.name.indexOf(' ');
+    const firstName = spaceIdx !== -1 ? editFormData.name.substring(0, spaceIdx) : editFormData.name;
+    const lastName = spaceIdx !== -1 ? editFormData.name.substring(spaceIdx + 1) : '';
+
+    updateDriverProfile(selectedRecord.id, {
+      name: firstName,
+      lastName: lastName,
+      email: selectedRecord.email,
+      plateNumber: selectedRecord.plateNumber,
     });
-    setRegistrations(updated);
-    localStorage.setItem('registrations', JSON.stringify(updated));
     setIsModalOpen(false);
   };
 
   const handleApproveRegistration = (record) => {
-    const updated = registrations.map(r => {
-      if (r.id === record.id) {
-        return { ...r, status: 'Approved' };
-      }
-      return r;
-    });
-    setRegistrations(updated);
-    localStorage.setItem('registrations', JSON.stringify(updated));
+    approveDriver(record.id);
     setIsModalOpen(false);
   };
 
@@ -105,20 +92,6 @@ export const Dashboard = () => {
       e.amount
     ]);
     downloadExcel(headers, rows, "Registrations", "registrations_report.xls");
-  };
-
-  const handleExportSingle = (record) => {
-    const headers = ["Registration ID", "Name", "Category", "Mobile Number", "Status", "Date", "Amount"];
-    const rows = [[
-      record.id,
-      record.name,
-      record.type,
-      record.phone || '',
-      record.status,
-      record.date,
-      record.amount
-    ]];
-    downloadExcel(headers, rows, "Registration Details", `registration_${record.id}.xls`);
   };
 
   const handleNewRegistration = () => {
@@ -206,7 +179,7 @@ export const Dashboard = () => {
       >
         <Table
           className="table-scrollable"
-          headers={['Registration ID', 'Name / Entity', 'Category', 'Mobile No', 'Status', 'Date', 'Amount']}
+          headers={['Registration ID', 'Name / Entity', 'Category', 'Mobile No', 'Status', 'Date', 'Amount', 'Actions']}
           data={filteredRegistrations}
           emptyTitle="No Registrations Found"
           emptyDescription="No registration records match your current search or filter criteria."
@@ -236,6 +209,15 @@ export const Dashboard = () => {
               </td>
               <td><span className="row-date">{row.date}</span></td>
               <td><strong className="row-amount">{row.amount}</strong></td>
+              <td>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleOpenModal(row)} />
+                  {row.status === 'Pending' && (
+                    <Button variant="ghost" size="sm" leftIcon={Check} onClick={() => handleApproveRegistration(row)} />
+                  )}
+                  <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)} />
+                </div>
+              </td>
             </tr>
           )}
         />
@@ -290,35 +272,6 @@ export const Dashboard = () => {
             </div>
           </div>
         )}
-        {selectedRecord && isEditMode && (
-          <div className="modal-record-details" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Input
-              label="Entity Name"
-              value={editFormData.name}
-              onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
-            />
-            <Input
-              label="Category"
-              value={editFormData.type}
-              onChange={e => setEditFormData({ ...editFormData, type: e.target.value })}
-            />
-            <Input
-              label="Amount"
-              value={editFormData.amount}
-              onChange={e => setEditFormData({ ...editFormData, amount: e.target.value })}
-            />
-            <Select
-              label="Status"
-              value={editFormData.status}
-              onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}
-              options={[
-                { label: 'Pending', value: 'Pending' },
-                { label: 'Approved', value: 'Approved' },
-                { label: 'Expired', value: 'Expired' }
-              ]}
-            />
-          </div>
-        )}
       </Modal>
 
       {/* Delete Confirmation React Modal */}
@@ -329,9 +282,7 @@ export const Dashboard = () => {
         subtitle="Are you sure you want to delete this registration record? This action cannot be undone."
         primaryActionLabel="Confirm Delete"
         onPrimaryAction={() => {
-          const updated = registrations.filter(r => r.id !== deleteRegId);
-          setRegistrations(updated);
-          localStorage.setItem('registrations', JSON.stringify(updated));
+          deleteDriver(deleteRegId);
           setDeleteRegId(null);
         }}
         secondaryActionLabel="Cancel"

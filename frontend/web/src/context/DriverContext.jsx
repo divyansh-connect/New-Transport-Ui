@@ -215,10 +215,11 @@ export const DriverProvider = ({ children }) => {
   };
 
   const updateDriverProfile = async (id, updatedProfile) => {
-    const target = drivers.find(d => d.id === id);
+    const target = drivers.find(d => d.id === id || d.realId === id);
     if (!target) return;
     try {
-      await apiCall(`/users/profile`, {
+      const targetId = target.realId || target.id;
+      await apiCall(`/users/${targetId}`, {
         method: 'PUT',
         body: JSON.stringify({
           name: updatedProfile.name,
@@ -279,6 +280,18 @@ export const DriverProvider = ({ children }) => {
     console.log('Update payment audit called: ', id, updatedData);
   };
 
+  const broadcastNotification = async (title, message, type = 'system') => {
+    try {
+      await apiCall('/notifications', {
+        method: 'POST',
+        body: JSON.stringify({ title, message, type })
+      });
+      loadData();
+    } catch (err) {
+      console.error('Broadcast notification failed:', err);
+    }
+  };
+
   return (
     <DriverContext.Provider
       value={{
@@ -294,7 +307,8 @@ export const DriverProvider = ({ children }) => {
         deletePayment,
         deleteDriver,
         updatePayment,
-        registerDriver
+        registerDriver,
+        broadcastNotification
       }}
     >
       {children}

@@ -30,7 +30,11 @@ const createPaymentRecord = async (req, res) => {
       return res.status(400).json({ error: 'driverId and amount are required.' });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: driverId } });
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ id: driverId }, { customId: driverId }]
+      }
+    });
     if (!user) {
       return res.status(404).json({ error: 'Associated user account not found.' });
     }
@@ -38,7 +42,7 @@ const createPaymentRecord = async (req, res) => {
     const payment = await prisma.payment.create({
       data: {
         customId: `PAY-${Date.now()}`,
-        driverId,
+        driverId: user.id,
         name: `${user.name} ${user.lastName || ''}`.trim(),
         amount,
         gateway: gateway || 'Credit Card',
