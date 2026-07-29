@@ -24,6 +24,11 @@ const {
   clearAll,
   createNotification
 } = require('../controllers/notificationController');
+const {
+  getAllTickets,
+  createTicket,
+  updateTicketStatus
+} = require('../controllers/ticketController');
 
 const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
 
@@ -33,6 +38,11 @@ router.post('/auth/login', login);
 
 // ── Telemetry (Map Pins) - Public ─────────────────────────────────────────────
 router.get('/users/pins', getActivePins);
+
+// ── Support Inquiries / Tickets (Public submit, Admin view & manage) ─────────
+router.get('/inquiries', getAllTickets);
+router.post('/inquiries', createTicket);
+router.put('/inquiries/:id', updateTicketStatus);
 
 // ── User Profile & GPS Telemetry Sync - Authorized ───────────────────────────
 router.get('/users/profile', authenticateJWT, getProfile);

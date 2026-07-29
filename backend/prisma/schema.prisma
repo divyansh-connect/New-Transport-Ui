@@ -111,3 +111,20 @@ model Notification {
   @@index([userId])
   @@map("notifications")
 }
+
+model Ticket {
+  id       String   @id @default(uuid()) @map("id")
+  customId String   @unique @map("custom_id")
+  subject  String   @db.VarChar(255) @map("subject")
+  details  String   @db.Text @map("details")
+  user     String   @db.VarChar(150) @map("user")
+  mobileNo String   @db.VarChar(50) @map("mobile_no")
+  status   String   @default("Open") @db.VarChar(30) @map("status")
+  date     DateTime @default(now()) @map("date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([customId])
+  @@map("tickets")
+}
+

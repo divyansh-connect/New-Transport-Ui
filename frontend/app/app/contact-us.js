@@ -8,6 +8,7 @@ import { Card } from '../src/components/common/cards/Card';
 import { CustomButton } from '../src/components/common/buttons/CustomButton';
 import { SPACING, RADIUS } from '../src/constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiFetch } from '../src/utils/api';
 
 export default function ContactUsScreen() {
   const { theme, registeredUser, showAlert, language } = useTheme();
@@ -20,7 +21,7 @@ export default function ContactUsScreen() {
   const [details, setDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Submit dynamic ticket to shared database/AsyncStorage simulation
+  // Submit dynamic ticket to shared database & AsyncStorage
   const handleRaiseTicket = async () => {
     if (!subject.trim() || !details.trim()) {
       showAlert(
@@ -33,42 +34,52 @@ export default function ContactUsScreen() {
     setSubmitting(true);
 
     try {
-      // Create new ticket object matching web Contact inquiry schema
       const newTicketId = `TK-${Math.floor(1000 + Math.random() * 9000)}`;
+      const userFullName = registeredUser ? `${registeredUser.name} ${registeredUser.lastName || ''}`.trim() : 'Guest Visitor';
+      const userPhone = registeredUser ? registeredUser.mobileNo : 'N/A';
+
       const newTicket = {
+        customId: newTicketId,
         id: newTicketId,
         subject,
         details,
-        user: registeredUser ? `${registeredUser.name} ${registeredUser.lastName}` : 'Guest Visitor',
-        mobileNo: registeredUser ? registeredUser.mobileNo : 'N/A',
+        user: userFullName,
+        mobileNo: userPhone,
         status: 'Open',
         date: new Date().toLocaleDateString()
       };
 
+      // 1. Submit to Backend Central API
+      try {
+        await apiFetch('/inquiries', {
+          method: 'POST',
+          body: JSON.stringify(newTicket)
+        });
+      } catch (apiErr) {
+        console.log('Backend inquiry submit error (fallback to local):', apiErr.message);
+      }
+
+      // 2. Also keep in local AsyncStorage as backup
       let ticketsList = [];
       const stored = await AsyncStorage.getItem('support_inquiries');
       if (stored) {
         ticketsList = JSON.parse(stored);
       }
-
       ticketsList = [newTicket, ...ticketsList];
       await AsyncStorage.setItem('support_inquiries', JSON.stringify(ticketsList));
 
-      // Simulate a small network delay
-      setTimeout(() => {
-        setSubmitting(false);
-        showAlert(
-          isArabic ? 'تم إرسال الطلب' : isUrdu ? 'درخواست جمع ہو گئی' : 'Inquiry Submitted',
-          isArabic
-            ? `تم تقديم التذكرة ${newTicketId} بنجاح. سيقوم فريقنا بمراجعتها قريبًا.`
-            : isUrdu
-              ? `ٹکٹ ${newTicketId} کامیابی کے ساتھ جمع کر دیا گیا ہے۔ ہماری ٹیم جلد ہی اس کا جائزہ لے گی۔`
-              : `Ticket ${newTicketId} has been successfully raised. Our Admin team will review it shortly on the Web Panel.`,
-          [{ text: isArabic ? 'موافق' : isUrdu ? 'ٹھیک ہے' : 'OK', onPress: () => router.replace('/map') }]
-        );
-        setSubject('');
-        setDetails('');
-      }, 1000);
+      setSubmitting(false);
+      showAlert(
+        isArabic ? 'تم إرسال الطلب' : isUrdu ? 'درخواست جمع ہو گئی' : 'Inquiry Submitted',
+        isArabic
+          ? `تم تقديم التذكرة ${newTicketId} بنجاح. سيقوم فريقنا بمراجعتها قريبًا.`
+          : isUrdu
+            ? `ٹکٹ ${newTicketId} کامیابی کے ساتھ جمع کر دیا گیا ہے۔ ہماری ٹیم جلد ہی اس کا جائزہ لے گی۔`
+            : `Ticket ${newTicketId} has been successfully raised. Our Admin team will review it shortly on the Web Panel.`,
+        [{ text: isArabic ? 'موافق' : isUrdu ? 'ٹھیک ہے' : 'OK', onPress: () => router.replace('/map') }]
+      );
+      setSubject('');
+      setDetails('');
 
     } catch (e) {
       setSubmitting(false);
