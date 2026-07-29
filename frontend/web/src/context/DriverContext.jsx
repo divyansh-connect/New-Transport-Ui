@@ -55,12 +55,13 @@ export const DriverProvider = ({ children }) => {
       phone: u.mobileNo || '—',
       contact: u.mobileNo || '—',
       mobileNo: u.mobileNo || '—',
-      plateNumber: u.carPlateNumber || '—',
+      plateNumber: u.role === 'driver' ? (u.carPlateNumber || '—') : '—',
+      location: u.role === 'driver' ? '' : (u.carPlateNumber || 'Delhi, IN'),
       vehicleType: displayTypes[u.role] || 'Visitor',
       vehicleModel: defaultModels[u.role] || 'Guest Access',
       licenseNumber: u.licenseName || 'LIC-' + u.customId,
       experienceYears: 4,
-      city: u.role === 'driver' ? 'Dallas, TX' : 'Delhi, IN',
+      city: u.role === 'driver' ? 'Dallas, TX' : (u.carPlateNumber || 'Delhi, IN'),
       avatar: u.role === 'driver' 
         ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256' 
         : 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=256',
@@ -219,13 +220,23 @@ export const DriverProvider = ({ children }) => {
     if (!target) return;
     try {
       const targetId = target.realId || target.id;
+      
+      const spaceIdx = updatedProfile.name ? updatedProfile.name.indexOf(' ') : -1;
+      const firstName = spaceIdx !== -1 ? updatedProfile.name.substring(0, spaceIdx) : updatedProfile.name;
+      const lastName = spaceIdx !== -1 ? updatedProfile.name.substring(spaceIdx + 1) : updatedProfile.lastName;
+
       await apiCall(`/users/${targetId}`, {
         method: 'PUT',
         body: JSON.stringify({
-          name: updatedProfile.name,
-          lastName: updatedProfile.lastName,
+          name: firstName,
+          lastName: lastName || undefined,
           email: updatedProfile.email,
-          carPlateNumber: updatedProfile.plateNumber,
+          carPlateNumber: updatedProfile.plateNumber || updatedProfile.location || updatedProfile.carPlateNumber,
+          mobileNo: updatedProfile.mobileNo || updatedProfile.phone || updatedProfile.contact,
+          latitude: updatedProfile.latitude,
+          longitude: updatedProfile.longitude,
+          status: updatedProfile.status,
+          amountPaid: updatedProfile.amountPaid || updatedProfile.amount
         })
       });
       loadData();

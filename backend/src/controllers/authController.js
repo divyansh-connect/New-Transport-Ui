@@ -4,10 +4,6 @@ const prisma = require('../config/db');
 
 // Helper to generate custom human-readable ID
 const generateCustomId = async (role) => {
-  const count = await prisma.user.count({
-    where: { role: role }
-  });
-
   const prefixMap = {
     driver: 'DRV',
     workshop: 'WS',
@@ -18,8 +14,26 @@ const generateCustomId = async (role) => {
 
   const prefix = prefixMap[role] || 'USR';
   const startNumber = role === 'driver' ? 1001 : 101; // Match initial seed patterns
-  const finalId = `${prefix}-${startNumber + count}`;
-  return finalId;
+
+  // Fetch the latest user created for this specific role
+  const latestUser = await prisma.user.findFirst({
+    where: { role: role },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  if (!latestUser || !latestUser.customId) {
+    return `${prefix}-${startNumber}`;
+  }
+
+  // Parse the numeric suffix from the customId (e.g. 'WS-105' -> 105)
+  const parts = latestUser.customId.split('-');
+  const lastNum = parseInt(parts[parts.length - 1], 10);
+
+  if (isNaN(lastNum)) {
+    return `${prefix}-${startNumber}`;
+  }
+
+  return `${prefix}-${lastNum + 1}`;
 };
 
 const register = async (req, res) => {
@@ -82,7 +96,7 @@ const register = async (req, res) => {
         lastName,
         mobileNo,
         password: hashedPassword,
-        carPlateNumber: userRole === 'driver' ? carPlateNumber : null,
+        carPlateNumber: carPlateNumber || null,
         email,
         role: userRole,
         status: userRole === 'admin' ? 'Approved' : 'Pending',

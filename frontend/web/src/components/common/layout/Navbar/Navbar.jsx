@@ -23,13 +23,15 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
   const { theme, toggleTheme, profile } = useTheme();
   const { notifications, markNotificationAsRead } = useDrivers();
   const navigate = useNavigate();
-  const searchInputRef = useRef(null);
-  const searchWrapperRef = useRef(null);
-
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const searchInputRef = useRef(null);
+  const searchWrapperRef = useRef(null);
+  const notificationsWrapperRef = useRef(null);
+  const userMenuWrapperRef = useRef(null);
 
   const searchableItems = [
     { title: 'Dashboard Overview', category: 'Page Navigation', path: '/' },
@@ -74,6 +76,12 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
     const handleClickOutside = (e) => {
       if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target)) {
         setIsSearchOpen(false);
+      }
+      if (notificationsWrapperRef.current && !notificationsWrapperRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+      if (userMenuWrapperRef.current && !userMenuWrapperRef.current.contains(e.target)) {
+        setShowUserMenu(false);
       }
     };
 
@@ -204,7 +212,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
         </button>
 
         {/* Notifications */}
-        <div className="navbar-popover-wrapper">
+        <div className="navbar-popover-wrapper" ref={notificationsWrapperRef}>
           <button
             className={`navbar-icon-btn ${showNotifications ? 'active' : ''}`}
             onClick={() => {
@@ -263,7 +271,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
         </div>
 
         {/* User Profile */}
-        <div className="navbar-popover-wrapper">
+        <div className="navbar-popover-wrapper" ref={userMenuWrapperRef}>
           <div
             className="navbar-user-profile"
             onClick={() => {

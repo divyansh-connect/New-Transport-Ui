@@ -255,14 +255,14 @@ export const WorkshopRegistrationForm = ({
             <Input
               label="Latitude"
               placeholder="28.6250"
-              value={formData.latitude || '28.6250'}
+              value={formData.latitude || ''}
               onChange={(e) => onChange({ ...formData, latitude: e.target.value })}
               required
             />
             <Input
               label="Longitude"
               placeholder="77.2180"
-              value={formData.longitude || '77.2180'}
+              value={formData.longitude || ''}
               onChange={(e) => onChange({ ...formData, longitude: e.target.value })}
               required
             />
@@ -403,14 +403,14 @@ export const OilChangeRegistrationForm = ({
             <Input
               label="Latitude"
               placeholder="28.6250"
-              value={formData.latitude || '28.6250'}
+              value={formData.latitude || ''}
               onChange={(e) => onChange({ ...formData, latitude: e.target.value })}
               required
             />
             <Input
               label="Longitude"
               placeholder="77.2180"
-              value={formData.longitude || '77.2180'}
+              value={formData.longitude || ''}
               onChange={(e) => onChange({ ...formData, longitude: e.target.value })}
               required
             />

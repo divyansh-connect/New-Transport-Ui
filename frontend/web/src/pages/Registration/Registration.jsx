@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/common/Cards/Card';
 import { Button } from '../../components/common/Button/Button';
@@ -34,6 +34,24 @@ export const Registration = () => {
     termsAccepted: false,
     selectedPlanId: subscriptionPlans?.[0]?.id || ''
   });
+
+  // Automatically fetch current browser location coordinates to populate Lat/Lng fields
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFormData((prev) => ({
+            ...prev,
+            latitude: position.coords.latitude.toFixed(6),
+            longitude: position.coords.longitude.toFixed(6)
+          }));
+        },
+        (error) => {
+          console.log('Browser geolocation denied or not available:', error.message);
+        }
+      );
+    }
+  }, []);
 
   const isDriver = formData.type === 'driver';
   const isWorkshop = formData.type === 'workshop' || formData.type === 'oil';

@@ -17,7 +17,7 @@ import {
 import './Services.css';
 
 export const Services = () => {
-  const { drivers, registerDriver } = useDrivers();
+  const { drivers, registerDriver, deleteDriver, updateDriverProfile } = useDrivers();
   const { subscriptionPlans, subscriptionConfig } = useTheme();
   const [activeTab, setActiveTab] = useState('workshop');
 
@@ -161,7 +161,16 @@ export const Services = () => {
   const handleEditClick = (record) => {
     setModalMode('edit');
     setSelectedRecord(record);
-    setFormData({ name: record.name, location: record.location, latitude: record.latitude || '28.6250', longitude: record.longitude || '77.2180', contact: record.contact, email: record.email || '', status: record.status, amount: record.amount || '$49.99' });
+    setFormData({
+      name: record.name,
+      location: record.location || '',
+      latitude: record.latitude || '',
+      longitude: record.longitude || '',
+      contact: record.contact || record.phone || '',
+      email: record.email || '',
+      status: record.status,
+      amount: record.amount || record.paymentAmount || '$49.99'
+    });
     setIsModalOpen(true);
   };
 
@@ -202,13 +211,16 @@ export const Services = () => {
       };
       saveToStorage([newService, ...allServices]);
     } else if (modalMode === 'edit') {
-      const updated = allServices.map(s => {
-        if (s.id === selectedRecord.id) {
-          return { ...s, name: formData.name, location: formData.location, latitude: formData.latitude, longitude: formData.longitude, contact: formData.contact, email: formData.email, status: formData.status, amount: formData.amount };
-        }
-        return s;
+      updateDriverProfile(selectedRecord.id, {
+        name: formData.name,
+        location: formData.location,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        contact: formData.contact,
+        email: formData.email,
+        status: formData.status,
+        amount: formData.amount
       });
-      saveToStorage(updated);
     }
     setIsModalOpen(false);
   };
@@ -598,7 +610,7 @@ export const Services = () => {
         subtitle="Are you sure you want to delete this registered service? This action cannot be undone."
         primaryActionLabel="Confirm Delete"
         onPrimaryAction={() => {
-          saveToStorage(allServices.filter(s => s.id !== deleteServiceId));
+          deleteDriver(deleteServiceId);
           setDeleteServiceId(null);
         }}
         secondaryActionLabel="Cancel"

@@ -236,9 +236,27 @@ export default function MapScreen() {
           oil:       { icon: oilSvg,    isPOI: true },
           location:  { icon: carSvg,    isPOI: false }
         };
+        var usedCoords = {};
         services.forEach(function(s) {
           // Visitors see Active Drivers (type === 'location'). Approved Drivers see everything (workshops, oil, location).
           if (s.type === 'location' || isDriver) {
+            var lat = parseFloat(s.lat);
+            var lng = parseFloat(s.lng);
+            if (isNaN(lat) || isNaN(lng)) return;
+
+            // Shift duplicate coordinates slightly to prevent overlay overlaps
+            var coordKey = lat.toFixed(5) + ',' + lng.toFixed(5);
+            if (usedCoords[coordKey]) {
+              var count = usedCoords[coordKey];
+              var angle = (count * 2 * Math.PI) / 8; // arrange in a small circle around central point
+              var offset = 0.00018 * count; // shift distance step
+              lat += Math.cos(angle) * offset;
+              lng += Math.sin(angle) * offset;
+              usedCoords[coordKey] = count + 1;
+            } else {
+              usedCoords[coordKey] = 1;
+            }
+
             var cfg = pinConfig[s.type] || { icon: wrenchSvg, isPOI: true };
             var htmlContent = '';
             var anchor = [11, 11];
@@ -258,7 +276,7 @@ export default function MapScreen() {
               iconSize: size,
               iconAnchor: anchor
             });
-            var sMarker = L.marker([s.lat, s.lng], { icon: sIcon }).addTo(map);
+            var sMarker = L.marker([lat, lng], { icon: sIcon }).addTo(map);
             sMarker.on('click', function() {
               window.ReactNativeWebView.postMessage(JSON.stringify(s));
             });
