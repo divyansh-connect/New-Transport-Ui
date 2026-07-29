@@ -10,7 +10,6 @@
     "build:web": "cd web && npm run build"
   },
   "workspaces": [
-    "app",
     "web"
   ]
 }
