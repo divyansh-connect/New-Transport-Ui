@@ -4,13 +4,41 @@ import { API_BASE_URL } from '../config';
 const DriverContext = createContext();
 
 export const DriverProvider = ({ children }) => {
-  const [drivers, setDrivers] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [drivers, setDrivers] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('_cached_drivers');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const [payments, setPayments] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('_cached_payments');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('_cached_notifications');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Helper to get active admin token
+  const getToken = () => localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
 
   // Base API call helper
   const apiCall = async (endpoint, options = {}) => {
-    const token = localStorage.getItem('admin_token');
+    const token = getToken();
     const headers = {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -91,10 +119,10 @@ export const DriverProvider = ({ children }) => {
   };
 
   const loadData = async () => {
-    let token = localStorage.getItem('admin_token');
+    let token = getToken();
     
     // Silent login fallback if already authenticated but missing backend JWT token
-    if (!token && localStorage.getItem('isAuthenticated') === 'true') {
+    if (!token && (localStorage.getItem('isAuthenticated') === 'true' || sessionStorage.getItem('isAuthenticated') === 'true')) {
       try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
@@ -104,6 +132,7 @@ export const DriverProvider = ({ children }) => {
         const data = await response.json();
         if (response.ok && data.token) {
           localStorage.setItem('admin_token', data.token);
+          sessionStorage.setItem('admin_token', data.token);
           token = data.token;
         }
       } catch (err) {
@@ -113,13 +142,15 @@ export const DriverProvider = ({ children }) => {
 
     if (!token) return;
     try {
-      const usersData = await apiCall('/users');
-      const paymentsData = await apiCall('/payments');
-      const notificationsData = await apiCall('/notifications');
+      // Parallel concurrent API calls for instant loading
+      const [usersData, paymentsData, notificationsData] = await Promise.all([
+        apiCall('/users'),
+        apiCall('/payments'),
+        apiCall('/notifications')
+      ]);
 
-      setDrivers(usersData.map(formatUser));
-      
-      setPayments(paymentsData.map(p => ({
+      const formattedUsers = usersData.map(formatUser);
+      const formattedPayments = paymentsData.map(p => ({
         id: p.customId || p.id,
         realId: p.id,
         driverId: p.driverId,
@@ -130,16 +161,24 @@ export const DriverProvider = ({ children }) => {
         date: new Date(p.date).toISOString().split('T')[0],
         mobileNo: p.user?.mobileNo || p.mobileNo || '',
         email: p.user?.email || p.email || ''
-      })));
-
-      setNotifications(notificationsData.map(n => ({
+      }));
+      const formattedNotifs = notificationsData.map(n => ({
         id: n.id,
         type: n.type,
         title: n.title,
         message: n.message,
         time: 'Just now',
         read: n.read
-      })));
+      }));
+
+      setDrivers(formattedUsers);
+      setPayments(formattedPayments);
+      setNotifications(formattedNotifs);
+
+      // Cache formatted data in sessionStorage for zero-delay refresh rendering
+      sessionStorage.setItem('_cached_drivers', JSON.stringify(formattedUsers));
+      sessionStorage.setItem('_cached_payments', JSON.stringify(formattedPayments));
+      sessionStorage.setItem('_cached_notifications', JSON.stringify(formattedNotifs));
     } catch (err) {
       console.log('Error loading backend data:', err);
     }
@@ -147,7 +186,7 @@ export const DriverProvider = ({ children }) => {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 15000);
+    const interval = setInterval(loadData, 10000);
     return () => clearInterval(interval);
   }, []);
 

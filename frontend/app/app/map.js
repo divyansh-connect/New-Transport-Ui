@@ -11,7 +11,7 @@ import { translations } from '../src/constants/translations';
 import { API_BASE_URL } from '../src/utils/api';
 
 export default function MapScreen() {
-  const { theme, language, registeredUser, showAlert } = useTheme();
+  const { theme, language, registeredUser, showAlert, unreadNoticeCount, markAllNoticesAsRead, updateUnreadNotices } = useTheme();
   const router = useRouter();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
@@ -352,10 +352,20 @@ export default function MapScreen() {
           )}
 
           <TouchableOpacity
-            style={[styles.settingsButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
-            onPress={() => router.push('/opportunity')}
+            style={[styles.settingsButton, { backgroundColor: theme.surface, borderColor: theme.border, position: 'relative' }]}
+            onPress={() => {
+              markAllNoticesAsRead();
+              router.push('/opportunity');
+            }}
           >
             <Icon name="bell" size={18} color={theme.primary} />
+            {unreadNoticeCount > 0 && (
+              <View style={styles.unreadBadgeDot}>
+                <Text style={styles.unreadBadgeText}>
+                  {unreadNoticeCount > 9 ? '9+' : unreadNoticeCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -743,5 +753,26 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 13,
     fontWeight: '700',
+  },
+  unreadBadgeDot: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#ef4444',
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#0f172a',
+    zIndex: 10,
+  },
+  unreadBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    textAlign: 'center',
   },
 });
