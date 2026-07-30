@@ -304,25 +304,30 @@ export const DriverProvider = ({ children }) => {
   };
 
   const deletePayment = async (id) => {
-    const target = payments.find(p => p.id === id);
-    if (!target) return;
+    const target = payments.find(p => p.id === id || p.realId === id);
+    const targetId = target ? (target.realId || target.id) : id;
+    // Optimistic removal
+    setPayments(prev => prev.filter(p => p.id !== id && p.realId !== id && p.id !== targetId));
     try {
-      await apiCall(`/payments/${target.realId}`, { method: 'DELETE' });
+      await apiCall(`/payments/${targetId}`, { method: 'DELETE' });
       loadData();
     } catch (err) {
-      console.error(err);
+      console.error('Delete payment failed:', err);
+      loadData();
     }
   };
 
   const deleteDriver = async (id) => {
     const target = drivers.find(d => d.id === id || d.realId === id);
-    if (!target) return;
+    const targetId = target ? (target.realId || target.id) : id;
+    // Optimistic removal
+    setDrivers(prev => prev.filter(d => d.id !== id && d.realId !== id && d.id !== targetId));
     try {
-      const targetId = target.realId || target.id;
       await apiCall(`/users/${targetId}`, { method: 'DELETE' });
       loadData();
     } catch (err) {
-      console.error(err);
+      console.error('Delete driver/user failed:', err);
+      loadData();
     }
   };
 
