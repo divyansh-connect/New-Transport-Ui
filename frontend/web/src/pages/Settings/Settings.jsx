@@ -89,6 +89,36 @@ export const Settings = () => {
 
   const API_BASE = API_BASE_URL;
   const adminToken = localStorage.getItem('admin_token');
+  const [dbAdmins, setDbAdmins] = useState([]);
+
+  // Fetch admin users from DB
+  const fetchAdminsFromDb = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE}/users?role=admin`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const formatted = data.map(u => ({
+            id: u.customId || u.id,
+            realId: u.id,
+            name: u.name,
+            email: u.email || '—',
+            phone: u.mobileNo || '—',
+            role: u.role === 'admin' ? 'System Admin' : u.role
+          }));
+          setDbAdmins(formatted);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch admins from DB:', err);
+    }
+  };
 
   // Load live settings from DB on mount
   useEffect(() => {
@@ -112,6 +142,8 @@ export const Settings = () => {
         }
       })
       .catch(err => console.warn('Could not load platform settings:', err));
+
+    fetchAdminsFromDb();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -161,17 +193,75 @@ export const Settings = () => {
     }
   };
 
-  const handleAddAdminSubmit = (e) => {
+  const handleAddAdminSubmit = async (e) => {
     e.preventDefault();
     if (!newAdminForm.name || !newAdminForm.email || !newAdminForm.password) return;
     setIsSaving(true);
-    setTimeout(() => {
-      addNewAdmin(newAdminForm);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          name: newAdminForm.name,
+          email: newAdminForm.email,
+          mobileNo: newAdminForm.phone || `+9665${Math.floor(10000000 + Math.random() * 90000000)}`,
+          password: newAdminForm.password,
+          role: 'admin',
+          status: 'Approved',
+          paymentStatus: 'Paid',
+          subscriptionDuration: 'Lifetime',
+          amountPaid: '$0.00'
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create administrator.');
+      }
+      addNewAdmin({
+        id: data.user?.customId || `ADM-${Math.floor(10 + Math.random() * 90)}`,
+        realId: data.user?.id,
+        name: newAdminForm.name,
+        email: newAdminForm.email,
+        phone: newAdminForm.phone || data.user?.mobileNo || '—',
+        role: 'System Admin'
+      });
       setNewAdminForm({ name: '', email: '', phone: '', role: 'System Admin', password: '' });
+      setSuccessBanner('✅ New administrator created in database! You can now log in with these credentials.');
+      fetchAdminsFromDb();
+    } catch (err) {
+      setSuccessBanner(`❌ ${err.message}`);
+    } finally {
       setIsSaving(false);
-      setSuccessBanner('New administrator added successfully!');
+      setTimeout(() => setSuccessBanner(''), 5000);
+    }
+  };
+
+  const handleDeleteAdminSubmit = async (adm) => {
+    const targetId = adm.realId || adm.id;
+    try {
+      const token = localStorage.getItem('admin_token');
+      await fetch(`${API_BASE}/users/${targetId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      deleteAdmin(adm.id);
+      setDbAdmins(prev => prev.filter(a => a.id !== adm.id && a.realId !== adm.realId && a.id !== targetId));
+      setSuccessBanner('✅ Administrator access revoked successfully.');
+      fetchAdminsFromDb();
+    } catch (err) {
+      deleteAdmin(adm.id);
+      setDbAdmins(prev => prev.filter(a => a.id !== adm.id && a.realId !== adm.realId && a.id !== targetId));
+      setSuccessBanner('Administrator removed.');
+    } finally {
       setTimeout(() => setSuccessBanner(''), 3000);
-    }, 800);
+    }
   };
 
   const handleAddPlanSubmit = (e) => {
@@ -391,72 +481,77 @@ export const Settings = () => {
                   </div>
                 </form>
 
-                <div style={{ overflowX: 'auto', maxHeight: '250px', overflowY: 'auto', marginTop: '16px' }}>
-                  <table className="desktop-view-only" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
-                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>ID</th>
-                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Name</th>
-                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Email</th>
-                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Phone</th>
-                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Role</th>
-                        <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {adminsList.map((adm) => (
-                        <tr key={adm.id} style={{ borderBottom: '1px solid var(--color-card-border)', fontSize: '14px', color: 'var(--color-text-main)' }}>
-                          <td style={{ padding: '12px' }}><code>{adm.id}</code></td>
-                          <td style={{ padding: '12px', fontWeight: '600' }}>{adm.name}</td>
-                          <td style={{ padding: '12px' }}>{adm.email}</td>
-                          <td style={{ padding: '12px' }}>{adm.phone || '—'}</td>
-                          <td style={{ padding: '12px' }}><Badge variant="primary">{adm.role}</Badge></td>
-                          <td style={{ padding: '12px' }}>
-                            <button
-                              onClick={() => deleteAdmin(adm.id)}
-                              style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
-                              title="Revoke Admin Access"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                {(() => {
+                  const displayAdminsList = dbAdmins.length > 0 ? dbAdmins : adminsList;
+                  return (
+                    <div style={{ overflowX: 'auto', maxHeight: '250px', overflowY: 'auto', marginTop: '16px' }}>
+                      <table className="desktop-view-only" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>ID</th>
+                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Name</th>
+                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Email</th>
+                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Phone</th>
+                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Role</th>
+                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {displayAdminsList.map((adm) => (
+                            <tr key={adm.id} style={{ borderBottom: '1px solid var(--color-card-border)', fontSize: '14px', color: 'var(--color-text-main)' }}>
+                              <td style={{ padding: '12px' }}><code>{adm.id}</code></td>
+                              <td style={{ padding: '12px', fontWeight: '600' }}>{adm.name}</td>
+                              <td style={{ padding: '12px' }}>{adm.email}</td>
+                              <td style={{ padding: '12px' }}>{adm.phone || '—'}</td>
+                              <td style={{ padding: '12px' }}><Badge variant="primary">{adm.role}</Badge></td>
+                              <td style={{ padding: '12px' }}>
+                                <button
+                                  onClick={() => handleDeleteAdminSubmit(adm)}
+                                  style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                                  title="Revoke Admin Access"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
 
-                  <div className="mobile-view-only">
-                    {adminsList.map((adm) => (
-                      <div key={adm.id} style={{
-                        backgroundColor: 'var(--color-surface)',
-                        border: '1px solid var(--color-card-border)',
-                        borderRadius: 'var(--radius-md)',
-                        padding: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px'
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontWeight: '700', color: 'var(--color-text-main)' }}>{adm.name}</span>
-                          <button
-                            onClick={() => deleteAdmin(adm.id)}
-                            style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                            title="Revoke Admin Access"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                          <span style={{ color: 'var(--color-text-muted)' }}>ID: <code>{adm.id}</code></span>
-                          <Badge variant="primary">{adm.role}</Badge>
-                        </div>
-                        <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-                          {adm.email}
-                        </div>
+                      <div className="mobile-view-only">
+                        {displayAdminsList.map((adm) => (
+                          <div key={adm.id} style={{
+                            backgroundColor: 'var(--color-surface)',
+                            border: '1px solid var(--color-card-border)',
+                            borderRadius: 'var(--radius-md)',
+                            padding: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px'
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontWeight: '700', color: 'var(--color-text-main)' }}>{adm.name}</span>
+                              <button
+                                onClick={() => handleDeleteAdminSubmit(adm)}
+                                style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                                title="Revoke Admin Access"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                              <span style={{ color: 'var(--color-text-muted)' }}>ID: <code>{adm.id}</code></span>
+                              <Badge variant="primary">{adm.role}</Badge>
+                            </div>
+                            <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                              {adm.email}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
+                  );
+                })()}
               </Card>
             </div>
           )}
