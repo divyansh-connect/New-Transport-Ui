@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../src/context/ThemeContext';
@@ -14,29 +14,55 @@ export default function OpportunityScreen() {
   const isUrdu = language === 'Urdu';
   const isRTL = isArabic || isUrdu;
 
-  const notice = opportunityNotice || {
-    title: 'High-Demand Cargo Routes Available',
-    category: 'Logistics Opportunity',
-    date: 'Today, 10:30 AM',
-    description: 'Long-haul freight opportunities open for heavy truck drivers connecting northern ports to regional fulfillment hubs. High competitive payouts.',
-  };
+  const defaultNoticeList = [
+    opportunityNotice || {
+      title: 'High-Demand Cargo Routes Available',
+      category: 'Logistics Opportunity',
+      type: 'Freight',
+      date: 'Today, 10:30 AM',
+      description: 'Long-haul freight opportunities open for heavy truck drivers connecting northern ports to regional fulfillment hubs. High competitive payouts.',
+    }
+  ];
+
+  const [notices, setNotices] = useState(defaultNoticeList);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchNotices = async () => {
+      try {
+        const { apiFetch } = require('../src/utils/api');
+        const data = await apiFetch('/notices');
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setNotices(data);
+        }
+      } catch (err) {
+        console.log('Error loading notices on OpportunityScreen:', err);
+      }
+    };
+    fetchNotices();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Header title={t.opportunityTitle} showBack={true} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Card style={styles.card}>
-          <View style={[styles.badgeRow, isRTL && { flexDirection: 'row-reverse' }]}>
-            <Text style={[styles.categoryBadge, { backgroundColor: theme.surface, color: theme.primary }]}>
-              {notice.category || 'Admin Announcement'}
+        {notices.map((notice, idx) => (
+          <Card key={notice.id || idx} style={styles.card}>
+            <View style={[styles.badgeRow, isRTL && { flexDirection: 'row-reverse' }]}>
+              <Text style={[styles.categoryBadge, { backgroundColor: theme.surface, color: theme.primary }]}>
+                {notice.type || notice.category || 'Admin Announcement'}
+              </Text>
+              <Text style={[styles.dateText, { color: theme.textSecondary }]}>{notice.date || 'Just Now'}</Text>
+            </View>
+            <Text style={[styles.title, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{notice.title}</Text>
+            <Text style={[styles.desc, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
+              {notice.description || notice.body || notice.content}
             </Text>
-            <Text style={[styles.dateText, { color: theme.textSecondary }]}>{notice.date || 'Just Now'}</Text>
-          </View>
-          <Text style={[styles.title, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{notice.title}</Text>
-          <Text style={[styles.desc, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
-            {notice.description || notice.body || notice.content}
-          </Text>
-        </Card>
+          </Card>
+        ))}
 
         <View style={[styles.noteBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.noteHeader, { color: theme.primary, textAlign: isRTL ? 'right' : 'left' }]}>{t.noticeInfo}</Text>

@@ -30,6 +30,14 @@ const {
   updateTicketStatus
 } = require('../controllers/ticketController');
 const { getSettings, updateSettings } = require('../controllers/settingsController');
+const {
+  getActiveNotices,
+  getAllNotices,
+  createNotice,
+  updateNotice,
+  toggleNoticeVisibility,
+  deleteNotice
+} = require('../controllers/noticeController');
 
 const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
 
@@ -39,6 +47,14 @@ router.post('/auth/login', login);
 
 // ── Telemetry (Map Pins) - Public ─────────────────────────────────────────────
 router.get('/users/pins', getActivePins);
+
+// ── Opportunity & Broadcast Notices ──────────────────────────────────────────
+router.get('/notices', getActiveNotices);
+router.get('/notices/all', getAllNotices);
+router.post('/notices', createNotice);
+router.put('/notices/:id/toggle-visibility', toggleNoticeVisibility);
+router.put('/notices/:id', updateNotice);
+router.delete('/notices/:id', deleteNotice);
 
 // ── Support Inquiries / Tickets (Public submit, Admin view & manage) ─────────
 router.get('/inquiries', getAllTickets);

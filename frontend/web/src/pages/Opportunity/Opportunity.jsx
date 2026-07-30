@@ -1,42 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/common/Cards/Card';
-import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { Modal } from '../../components/common/Modal/Modal';
 import { useDrivers } from '../../context/DriverContext';
+import { API_BASE_URL } from '../../config';
 import './Opportunity.css';
+
+const DEFAULT_NOTICES = [
+  {
+    id: 1,
+    title: 'High-Demand Cargo Routes Available',
+    date: '24 Jul 2026',
+    type: 'Freight',
+    location: 'Northern Ports',
+    priority: 'High',
+    description: 'Long-haul freight opportunities open for heavy truck drivers connecting northern ports. Premium rates applied for weekend dispatch.',
+    isVisible: true
+  },
+  {
+    id: 2,
+    title: 'Partner Workshop Expansion Notice',
+    date: '21 Jul 2026',
+    type: 'Partnership',
+    location: 'All Zones',
+    priority: 'Normal',
+    description: 'Register oil change centers & workshops for automatic dispatch requests. New API endpoints available for third-party systems.',
+    isVisible: true
+  },
+  {
+    id: 3,
+    title: 'Monsoon Safety Guidelines',
+    date: '18 Jul 2026',
+    type: 'Safety',
+    location: 'System Wide',
+    priority: 'Critical',
+    description: 'Mandatory speed limits enforced across all active tracking nodes due to heavy rainfall warnings.',
+    isVisible: true
+  }
+];
 
 export const Opportunity = () => {
   const { broadcastNotification } = useDrivers();
   const [validationAlert, setValidationAlert] = useState('');
-  const [opportunities, setOpportunities] = useState([
-    {
-      id: 1,
-      title: 'High-Demand Cargo Routes Available',
-      date: '24 Jul 2026',
-      type: 'Freight',
-      location: 'Northern Ports',
-      priority: 'High',
-      description: 'Long-haul freight opportunities open for heavy truck drivers connecting northern ports. Premium rates applied for weekend dispatch.'
-    },
-    {
-      id: 2,
-      title: 'Partner Workshop Expansion Notice',
-      date: '21 Jul 2026',
-      type: 'Partnership',
-      location: 'All Zones',
-      priority: 'Normal',
-      description: 'Register oil change centers & workshops for automatic dispatch requests. New API endpoints available for third-party systems.'
-    },
-    {
-      id: 3,
-      title: 'Monsoon Safety Guidelines',
-      date: '18 Jul 2026',
-      type: 'Safety',
-      location: 'System Wide',
-      priority: 'Critical',
-      description: 'Mandatory speed limits enforced across all active tracking nodes due to heavy rainfall warnings.'
-    }
-  ]);
+  const [opportunities, setOpportunities] = useState(DEFAULT_NOTICES);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -50,6 +56,24 @@ export const Opportunity = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
+  const fetchNotices = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/notices/all`);
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setOpportunities(data);
+        }
+      }
+    } catch (err) {
+      console.log('Error fetching notices in Web Admin:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotices();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -59,8 +83,8 @@ export const Opportunity = () => {
     setEditingId(opp.id);
     setFormData({
       title: opp.title,
-      type: opp.type,
-      priority: opp.priority,
+      type: opp.type || 'Freight',
+      priority: opp.priority || 'Normal',
       location: opp.location === 'All Zones' ? '' : opp.location,
       description: opp.description
     });
@@ -88,35 +112,38 @@ export const Opportunity = () => {
 
     try {
       if (editingId) {
-        setOpportunities((prev) =>
-          prev.map((item) =>
-            item.id === editingId
-              ? {
-                  ...item,
-                  title: formData.title.trim(),
-                  type: formData.type,
-                  priority: formData.priority,
-                  location: formData.location.trim() || 'All Zones',
-                  description: formData.description.trim()
-                }
-              : item
-          )
-        );
+        // Call backend API to update
+        await fetch(`${API_BASE_URL}/notices/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: formData.title.trim(),
+            type: formData.type,
+            priority: formData.priority,
+            location: formData.location.trim() || 'All Zones',
+            description: formData.description.trim()
+          })
+        });
+
         setEditingId(null);
         setSuccessMessage('Notice successfully updated!');
       } else {
         const today = new Date();
         const formattedDate = `${today.getDate()} ${today.toLocaleString('en', { month: 'short' })} ${today.getFullYear()}`;
 
-        const newNotice = {
-          id: Date.now(),
-          title: formData.title.trim(),
-          type: formData.type,
-          priority: formData.priority,
-          location: formData.location.trim() || 'All Zones',
-          date: formattedDate,
-          description: formData.description.trim()
-        };
+        // Call backend API to create notice
+        await fetch(`${API_BASE_URL}/notices`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: formData.title.trim(),
+            type: formData.type,
+            priority: formData.priority,
+            location: formData.location.trim() || 'All Zones',
+            date: formattedDate,
+            description: formData.description.trim()
+          })
+        });
 
         // Broadcast notification to database to sync with mobile app
         await broadcastNotification(
@@ -125,9 +152,10 @@ export const Opportunity = () => {
           formData.type.toLowerCase()
         );
 
-        setOpportunities((prev) => [newNotice, ...prev]);
         setSuccessMessage('Notice successfully published & live broadcasted to Driver App!');
       }
+
+      await fetchNotices();
 
       setFormData({
         title: '',
@@ -146,11 +174,34 @@ export const Opportunity = () => {
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (editingId === id) {
       handleCancelEdit();
     }
+    try {
+      await fetch(`${API_BASE_URL}/notices/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.log('Error deleting notice:', err);
+    }
     setOpportunities((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleToggleVisibility = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/notices/${id}/toggle-visibility`, { method: 'PUT' });
+      if (response.ok) {
+        await fetchNotices();
+      } else {
+        setOpportunities((prev) =>
+          prev.map((item) => (item.id === id ? { ...item, isVisible: !item.isVisible } : item))
+        );
+      }
+    } catch (err) {
+      console.log('Error toggling visibility:', err);
+      setOpportunities((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, isVisible: !item.isVisible } : item))
+      );
+    }
   };
 
   return (
@@ -302,7 +353,7 @@ export const Opportunity = () => {
               </p>
             ) : (
               opportunities.map((opp) => (
-                <div key={opp.id} className="opportunity-card">
+                <div key={opp.id} className="opportunity-card" style={{ opacity: opp.isVisible === false ? 0.65 : 1 }}>
                   <div className="opportunity-card-header">
                     <div className="d-flex align-center gap-sm">
                       {opp.priority === 'Critical' ? (
@@ -312,7 +363,19 @@ export const Opportunity = () => {
                       )}
                       <h4 className="opportunity-title">{opp.title}</h4>
                     </div>
-                    <span className={`priority-badge ${opp.priority.toLowerCase()}`}>{opp.priority}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className={`priority-badge ${opp.priority ? opp.priority.toLowerCase() : 'normal'}`}>{opp.priority}</span>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: opp.isVisible !== false ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        color: opp.isVisible !== false ? '#10b981' : '#ef4444'
+                      }}>
+                        {opp.isVisible !== false ? 'Visible' : 'Hidden'}
+                      </span>
+                    </div>
                   </div>
 
                   <p className="opportunity-desc">{opp.description}</p>
@@ -322,12 +385,20 @@ export const Opportunity = () => {
                       <span className="meta-item"><Clock size={14} /> {opp.date}</span>
                       <span className="meta-item"><Map size={14} /> {opp.location}</span>
                     </div>
-                    <div className="action-buttons" style={{ display: 'flex', gap: '8px' }}>
+                    <div className="action-buttons" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button
+                        className="btn-icon primary"
+                        onClick={() => handleToggleVisibility(opp.id)}
+                        title={opp.isVisible !== false ? "Hide Notice from Startup Popup" : "Show Notice on Startup Popup"}
+                        style={{ color: opp.isVisible !== false ? 'var(--color-primary)' : 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+                      >
+                        {opp.isVisible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
+                      </button>
                       <button className="btn-icon primary" onClick={() => handleEdit(opp)} title="Edit Broadcast" style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>
                         <Edit2 size={16} />
                       </button>
-                      <button className="btn-icon danger" onClick={() => handleDelete(opp.id)} title="Delete Broadcast">
-                        <Trash2 size={16} />
+                      <button className="btn-icon danger" onClick={() => handleDelete(opp.id)} title="Delete Broadcast" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <Trash2 size={16} color="var(--color-danger)" />
                       </button>
                     </div>
                   </div>

@@ -147,3 +147,20 @@ model PlatformSettings {
   @@map("platform_settings")
 }
 
+model Notice {
+  id          String   @id @default(uuid()) @map("id")
+  customId    String   @unique @map("custom_id")
+  title       String   @db.VarChar(255) @map("title")
+  type        String   @default("Freight") @db.VarChar(50) @map("type")
+  priority    String   @default("Normal") @db.VarChar(50) @map("priority")
+  location    String   @default("All Zones") @db.VarChar(255) @map("location")
+  description String   @db.Text @map("description")
+  date        String   @db.VarChar(100) @map("date")
+  isVisible   Boolean  @default(true) @map("is_visible")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("notices")
+}
+
+

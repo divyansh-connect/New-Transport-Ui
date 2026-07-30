@@ -353,6 +353,13 @@ export default function MapScreen() {
 
           <TouchableOpacity
             style={[styles.settingsButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => router.push('/opportunity')}
+          >
+            <Icon name="bell" size={18} color={theme.primary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.settingsButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
             onPress={() => router.push('/menu')}
           >
             <Icon name="settings" size={18} color={theme.primary} />
