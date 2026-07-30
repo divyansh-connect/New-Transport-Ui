@@ -8,7 +8,7 @@ import { SPACING, RADIUS } from '../src/constants/theme';
 import { translations } from '../src/constants/translations';
 
 export default function OpportunityScreen() {
-  const { theme, opportunityNotice, language } = useTheme();
+  const { theme, opportunityNotice, language, markAllNoticesAsRead } = useTheme();
   const t = translations[language] || translations.English;
   const isArabic = language === 'Arabic';
   const isUrdu = language === 'Urdu';
@@ -34,9 +34,13 @@ export default function OpportunityScreen() {
         const data = await apiFetch('/notices');
         if (isMounted && Array.isArray(data) && data.length > 0) {
           setNotices(data);
+          markAllNoticesAsRead(data);
+        } else {
+          markAllNoticesAsRead(defaultNoticeList);
         }
       } catch (err) {
         console.log('Error loading notices on OpportunityScreen:', err);
+        markAllNoticesAsRead(defaultNoticeList);
       }
     };
     fetchNotices();

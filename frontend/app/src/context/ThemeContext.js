@@ -13,11 +13,19 @@ const defaultNotice = {
   description: 'Long-haul freight opportunities open for heavy truck drivers connecting northern ports to regional fulfillment hubs. High competitive payouts.',
 };
 
+const DEFAULT_FALLBACK_NOTICES = [
+  { id: 'notice-1', title: 'High-Demand Cargo Routes Available' },
+  { id: 'notice-2', title: 'Partner Workshop Expansion Notice' },
+  { id: 'notice-3', title: 'Monsoon Safety Guidelines' }
+];
+
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [language, setLanguage] = useState('English');
   const [registeredUser, setRegisteredUser] = useState(null);
   const [opportunityNotice, setOpportunityNotice] = useState(defaultNotice);
+  const [readNoticeIds, setReadNoticeIds] = useState([]);
+  const [unreadNoticeCount, setUnreadNoticeCount] = useState(0);
 
   const refreshUserProfile = async () => {
     try {
@@ -40,7 +48,7 @@ export const ThemeProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Load registered user profile & admin notice from storage
+    // Load registered user profile, admin notice, and read notice IDs from storage
     AsyncStorage.getItem('user_profile').then((data) => {
       if (data) {
         try {
@@ -61,7 +69,63 @@ export const ThemeProvider = ({ children }) => {
         }
       }
     });
+
+    AsyncStorage.getItem('read_notice_ids').then((data) => {
+      if (data) {
+        try {
+          setReadNoticeIds(JSON.parse(data));
+        } catch (e) {
+          console.log('Error parsing read notice IDs:', e);
+        }
+      }
+    });
   }, []);
+
+  const updateUnreadNotices = (activeNotices = []) => {
+    if (!Array.isArray(activeNotices) || activeNotices.length === 0) {
+      setUnreadNoticeCount(0);
+      return;
+    }
+    const unread = activeNotices.filter((n) => {
+      const idStr = String(n.id || n.customId || '');
+      return idStr && !readNoticeIds.includes(idStr);
+    });
+    setUnreadNoticeCount(unread.length);
+  };
+
+  // ── Real-time background sync for notices & red count badge ──
+  useEffect(() => {
+    const fetchLiveNotices = async () => {
+      try {
+        const { apiFetch } = require('../utils/api');
+        const notices = await apiFetch('/notices');
+        if (Array.isArray(notices) && notices.length > 0) {
+          updateUnreadNotices(notices);
+        } else {
+          updateUnreadNotices(DEFAULT_FALLBACK_NOTICES);
+        }
+      } catch (err) {
+        updateUnreadNotices(DEFAULT_FALLBACK_NOTICES);
+      }
+    };
+
+    fetchLiveNotices();
+    const interval = setInterval(fetchLiveNotices, 4000);
+    return () => clearInterval(interval);
+  }, [readNoticeIds]);
+
+  const markAllNoticesAsRead = async (noticesToMark = []) => {
+    try {
+      const targets = noticesToMark.length > 0 ? noticesToMark : DEFAULT_FALLBACK_NOTICES;
+      const newIds = targets.map((n) => String(n.id || n.customId || '')).filter(Boolean);
+      const updatedReadIds = Array.from(new Set([...readNoticeIds, ...newIds]));
+      setReadNoticeIds(updatedReadIds);
+      setUnreadNoticeCount(0);
+      await AsyncStorage.setItem('read_notice_ids', JSON.stringify(updatedReadIds));
+    } catch (e) {
+      console.log('Error marking notices as read:', e);
+    }
+  };
 
   const saveUserProfile = async (userData) => {
     setRegisteredUser(userData);
@@ -113,6 +177,10 @@ export const ThemeProvider = ({ children }) => {
         alertConfig,
         showAlert,
         hideAlert,
+        unreadNoticeCount,
+        readNoticeIds,
+        updateUnreadNotices,
+        markAllNoticesAsRead,
       }}
     >
       {children}
@@ -137,6 +205,10 @@ export const useTheme = () => {
       alertConfig: null,
       showAlert: () => {},
       hideAlert: () => {},
+      unreadNoticeCount: 0,
+      readNoticeIds: [],
+      updateUnreadNotices: () => {},
+      markAllNoticesAsRead: () => {},
     };
   }
   return context;
