@@ -17,8 +17,12 @@ import { NotFound } from './pages/NotFound/NotFound';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  if (!isAuthenticated) {
+  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+  const hasToken = Boolean(sessionStorage.getItem('admin_token'));
+  if (!isAuthenticated || !hasToken) {
+    sessionStorage.clear();
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('admin_token');
     return <Navigate to="/login" replace />;
   }
   return children;

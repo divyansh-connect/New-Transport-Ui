@@ -33,6 +33,8 @@ export const Login = () => {
       if (data.user?.role !== 'admin') {
         throw new Error('Access Denied: This Web Panel is exclusively for System Administrators. Driver & Workshop partners must use the Mobile App.');
       }
+      sessionStorage.setItem('isAuthenticated', 'true');
+      sessionStorage.setItem('admin_token', data.token);
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('admin_token', data.token);
       navigate('/');
@@ -148,6 +150,8 @@ export const Login = () => {
                       });
                       const data = await response.json();
                       if (response.ok && data.token) {
+                        sessionStorage.setItem('isAuthenticated', 'true');
+                        sessionStorage.setItem('admin_token', data.token);
                         localStorage.setItem('isAuthenticated', 'true');
                         localStorage.setItem('admin_token', data.token);
                         navigate('/');
