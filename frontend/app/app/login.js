@@ -25,7 +25,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // ── Login by Mobile Number ──────────────────────────────────────────────────
+  // ── Login by Mobile Number or Email ──────────────────────────────────────────
   // Authenticates with the backend and saves JWT session
   const handleLogin = async () => {
     if (!mobile.trim() || !password.trim()) {
@@ -94,7 +94,7 @@ export default function LoginScreen() {
             {isArabic ? 'نظام تتبع حياة المستخدم' : isUrdu ? 'صارف لائیو ٹریکنگ' : 'User Life Tracking'}
           </Text>
           <Text style={[styles.appTagline, { color: theme.textSecondary }]}>
-            {isArabic ? 'أدخل رقم جوالك أو معرف المستخدم للدخول' : isUrdu ? 'جاری رکھنے کے لیے اپنا موبائل نمبر یا صارف آئی ڈی درج کریں' : 'Enter your mobile number or User ID to continue'}
+            {isArabic ? 'أدخل رقم جوالك أو البريد الإلكتروني للدخول' : isUrdu ? 'جاری رکھنے کے لیے اپنا موبائل نمبر یا ای میل درج کریں' : 'Enter your mobile number or email to continue'}
           </Text>
         </View>
 
@@ -105,15 +105,15 @@ export default function LoginScreen() {
           </Text>
           <Text style={[styles.cardSubheading, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
             {isArabic
-              ? 'أدخل رقم جوالك المسجّل أو معرف المستخدم للوصول إلى حسابك'
+              ? 'أدخل رقم جوالك المسجّل أو البريد الإلكتروني للوصول إلى حسابك'
               : isUrdu
-                ? 'اپنے اکاؤنٹ تک رسائی کے لیے اپنا رجسٹرڈ موبائل نمبر یا صارف آئی ڈی درج کریں'
-                : 'Enter your registered mobile number or User ID to access your account'}
+                ? 'اپنے اکاؤنٹ تک رسائی کے لیے اپنا رجسٹرڈ موبائل نمبر یا ای میل درج کریں'
+                : 'Enter your registered mobile number or email to access your account'}
           </Text>
 
           <CustomInput
-            label={isArabic ? 'رقم الجوال أو معرف المستخدم' : isUrdu ? 'موبائل نمبر یا صارف آئی ڈی' : 'Mobile Number, Email or User ID'}
-            placeholder={isArabic ? 'أدخل رقم الجوال أو معرف المستخدم' : isUrdu ? 'موبائل نمبر یا صارف آئی ڈی درج کریں' : 'Enter mobile, email or User ID'}
+            label={isArabic ? 'رقم الجوال أو البريد الإلكتروني' : isUrdu ? 'موبائل نمبر یا ای میل' : 'Mobile Number or Email'}
+            placeholder={isArabic ? 'أدخل رقم الجوال أو البريد الإلكتروني' : isUrdu ? 'موبائل نمبر یا ای میل درج کریں' : 'Enter mobile number or email'}
             value={mobile}
             onChangeText={setMobile}
             keyboardType="default"
@@ -136,8 +136,6 @@ export default function LoginScreen() {
             onPress={handleLogin}
             style={{ marginTop: SPACING.md }}
           />
-
-
         </Card>
 
         {/* Divider */}

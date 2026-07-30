@@ -44,6 +44,7 @@ export default function MapScreen() {
   // Driver   = registeredUser exists AND status === 'Approved'
   const isApprovedDriver = registeredUser?.status === 'Approved';
   const isPending = registeredUser && !isApprovedDriver;
+  const currentUserRole = (registeredUser?.role || 'visitor').toLowerCase();
   // For Leaflet JS injection we still need a string role
   const userRole = isApprovedDriver ? 'Driver' : 'Visitor';
   
@@ -247,9 +248,9 @@ export default function MapScreen() {
         var wrenchSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
         var oilSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/></svg>';
 
-        // 3. Service Hubs & Active Drivers
-        var isDriver = '${userRole}' === 'Driver';
-        var showVisitorServices = ${platformSettings.showVisitorServices ? 'true' : 'false'};
+        // 3. Service Hubs & Active Drivers (ROLE-SPECIFIC FILTERING FOR APPROVED ACCOUNTS)
+        var isApprovedDriver = ${isApprovedDriver ? 'true' : 'false'};
+        var currentUserRole = '${currentUserRole}';
         var services = ${JSON.stringify(activePins.length > 0 ? activePins : serviceNodes)};
         var pinConfig = {
           workshop:  { icon: wrenchSvg, isPOI: true },
@@ -258,11 +259,16 @@ export default function MapScreen() {
         };
         var usedCoords = {};
         services.forEach(function(s) {
-          // Approved Drivers see everything. Visitors see drivers always.
-          // Visitors see POIs (workshop/oil) only if admin has enabled showVisitorServices.
-          var isPOI = (s.type === 'workshop' || s.type === 'oil');
-          var shouldShow = isDriver || s.type === 'location' || (isPOI && showVisitorServices);
-          if (!shouldShow) return;
+          // Strictly require approved user account to view pins
+          if (!isApprovedDriver) return;
+
+          // Workshop role sees ONLY workshop pins
+          if (currentUserRole === 'workshop' && s.type !== 'workshop') return;
+
+          // Oil changer role sees ONLY oil changer pins
+          if (currentUserRole === 'oil' && s.type !== 'oil') return;
+
+          // Driver role sees BOTH workshop and oil changer pins (plus driver location pins)
             var lat = parseFloat(s.lat);
             var lng = parseFloat(s.lng);
             if (isNaN(lat) || isNaN(lng)) return;
@@ -389,12 +395,14 @@ export default function MapScreen() {
       >
         <Text style={[styles.noticeText, { color: theme.textPrimary }]}>
           {isApprovedDriver
-            ? t.allServicesVisible
+            ? (currentUserRole === 'workshop'
+                ? (isArabic ? 'وضع الورشة — عرض ورش الصيانة فقط' : isUrdu ? 'ورکشاپ موڈ — صرف ورکشاپ پوائنٹس دکھائے جا رہے ہیں' : 'Workshop Mode — Viewing Workshop Hubs Only')
+                : currentUserRole === 'oil'
+                  ? (isArabic ? 'وضع تغيير الزيت — عرض محطات تغيير الزيت فقط' : isUrdu ? 'ائل چینج موڈ — صرف ائل چینج پوائنٹس دکھائے جا رہے ہیں' : 'Oil Change Mode — Viewing Oil Change Stations Only')
+                  : t.allServicesVisible)
             : isPending
-              ? (isArabic ? 'بانتظار موافقة المدير — اضغط للتحقق ➔' : isUrdu ? 'ایڈمن کی منظوری کا انتظار ہے — چیک کرنے کے لیے کلک کریں ➔' : 'Pending Admin Approval — Services locked (tap to check)')
-              : platformSettings.showVisitorServices
-                ? (isArabic ? 'وضع الزائر — عرض السائقين والخدمات المتاحة' : isUrdu ? 'وزیٹر موڈ — ڈرائیورز و سروسز دکھائی جا رہی ہیں' : 'Visitor Mode — Viewing Drivers & Service Hubs')
-                : (isArabic ? 'وضع الزائر — عرض السائقين المتاحين فقط' : isUrdu ? 'وزیٹر موڈ — صرف ڈرائیورز دکھائے جا رہے ہیں' : 'Visitor Mode — Viewing Active Drivers Only')}
+              ? (isArabic ? 'بانتظار موافقة المدير — الخريطة مقفلة (اضغط للتحقق) ➔' : isUrdu ? 'ایڈمن کی منظوری کا انتظار ہے — نقشہ مقفل ہے ➔' : 'Pending Admin Approval — Drivers & Services locked (tap to check)')
+              : (isArabic ? 'وضع الزائر — قم بتسجيل الدخول والموافقة لرؤية السائقين والخدمات' : isUrdu ? 'وزیٹر موڈ — ڈرائیورز و سروسز دیکھنے کے لیے لاگ ان کریں' : 'Visitor Mode — Login & Get Approved to View Drivers & Services')}
         </Text>
       </TouchableOpacity>
 
