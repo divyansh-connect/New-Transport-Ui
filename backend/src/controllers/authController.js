@@ -193,19 +193,17 @@ const login = async (req, res) => {
     const searchTerm = (identity || mobileNo || email || '').trim();
 
     if (!password || !searchTerm) {
-      return res.status(400).json({ error: 'Identity (Mobile Number, Email, or User ID) and Password are required.' });
+      return res.status(400).json({ error: 'Identity (Mobile Number or Email) and Password are required.' });
     }
 
     const cleanDigits = searchTerm.replace(/[^0-9]/g, '');
 
-    // Flexible search by email, mobileNo (exact or partial digits), or customId
+    // Search strictly by email or mobileNo (exact or partial digits)
     let user = await prisma.user.findFirst({
       where: {
         OR: [
           { email: searchTerm.toLowerCase() },
           { mobileNo: searchTerm },
-          { customId: searchTerm },
-          { customId: searchTerm.toUpperCase() },
           ...(cleanDigits && cleanDigits.length >= 4 ? [{ mobileNo: { contains: cleanDigits } }] : [])
         ]
       }
