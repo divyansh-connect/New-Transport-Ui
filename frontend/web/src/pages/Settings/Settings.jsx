@@ -64,7 +64,7 @@ export const Settings = () => {
     name: '',
     email: '',
     phone: '',
-    role: 'System Admin',
+    role: 'admin',
     password: ''
   });
 
@@ -361,39 +361,42 @@ export const Settings = () => {
     setIsSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`${API_BASE}/auth/register`, {
+      const isSuperAdmin = newAdminForm.role === 'admin';
+      
+      const endpoint = isSuperAdmin ? `${API_BASE}/auth/register` : `${API_BASE}/coworkers`;
+      const bodyPayload = isSuperAdmin ? {
+        name: newAdminForm.name,
+        email: newAdminForm.email,
+        mobileNo: newAdminForm.phone || `+9665${Math.floor(10000000 + Math.random() * 90000000)}`,
+        password: newAdminForm.password,
+        role: 'admin',
+        status: 'Approved',
+        paymentStatus: 'Paid',
+        subscriptionDuration: 'Lifetime',
+        amountPaid: '$0.00'
+      } : {
+        name: newAdminForm.name,
+        email: newAdminForm.email,
+        mobileNo: newAdminForm.phone || `+9665${Math.floor(10000000 + Math.random() * 90000000)}`,
+        password: newAdminForm.password
+      };
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({
-          name: newAdminForm.name,
-          email: newAdminForm.email,
-          mobileNo: newAdminForm.phone || `+9665${Math.floor(10000000 + Math.random() * 90000000)}`,
-          password: newAdminForm.password,
-          role: 'admin',
-          status: 'Approved',
-          paymentStatus: 'Paid',
-          subscriptionDuration: 'Lifetime',
-          amountPaid: '$0.00'
-        })
+        body: JSON.stringify(bodyPayload)
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create administrator.');
+        throw new Error(data.error || 'Failed to create account.');
       }
-      addNewAdmin({
-        id: data.user?.customId || `ADM-${Math.floor(10 + Math.random() * 90)}`,
-        realId: data.user?.id,
-        name: newAdminForm.name,
-        email: newAdminForm.email,
-        phone: newAdminForm.phone || data.user?.mobileNo || '—',
-        role: 'System Admin'
-      });
-      setNewAdminForm({ name: '', email: '', phone: '', role: 'System Admin', password: '' });
-      setSuccessBanner('✅ New administrator created in database! You can now log in with these credentials.');
+      setNewAdminForm({ name: '', email: '', phone: '', role: 'admin', password: '' });
+      setSuccessBanner(`✅ New ${isSuperAdmin ? 'administrator' : 'sub-admin staff member'} created in database successfully!`);
       fetchAdminsFromDb();
+      fetchCoworkersFromDb();
     } catch (err) {
       setSuccessBanner(`❌ ${err.message}`);
     } finally {
@@ -403,24 +406,30 @@ export const Settings = () => {
   };
 
   const handleDeleteAdminSubmit = async (adm) => {
+    const isCoworker = adm.role === 'coworker' || adm.role === 'Sub-Admin / Staff' || adm.isCoworker;
+    const confirmMsg = `Are you sure you want to permanently delete this ${isCoworker ? 'staff account' : 'administrator account'}?`;
+    if (!window.confirm(confirmMsg)) return;
+
     const targetId = adm.realId || adm.id;
     try {
       const token = localStorage.getItem('admin_token');
-      await fetch(`${API_BASE}/users/${targetId}`, {
+      const endpoint = isCoworker ? `${API_BASE}/coworkers/${targetId}` : `${API_BASE}/users/${targetId}`;
+      const res = await fetch(endpoint, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
       });
-      deleteAdmin(adm.id);
-      setDbAdmins(prev => prev.filter(a => a.id !== adm.id && a.realId !== adm.realId && a.id !== targetId));
-      setSuccessBanner('✅ Administrator access revoked successfully.');
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to delete user.');
+      }
+      setSuccessBanner('✅ Account permanently removed.');
       fetchAdminsFromDb();
+      fetchCoworkersFromDb();
     } catch (err) {
-      deleteAdmin(adm.id);
-      setDbAdmins(prev => prev.filter(a => a.id !== adm.id && a.realId !== adm.realId && a.id !== targetId));
-      setSuccessBanner('Administrator removed.');
+      setSuccessBanner(`❌ ${err.message}`);
     } finally {
       setTimeout(() => setSuccessBanner(''), 3000);
     }
@@ -493,7 +502,7 @@ export const Settings = () => {
             onClick={() => setActiveTab('admins')}
           >
             <UserPlus size={18} />
-            <span>Manage Admins</span>
+            <span>Manage Admins & Staff</span>
           </button>
           <button
             className={`settings-tab-btn ${activeTab === 'subscriptions' ? 'active' : ''}`}
@@ -501,13 +510,6 @@ export const Settings = () => {
           >
             <DollarSign size={18} />
             <span>Subscription Settings</span>
-          </button>
-          <button
-            className={`settings-tab-btn ${activeTab === 'coworkers' ? 'active' : ''}`}
-            onClick={() => setActiveTab('coworkers')}
-          >
-            <Users size={18} />
-            <span>Coworkers & Permissions</span>
           </button>
           <button
             className={`settings-tab-btn ${activeTab === 'config' ? 'active' : ''}`}
@@ -597,14 +599,15 @@ export const Settings = () => {
           )}
 
           {activeTab === 'admins' && (
-            <div className="settings-tab-content">
+            <div className="settings-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <Card
-                title="Manage Dashboard Administrators"
-                subtitle="Add, configure roles, or revoke access for platform system admins."
+                title="Manage Dashboard Admins & Sub-Admin Staff"
+                subtitle="Create and configure access control rules for platform administrators and sub-admin coworkers."
               >
                 <form onSubmit={handleAddAdminSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' }}>
                   <Input
                     label="Name"
+                    placeholder="Full name"
                     value={newAdminForm.name}
                     onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
                     required
@@ -612,24 +615,28 @@ export const Settings = () => {
                   <Input
                     label="Email"
                     type="email"
+                    placeholder="email@example.com"
                     value={newAdminForm.email}
                     onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
                     required
                   />
                   <Input
                     label="Phone"
+                    placeholder="Mobile number"
                     value={newAdminForm.phone}
                     onChange={(e) => setNewAdminForm({ ...newAdminForm, phone: e.target.value })}
+                    required
                   />
                   <Input
                     label="Password"
                     type="password"
+                    placeholder="Account password"
                     value={newAdminForm.password}
                     onChange={(e) => setNewAdminForm({ ...newAdminForm, password: e.target.value })}
                     required
                   />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Role</label>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Role Type</label>
                     <select
                       value={newAdminForm.role}
                       onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
@@ -642,18 +649,34 @@ export const Settings = () => {
                         height: '42px'
                       }}
                     >
-                      <option value="System Admin">System Admin</option>
+                      <option value="admin">Super Admin (Full Access)</option>
+                      <option value="coworker">Sub-Admin / Staff (Custom Access)</option>
                     </select>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
-                    <Button type="submit" variant="primary" leftIcon={Plus} isLoading={isSaving} disabled={isSaving} style={{ height: '42px', width: '100%', justifyContent: 'center' }}>Add Admin</Button>
+                    <Button type="submit" variant="primary" leftIcon={Plus} isLoading={isSaving} disabled={isSaving} style={{ height: '42px', width: '100%', justifyContent: 'center' }}>Create Account</Button>
                   </div>
                 </form>
 
                 {(() => {
-                  const displayAdminsList = dbAdmins.length > 0 ? dbAdmins : adminsList;
+                  const displayAdminsList = [
+                    ...dbAdmins.map(a => ({ ...a, isCoworker: false })),
+                    ...dbCoworkers.map(c => ({
+                      id: c.customId || c.id,
+                      realId: c.id,
+                      name: c.name,
+                      email: c.email || '—',
+                      phone: c.mobileNo || '—',
+                      role: 'Sub-Admin / Staff',
+                      isCoworker: true
+                    }))
+                  ];
+
                   return (
-                    <div style={{ overflowX: 'auto', maxHeight: '250px', overflowY: 'auto', marginTop: '16px' }}>
+                    <div style={{ overflowX: 'auto', maxHeight: '350px', overflowY: 'auto', marginTop: '16px' }}>
+                      <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
+                        💡 <strong>Tip:</strong> Click on any <em>Sub-Admin / Staff</em> row to configure their module permission matrix below.
+                      </p>
                       <table className="desktop-view-only" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                           <tr style={{ borderBottom: '2px solid var(--color-card-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
@@ -661,67 +684,197 @@ export const Settings = () => {
                             <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Name</th>
                             <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Email</th>
                             <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Phone</th>
-                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Role</th>
+                            <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Role Type</th>
                             <th style={{ padding: '12px', position: 'sticky', top: 0, backgroundColor: 'var(--color-card-bg)', zIndex: 1 }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {displayAdminsList.map((adm) => (
-                            <tr key={adm.id} style={{ borderBottom: '1px solid var(--color-card-border)', fontSize: '14px', color: 'var(--color-text-main)' }}>
-                              <td style={{ padding: '12px' }}><code>{adm.id}</code></td>
-                              <td style={{ padding: '12px', fontWeight: '600' }}>{adm.name}</td>
-                              <td style={{ padding: '12px' }}>{adm.email}</td>
-                              <td style={{ padding: '12px' }}>{adm.phone || '—'}</td>
-                              <td style={{ padding: '12px' }}><Badge variant="primary">{adm.role}</Badge></td>
-                              <td style={{ padding: '12px' }}>
-                                <button
-                                  onClick={() => handleDeleteAdminSubmit(adm)}
-                                  style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
-                                  title="Revoke Admin Access"
-                                >
-                                  <Trash2 size={18} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                          {displayAdminsList.map((adm) => {
+                            const isSelected = adm.isCoworker && selectedCoworkerId === adm.realId;
+                            return (
+                              <tr 
+                                key={adm.id} 
+                                onClick={() => {
+                                  if (adm.isCoworker) {
+                                    handleSelectCoworker(adm.realId);
+                                  } else {
+                                    setSelectedCoworkerId('');
+                                  }
+                                }}
+                                style={{ 
+                                  borderBottom: '1px solid var(--color-card-border)', 
+                                  fontSize: '14px', 
+                                  color: 'var(--color-text-main)',
+                                  cursor: adm.isCoworker ? 'pointer' : 'default',
+                                  backgroundColor: isSelected ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+                                  transition: 'background-color 0.15s ease'
+                                }}
+                              >
+                                <td style={{ padding: '12px' }}><code>{adm.id}</code></td>
+                                <td style={{ padding: '12px', fontWeight: '600' }}>{adm.name}</td>
+                                <td style={{ padding: '12px' }}>{adm.email}</td>
+                                <td style={{ padding: '12px' }}>{adm.phone || '—'}</td>
+                                <td style={{ padding: '12px' }}>
+                                  <Badge variant={adm.isCoworker ? 'secondary' : 'primary'}>{adm.role}</Badge>
+                                </td>
+                                <td style={{ padding: '12px' }}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteAdminSubmit(adm);
+                                    }}
+                                    style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                                    title="Revoke Access"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
 
-                      <div className="mobile-view-only">
-                        {displayAdminsList.map((adm) => (
-                          <div key={adm.id} style={{
-                            backgroundColor: 'var(--color-surface)',
-                            border: '1px solid var(--color-card-border)',
-                            borderRadius: 'var(--radius-md)',
-                            padding: '12px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px'
-                          }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontWeight: '700', color: 'var(--color-text-main)' }}>{adm.name}</span>
-                              <button
-                                onClick={() => handleDeleteAdminSubmit(adm)}
-                                style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                                title="Revoke Admin Access"
-                              >
-                                <Trash2 size={16} />
-                              </button>
+                      <div className="mobile-view-only" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {displayAdminsList.map((adm) => {
+                          const isSelected = adm.isCoworker && selectedCoworkerId === adm.realId;
+                          return (
+                            <div 
+                              key={adm.id} 
+                              onClick={() => {
+                                  if (adm.isCoworker) {
+                                    handleSelectCoworker(adm.realId);
+                                  } else {
+                                    setSelectedCoworkerId('');
+                                  }
+                              }}
+                              style={{
+                                backgroundColor: isSelected ? 'rgba(79, 70, 229, 0.08)' : 'var(--color-surface)',
+                                border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-card-border)',
+                                borderRadius: 'var(--radius-md)',
+                                padding: '12px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '8px',
+                                cursor: adm.isCoworker ? 'pointer' : 'default'
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: '700', color: 'var(--color-text-main)' }}>{adm.name}</span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteAdminSubmit(adm);
+                                  }}
+                                  style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                                  title="Revoke Access"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                                <span style={{ color: 'var(--color-text-muted)' }}>ID: <code>{adm.id}</code></span>
+                                <Badge variant={adm.isCoworker ? 'secondary' : 'primary'}>{adm.role}</Badge>
+                              </div>
+                              <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                                {adm.email}
+                              </div>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                              <span style={{ color: 'var(--color-text-muted)' }}>ID: <code>{adm.id}</code></span>
-                              <Badge variant="primary">{adm.role}</Badge>
-                            </div>
-                            <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-                              {adm.email}
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   );
                 })()}
               </Card>
+
+              {/* Granular Module Permission Matrix (Unified Display) */}
+              {selectedCoworkerId ? (
+                <Card
+                  title={`Module Permission Matrix — ${dbCoworkers.find(c => c.id === selectedCoworkerId)?.name || 'Selected Sub-Admin'}`}
+                  subtitle="Configure granular module access (Can View, Can Add, Can Edit, Can Delete) for this staff member."
+                >
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
+                          <th style={{ padding: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Module Name</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can View</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Add</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Edit</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Delete</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {MODULES_LIST.map((mod) => {
+                          const perm = coworkerPerms.find(p => p.moduleName === mod) || {};
+                          return (
+                            <tr key={mod} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                              <td style={{ padding: '12px', fontSize: '14px', fontWeight: '600', color: 'var(--color-text-main)' }}>{mod}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canView)}
+                                  onChange={() => handleTogglePerm(mod, 'canView')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canAdd)}
+                                  onChange={() => handleTogglePerm(mod, 'canAdd')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canEdit)}
+                                  onChange={() => handleTogglePerm(mod, 'canEdit')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canDelete)}
+                                  onChange={() => handleTogglePerm(mod, 'canDelete')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="primary"
+                      leftIcon={Save}
+                      isLoading={isSaving}
+                      disabled={isSaving}
+                      onClick={handleSaveCoworkerPerms}
+                    >
+                      Save Module Permission Matrix
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <div style={{
+                  padding: '24px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px dashed var(--color-card-border)',
+                  textAlign: 'center',
+                  color: 'var(--color-text-muted)',
+                  fontSize: '14px',
+                  backgroundColor: 'var(--color-bg-card)'
+                }}>
+                  ℹ️ Click on any <strong>Sub-Admin / Staff</strong> member in the table above to configure their custom module permission matrix.
+                </div>
+              )}
             </div>
           )}
 
@@ -1008,173 +1161,7 @@ export const Settings = () => {
             </div>
           )}
 
-          {activeTab === 'coworkers' && (
-            <div className="settings-tab-content">
-              {/* Create Coworker Card */}
-              <Card
-                title="Create Coworker / Sub-Admin Account"
-                subtitle="Add new staff members to manage specific modules in your Transport & Logistics Platform."
-              >
-                <form onSubmit={handleAddCoworkerSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', alignItems: 'end' }}>
-                  <Input
-                    label="Full Name *"
-                    placeholder="e.g. John Staff"
-                    value={newCoworkerForm.name}
-                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, name: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Email Address *"
-                    type="email"
-                    placeholder="staff@userlife.com"
-                    value={newCoworkerForm.email}
-                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, email: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Mobile Number *"
-                    placeholder="+966 50 123 4567"
-                    value={newCoworkerForm.phone}
-                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, phone: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Password *"
-                    type="password"
-                    placeholder="Create staff password"
-                    value={newCoworkerForm.password}
-                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, password: e.target.value })}
-                    required
-                  />
-                  <div style={{ paddingBottom: '2px' }}>
-                    <Button variant="primary" type="submit" leftIcon={UserPlus} isLoading={isSaving} disabled={isSaving}>
-                      Add Coworker Staff
-                    </Button>
-                  </div>
-                </form>
-              </Card>
 
-              {/* Coworkers Staff List */}
-              <Card
-                title="Coworker Staff Roster"
-                subtitle="List of all sub-admin staff accounts registered in database."
-              >
-                {dbCoworkers.length === 0 ? (
-                  <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>No coworker staff accounts found. Create one above!</p>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' }}>
-                    {dbCoworkers.map((cw) => {
-                      const isSelected = cw.id === selectedCoworkerId;
-                      return (
-                        <div
-                          key={cw.id}
-                          onClick={() => handleSelectCoworker(cw.id)}
-                          style={{
-                            padding: '14px 16px',
-                            borderRadius: 'var(--radius-md)',
-                            border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
-                            backgroundColor: isSelected ? 'rgba(79, 70, 229, 0.08)' : 'var(--color-bg-card)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <div>
-                            <strong style={{ display: 'block', fontSize: '14px', color: 'var(--color-text-main)' }}>{cw.name} {cw.lastName || ''}</strong>
-                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>ID: {cw.customId} | {cw.mobileNo}</span>
-                          </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDeleteCoworkerSubmit(cw.id); }}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                            title="Delete Coworker"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
-
-              {/* Granular Module Permission Matrix */}
-              {selectedCoworkerId && (
-                <Card
-                  title={`Module Permission Matrix — ${dbCoworkers.find(c => c.id === selectedCoworkerId)?.name || 'Selected Coworker'}`}
-                  subtitle="Configure granular module access (Can View, Can Add, Can Edit, Can Delete) for this staff member."
-                >
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px' }}>
-                      <thead>
-                        <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
-                          <th style={{ padding: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Module Name</th>
-                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can View</th>
-                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Add</th>
-                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Edit</th>
-                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Delete</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {MODULES_LIST.map((mod) => {
-                          const perm = coworkerPerms.find(p => p.moduleName === mod) || {};
-                          return (
-                            <tr key={mod} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                              <td style={{ padding: '12px', fontSize: '14px', fontWeight: '600', color: 'var(--color-text-main)' }}>{mod}</td>
-                              <td style={{ padding: '12px', textAlign: 'center' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(perm.canView)}
-                                  onChange={() => handleTogglePerm(mod, 'canView')}
-                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                                />
-                              </td>
-                              <td style={{ padding: '12px', textAlign: 'center' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(perm.canAdd)}
-                                  onChange={() => handleTogglePerm(mod, 'canAdd')}
-                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                                />
-                              </td>
-                              <td style={{ padding: '12px', textAlign: 'center' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(perm.canEdit)}
-                                  onChange={() => handleTogglePerm(mod, 'canEdit')}
-                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                                />
-                              </td>
-                              <td style={{ padding: '12px', textAlign: 'center' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(perm.canDelete)}
-                                  onChange={() => handleTogglePerm(mod, 'canDelete')}
-                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button
-                      variant="primary"
-                      leftIcon={Save}
-                      isLoading={isSaving}
-                      disabled={isSaving}
-                      onClick={handleSaveCoworkerPerms}
-                    >
-                      Save Module Permission Matrix
-                    </Button>
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>
