@@ -38,8 +38,16 @@ const {
   toggleNoticeVisibility,
   deleteNotice
 } = require('../controllers/noticeController');
+const {
+  getCoworkers,
+  createCoworker,
+  updateCoworker,
+  deleteCoworker,
+  getMyPermissions
+} = require('../controllers/coworkerController');
 
 const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
+const { checkPermission } = require('../middlewares/permission');
 
 // ── Auth Endpoints ───────────────────────────────────────────────────────────
 router.post('/auth/register', register);
@@ -51,43 +59,48 @@ router.get('/users/pins', getActivePins);
 // ── Opportunity & Broadcast Notices ──────────────────────────────────────────
 router.get('/notices', getActiveNotices);
 router.get('/notices/all', getAllNotices);
-router.post('/notices', createNotice);
-router.put('/notices/:id/toggle-visibility', toggleNoticeVisibility);
-router.put('/notices/:id', updateNotice);
-router.delete('/notices/:id', deleteNotice);
+router.post('/notices', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'add'), createNotice);
+router.put('/notices/:id/toggle-visibility', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'edit'), toggleNoticeVisibility);
+router.put('/notices/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'edit'), updateNotice);
+router.delete('/notices/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'delete'), deleteNotice);
 
-// ── Support Inquiries / Tickets (Public submit, Admin view & manage) ─────────
+// ── Support Inquiries / Tickets ───────────────────────────────────────────────
 router.get('/inquiries', getAllTickets);
 router.post('/inquiries', createTicket);
-router.put('/inquiries/:id', updateTicketStatus);
+router.put('/inquiries/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Inquiries', 'edit'), updateTicketStatus);
 
 // ── User Profile & GPS Telemetry Sync - Authorized ───────────────────────────
 router.get('/users/profile', authenticateJWT, getProfile);
 router.put('/users/profile', authenticateJWT, updateProfile);
 router.put('/users/coordinates', authenticateJWT, updateCoordinates);
 
-// ── Admin Operations (User Management) - Admins Only ──────────────────────────
-router.get('/users', authenticateJWT, authorizeRoles('admin'), getAllUsers);
-// Specific sub-paths MUST come before generic /:id to avoid Express route conflict
-router.put('/users/:id/approve', authenticateJWT, authorizeRoles('admin'), approveUser);
-router.put('/users/:id/reject', authenticateJWT, authorizeRoles('admin'), rejectUser);
-// Generic user update (must be AFTER specific sub-paths)
-router.put('/users/:id', authenticateJWT, authorizeRoles('admin'), updateUserProfileAdmin);
-router.delete('/users/:id', authenticateJWT, authorizeRoles('admin'), deleteUser);
+// ── Admin & Staff Operations (User Management) ─────────────────────────────────
+router.get('/users', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Users', 'view'), getAllUsers);
+router.put('/users/:id/approve', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Users', 'edit'), approveUser);
+router.put('/users/:id/reject', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Users', 'edit'), rejectUser);
+router.put('/users/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Users', 'edit'), updateUserProfileAdmin);
+router.delete('/users/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Users', 'delete'), deleteUser);
 
-// ── Admin Operations (Payments Auditing) - Admins Only ────────────────────────
-router.get('/payments', authenticateJWT, authorizeRoles('admin'), getAllPayments);
-router.post('/payments', authenticateJWT, authorizeRoles('admin'), createPaymentRecord);
-router.delete('/payments/:id', authenticateJWT, authorizeRoles('admin'), deletePaymentRecord);
+// ── Admin & Staff Operations (Payments Auditing) ──────────────────────────────
+router.get('/payments', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Payments', 'view'), getAllPayments);
+router.post('/payments', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Payments', 'add'), createPaymentRecord);
+router.delete('/payments/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Payments', 'delete'), deletePaymentRecord);
 
-// ── System Notifications (Admins manage all, users manage their own) ──────────
+// ── System Notifications ──────────────────────────────────────────────────────
 router.get('/notifications', authenticateJWT, getAllNotifications);
-router.post('/notifications', authenticateJWT, authorizeRoles('admin'), createNotification);
+router.post('/notifications', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notifications', 'add'), createNotification);
 router.put('/notifications/:id/read', authenticateJWT, markAsRead);
 router.delete('/notifications', authenticateJWT, clearAll);
 
-// ── Platform Settings (public GET, admin PUT) ────────────────────────────────
+// ── Platform Settings ─────────────────────────────────────────────────────────
 router.get('/settings', getSettings);
-router.put('/settings', authenticateJWT, authorizeRoles('admin'), updateSettings);
+router.put('/settings', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Settings', 'edit'), updateSettings);
+
+// ── Coworkers & Granular Permissions Management ───────────────────────────────
+router.get('/coworkers', authenticateJWT, authorizeRoles('admin', 'coworker'), getCoworkers);
+router.post('/coworkers', authenticateJWT, authorizeRoles('admin'), createCoworker);
+router.put('/coworkers/:id', authenticateJWT, authorizeRoles('admin'), updateCoworker);
+router.delete('/coworkers/:id', authenticateJWT, authorizeRoles('admin'), deleteCoworker);
+router.get('/permissions/me', authenticateJWT, getMyPermissions);
 
 module.exports = router;

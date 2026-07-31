@@ -32,6 +32,7 @@
       ]
     ],
     "extra": {
+      "EXPO_PUBLIC_API_BASE_URL": "https://user-logistic-production.up.railway.app/api",
       "router": {},
       "eas": {
         "projectId": "d96b6da1-36f0-425d-910e-81017d3532a0"

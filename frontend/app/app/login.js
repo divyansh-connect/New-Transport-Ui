@@ -56,7 +56,7 @@ export default function LoginScreen() {
       }
     } catch (e) {
       showAlert(
-        isArabic ? 'لم يُعثر على حساب' : isUrdu ? 'اکاؤنٹ نہیں ملا' : 'Account Not Found',
+        isArabic ? 'فشل تسجيل الدخول' : isUrdu ? 'لاگ ان ناممکن' : 'Login Error',
         e.message || 'Verification failed. Please register or check connection.'
       );
     } finally {

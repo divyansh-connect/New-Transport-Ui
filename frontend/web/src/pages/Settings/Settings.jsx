@@ -22,7 +22,10 @@ import {
   DollarSign,
   Layers,
   Settings2,
-  UserPlus
+  UserPlus,
+  Users,
+  CheckSquare,
+  Key
 } from 'lucide-react';
 import './Settings.css';
 import { API_BASE_URL } from '../../config';
@@ -117,6 +120,165 @@ export const Settings = () => {
       }
     } catch (err) {
       console.warn('Could not fetch admins from DB:', err);
+    }
+  };
+
+  // State for Coworkers / Staff Granular Permissions
+  const [dbCoworkers, setDbCoworkers] = useState([]);
+  const [selectedCoworkerId, setSelectedCoworkerId] = useState('');
+  const [coworkerPerms, setCoworkerPerms] = useState([]);
+  const [newCoworkerForm, setNewCoworkerForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: ''
+  });
+
+  const MODULES_LIST = [
+    'Dashboard',
+    'Users',
+    'Payments',
+    'Notices',
+    'Inquiries',
+    'Settings',
+    'Notifications'
+  ];
+
+  const fetchCoworkersFromDb = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE}/coworkers`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setDbCoworkers(data);
+          if (data.length > 0) {
+            setSelectedCoworkerId(prev => {
+              const match = data.find(c => c.id === prev);
+              const target = match || data[0];
+              setCoworkerPerms(target.permissions || []);
+              return target.id;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch coworkers from DB:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdminsFromDb();
+    fetchCoworkersFromDb();
+  }, []);
+
+  const handleSelectCoworker = (cwId) => {
+    setSelectedCoworkerId(cwId);
+    const target = dbCoworkers.find(c => c.id === cwId);
+    if (target) {
+      setCoworkerPerms(target.permissions || []);
+    }
+  };
+
+  const handleTogglePerm = (moduleName, actionField) => {
+    setCoworkerPerms(prev => {
+      const existing = prev.find(p => p.moduleName === moduleName);
+      if (existing) {
+        return prev.map(p => p.moduleName === moduleName ? { ...p, [actionField]: !p[actionField] } : p);
+      } else {
+        return [
+          ...prev,
+          {
+            moduleName,
+            canView: actionField === 'canView',
+            canAdd: actionField === 'canAdd',
+            canEdit: actionField === 'canEdit',
+            canDelete: actionField === 'canDelete'
+          }
+        ];
+      }
+    });
+  };
+
+  const handleSaveCoworkerPerms = async () => {
+    if (!selectedCoworkerId) return;
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE}/coworkers/${selectedCoworkerId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ permissions: coworkerPerms })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update permissions.');
+      setSuccessBanner('✅ Coworker module permissions saved to database!');
+      fetchCoworkersFromDb();
+    } catch (err) {
+      setSuccessBanner(`❌ ${err.message}`);
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSuccessBanner(''), 4000);
+    }
+  };
+
+  const handleAddCoworkerSubmit = async (e) => {
+    e.preventDefault();
+    if (!newCoworkerForm.name || !newCoworkerForm.phone || !newCoworkerForm.password) return;
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE}/coworkers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          name: newCoworkerForm.name,
+          email: newCoworkerForm.email,
+          mobileNo: newCoworkerForm.phone,
+          password: newCoworkerForm.password
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create coworker staff.');
+      setNewCoworkerForm({ name: '', email: '', phone: '', password: '' });
+      setSuccessBanner('✅ New Coworker / Sub-Admin account created successfully!');
+      fetchCoworkersFromDb();
+    } catch (err) {
+      setSuccessBanner(`❌ ${err.message}`);
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSuccessBanner(''), 4000);
+    }
+  };
+
+  const handleDeleteCoworkerSubmit = async (cwId) => {
+    if (!window.confirm('Are you sure you want to delete this coworker staff account?')) return;
+    try {
+      const token = localStorage.getItem('admin_token');
+      await fetch(`${API_BASE}/coworkers/${cwId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      setSuccessBanner('Coworker staff account permanently removed.');
+      fetchCoworkersFromDb();
+    } catch (err) {
+      setSuccessBanner(`❌ ${err.message}`);
+    } finally {
+      setTimeout(() => setSuccessBanner(''), 3000);
     }
   };
 
@@ -339,6 +501,13 @@ export const Settings = () => {
           >
             <DollarSign size={18} />
             <span>Subscription Settings</span>
+          </button>
+          <button
+            className={`settings-tab-btn ${activeTab === 'coworkers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('coworkers')}
+          >
+            <Users size={18} />
+            <span>Coworkers & Permissions</span>
           </button>
           <button
             className={`settings-tab-btn ${activeTab === 'config' ? 'active' : ''}`}
@@ -836,6 +1005,174 @@ export const Settings = () => {
                   <Button variant="primary" leftIcon={Save} isLoading={isSaving} disabled={isSaving} onClick={handleSaveAccessConfig}>Save Access Config</Button>
                 </div>
               </Card>
+            </div>
+          )}
+
+          {activeTab === 'coworkers' && (
+            <div className="settings-tab-content">
+              {/* Create Coworker Card */}
+              <Card
+                title="Create Coworker / Sub-Admin Account"
+                subtitle="Add new staff members to manage specific modules in your Transport & Logistics Platform."
+              >
+                <form onSubmit={handleAddCoworkerSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', alignItems: 'end' }}>
+                  <Input
+                    label="Full Name *"
+                    placeholder="e.g. John Staff"
+                    value={newCoworkerForm.name}
+                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, name: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Email Address *"
+                    type="email"
+                    placeholder="staff@userlife.com"
+                    value={newCoworkerForm.email}
+                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, email: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Mobile Number *"
+                    placeholder="+966 50 123 4567"
+                    value={newCoworkerForm.phone}
+                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, phone: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Password *"
+                    type="password"
+                    placeholder="Create staff password"
+                    value={newCoworkerForm.password}
+                    onChange={(e) => setNewCoworkerForm({ ...newCoworkerForm, password: e.target.value })}
+                    required
+                  />
+                  <div style={{ paddingBottom: '2px' }}>
+                    <Button variant="primary" type="submit" leftIcon={UserPlus} isLoading={isSaving} disabled={isSaving}>
+                      Add Coworker Staff
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+
+              {/* Coworkers Staff List */}
+              <Card
+                title="Coworker Staff Roster"
+                subtitle="List of all sub-admin staff accounts registered in database."
+              >
+                {dbCoworkers.length === 0 ? (
+                  <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>No coworker staff accounts found. Create one above!</p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' }}>
+                    {dbCoworkers.map((cw) => {
+                      const isSelected = cw.id === selectedCoworkerId;
+                      return (
+                        <div
+                          key={cw.id}
+                          onClick={() => handleSelectCoworker(cw.id)}
+                          style={{
+                            padding: '14px 16px',
+                            borderRadius: 'var(--radius-md)',
+                            border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                            backgroundColor: isSelected ? 'rgba(79, 70, 229, 0.08)' : 'var(--color-bg-card)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '14px', color: 'var(--color-text-main)' }}>{cw.name} {cw.lastName || ''}</strong>
+                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>ID: {cw.customId} | {cw.mobileNo}</span>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteCoworkerSubmit(cw.id); }}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                            title="Delete Coworker"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+
+              {/* Granular Module Permission Matrix */}
+              {selectedCoworkerId && (
+                <Card
+                  title={`Module Permission Matrix — ${dbCoworkers.find(c => c.id === selectedCoworkerId)?.name || 'Selected Coworker'}`}
+                  subtitle="Configure granular module access (Can View, Can Add, Can Edit, Can Delete) for this staff member."
+                >
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
+                          <th style={{ padding: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Module Name</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can View</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Add</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Edit</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>Can Delete</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {MODULES_LIST.map((mod) => {
+                          const perm = coworkerPerms.find(p => p.moduleName === mod) || {};
+                          return (
+                            <tr key={mod} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                              <td style={{ padding: '12px', fontSize: '14px', fontWeight: '600', color: 'var(--color-text-main)' }}>{mod}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canView)}
+                                  onChange={() => handleTogglePerm(mod, 'canView')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canAdd)}
+                                  onChange={() => handleTogglePerm(mod, 'canAdd')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canEdit)}
+                                  onChange={() => handleTogglePerm(mod, 'canEdit')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(perm.canDelete)}
+                                  onChange={() => handleTogglePerm(mod, 'canDelete')}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="primary"
+                      leftIcon={Save}
+                      isLoading={isSaving}
+                      disabled={isSaving}
+                      onClick={handleSaveCoworkerPerms}
+                    >
+                      Save Module Permission Matrix
+                    </Button>
+                  </div>
+                </Card>
+              )}
             </div>
           )}
         </div>

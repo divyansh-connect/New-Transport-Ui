@@ -13,6 +13,7 @@ enum Role {
   oil
   visitor
   admin
+  coworker
 }
 
 enum UserStatus {
@@ -69,11 +70,30 @@ model User {
   // Relationships
   payments      Payment[]
   notifications Notification[]
+  permissions   Permission[]
 
   @@index([role])
   @@index([status])
   @@index([mobileNo])
   @@map("users")
+}
+
+model Permission {
+  id         String   @id @default(uuid()) @map("id")
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleName String   @db.VarChar(100) @map("module_name")
+  canView    Boolean  @default(false) @map("can_view")
+  canAdd     Boolean  @default(false) @map("can_add")
+  canEdit    Boolean  @default(false) @map("can_edit")
+  canDelete  Boolean  @default(false) @map("can_delete")
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, moduleName], name: "userId_moduleName")
+  @@index([userId])
+  @@map("permissions")
 }
 
 model Payment {

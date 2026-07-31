@@ -1,9 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// This reads the active backend URL directly from your app's .env file:
-const PC_WIFI_IP = '192.168.1.8';
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || `http://${PC_WIFI_IP}:5000/api`;
+// Reads active backend URL from .env, fallback to live Railway production backend:
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://user-logistic-production.up.railway.app/api';
 
 /**
  * Custom fetch wrapper to handle secure API calls to the backend

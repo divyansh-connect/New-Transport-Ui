@@ -95,6 +95,7 @@ const register = async (req, res) => {
       else if (lower.includes('oil')) userRole = 'oil';
       else if (lower.includes('visitor')) userRole = 'visitor';
       else if (lower.includes('admin')) userRole = 'admin';
+      else if (lower.includes('coworker') || lower.includes('staff')) userRole = 'coworker';
       else {
         return res.status(400).json({ error: 'Invalid user role specified.' });
       }
@@ -251,8 +252,8 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials. Password verification failed.' });
     }
 
-    // Enforce Approval Gating for non-admin accounts
-    if (user.role !== 'admin') {
+    // Enforce Approval Gating for non-admin/coworker accounts
+    if (user.role !== 'admin' && user.role !== 'coworker') {
       if (user.status === 'Pending') {
         return res.status(403).json({
           error: 'Your account is pending admin approval. Please wait for an administrator to review and approve your registration.'
