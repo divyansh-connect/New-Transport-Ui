@@ -39,6 +39,18 @@ export const Login = () => {
       sessionStorage.setItem('admin_token', data.token);
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('admin_token', data.token);
+      if (data.user) {
+        const profileObj = {
+          name: data.user.name || 'Admin User',
+          email: data.user.email || '',
+          role: data.user.role === 'admin' ? 'System Administrator' : 'Sub-Admin / Staff',
+          rawRole: data.user.role,
+          phone: data.user.mobileNo || '—',
+          permissions: data.user.permissions || []
+        };
+        sessionStorage.setItem('admin_user_profile', JSON.stringify(profileObj));
+        localStorage.setItem('admin_user_profile', JSON.stringify(profileObj));
+      }
       navigate('/');
     } catch (err) {
       setErrorMsg(err.message);

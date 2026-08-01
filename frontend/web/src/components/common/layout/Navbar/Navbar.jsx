@@ -21,7 +21,7 @@ import { API_BASE_URL } from '../../../../config';
 import './Navbar.css';
 
 export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
-  const { theme, toggleTheme, profile } = useTheme();
+  const { theme, toggleTheme, profile, isProfileLoading } = useTheme();
   const { notifications, markNotificationAsRead } = useDrivers();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -315,8 +315,8 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
               <span className="status-dot" />
             </div>
             <div className="user-details">
-              <span className="user-name">{profile?.name || 'Admin User'}</span>
-              <span className="user-role">{profile?.role || 'System Administrator'}</span>
+              <span className="user-name">{profile?.name || (isProfileLoading ? 'Loading...' : 'User')}</span>
+              <span className="user-role">{profile?.role || (isProfileLoading ? '...' : '')}</span>
             </div>
             <ChevronDown size={14} className="dropdown-arrow" />
           </div>
@@ -324,8 +324,8 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
           {showUserMenu && (
             <div className="navbar-dropdown user-menu-dropdown">
               <div className="user-menu-header">
-                <strong>{profile?.name || 'Admin User'}</strong>
-                <p>{profile?.email || 'admin@userlife.com'}</p>
+                <strong>{profile?.name || 'User'}</strong>
+                <p>{profile?.email || ''}</p>
               </div>
               <div className="user-menu-items">
                 <button className="user-menu-item" onClick={() => { setShowUserMenu(false); navigate('/settings'); }} style={{ background: 'transparent', border: 'none', width: '100%', textAlign: 'left', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-main)' }}>

@@ -29,8 +29,27 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const [userRole, setUserRole] = useState('admin');
-  const [permissions, setPermissions] = useState([]);
+  const getCachedProfile = () => {
+    try {
+      const cached = sessionStorage.getItem('admin_user_profile') || localStorage.getItem('admin_user_profile');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  };
+
+  const cachedUser = getCachedProfile();
+
+  const [userRole, setUserRole] = useState(() => {
+    if (cachedUser?.rawRole) return cachedUser.rawRole;
+    if (cachedUser?.role === 'System Administrator') return 'admin';
+    return cachedUser ? 'coworker' : null;
+  });
+
+  const [permissions, setPermissions] = useState(() => {
+    return cachedUser?.permissions || [];
+  });
+
+  const [isLoadingPerms, setIsLoadingPerms] = useState(!cachedUser);
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -68,7 +87,10 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
     const fetchPerms = async () => {
       try {
         const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
-        if (!token) return;
+        if (!token) {
+          setIsLoadingPerms(false);
+          return;
+        }
         const res = await fetch(`${API_BASE_URL}/permissions/me`, {
           headers: {
             'Content-Type': 'application/json',
@@ -79,15 +101,18 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
           const data = await res.json();
           setUserRole(data.role);
           setPermissions(data.permissions || []);
+          setIsLoadingPerms(false);
         }
       } catch (err) {
         console.warn('Failed to fetch user permissions:', err);
+        setIsLoadingPerms(false);
       }
     };
     fetchPerms();
   }, []);
 
   const hasPermission = (moduleName) => {
+    if (isLoadingPerms && !userRole) return false;
     if (userRole === 'admin') return true;
     const perm = permissions.find(p => p.moduleName === moduleName);
     return perm ? perm.canView : false;

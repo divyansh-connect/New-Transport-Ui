@@ -10,21 +10,48 @@ export const ThemeProvider = ({ children }) => {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   });
 
-  const [profile, setProfile] = useState({
-    name: 'Admin User',
-    email: 'admin@userlife.com',
-    role: 'System Administrator',
-    phone: '+1 (555) 234-5678',
+  const getCachedProfile = () => {
+    try {
+      const cached = sessionStorage.getItem('admin_user_profile') || localStorage.getItem('admin_user_profile');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  };
+
+  const cachedProfile = getCachedProfile();
+
+  const [profile, setProfile] = useState(() => {
+    if (cachedProfile) {
+      return {
+        name: cachedProfile.name || '',
+        email: cachedProfile.email || '',
+        role: cachedProfile.role || '',
+        phone: cachedProfile.phone || '—'
+      };
+    }
+    return { name: '', email: '', role: '', phone: '' };
   });
 
-  const [currentUserRole, setCurrentUserRole] = useState('admin');
-  const [currentUserPermissions, setCurrentUserPermissions] = useState([]);
+  const [currentUserRole, setCurrentUserRole] = useState(() => {
+    if (cachedProfile?.rawRole) return cachedProfile.rawRole;
+    if (cachedProfile?.role === 'System Administrator') return 'admin';
+    return cachedProfile ? 'coworker' : null;
+  });
+
+  const [currentUserPermissions, setCurrentUserPermissions] = useState(() => {
+    return cachedProfile?.permissions || [];
+  });
+
+  const [isProfileLoading, setIsProfileLoading] = useState(!cachedProfile);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
-        if (!token) return;
+        if (!token) {
+          setIsProfileLoading(false);
+          return;
+        }
         const res = await fetch(`${API_BASE_URL}/users/profile`, {
           headers: {
             'Content-Type': 'application/json',
@@ -34,17 +61,26 @@ export const ThemeProvider = ({ children }) => {
         if (res.ok) {
           const data = await res.json();
           const userObj = data.user || data;
-          setProfile({
-            name: userObj.name || 'Admin User',
-            email: userObj.email || 'admin@userlife.com',
+          const updatedProfile = {
+            name: userObj.name || userObj.email || 'Admin User',
+            email: userObj.email || '',
             role: userObj.role === 'admin' ? 'System Administrator' : 'Sub-Admin / Staff',
-            phone: userObj.mobileNo || '—'
-          });
-          setCurrentUserRole(userObj.role || 'admin');
+            rawRole: userObj.role,
+            phone: userObj.mobileNo || '—',
+            permissions: userObj.permissions || []
+          };
+          setProfile(updatedProfile);
+          setCurrentUserRole(userObj.role || 'coworker');
           setCurrentUserPermissions(userObj.permissions || []);
+          setIsProfileLoading(false);
+          try {
+            sessionStorage.setItem('admin_user_profile', JSON.stringify(updatedProfile));
+            localStorage.setItem('admin_user_profile', JSON.stringify(updatedProfile));
+          } catch (e) {}
         }
       } catch (err) {
         console.warn('ThemeContext: Failed to fetch profile:', err);
+        setIsProfileLoading(false);
       }
     };
     fetchProfile();
@@ -196,7 +232,8 @@ export const ThemeProvider = ({ children }) => {
       setActiveSettingsTab,
       currentUserRole,
       currentUserPermissions,
-      checkUserPermission
+      checkUserPermission,
+      isProfileLoading
     }}>
       {children}
     </ThemeContext.Provider>
