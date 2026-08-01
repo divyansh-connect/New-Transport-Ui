@@ -1,10 +1,12 @@
 import React from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { useDrivers } from '../../context/DriverContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Check, CheckCheck, Trash2 } from 'lucide-react';
 import './Notifications.css';
 
 export const Notifications = () => {
+  const { checkUserPermission } = useTheme();
   const { notifications, markNotificationAsRead, markAllNotificationsAsRead, clearAllNotifications } = useDrivers();
 
   const hasUnread = notifications.some(n => !n.read);
@@ -17,7 +19,7 @@ export const Notifications = () => {
           <p>Admin notifications and system alerts.</p>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          {hasUnread && (
+          {hasUnread && checkUserPermission('Notifications', 'edit') && (
             <button 
               onClick={markAllNotificationsAsRead}
               className="mark-all-read-btn"
@@ -38,7 +40,7 @@ export const Notifications = () => {
               <CheckCheck size={16} /> Mark All Read
             </button>
           )}
-          {notifications.length > 0 && (
+          {notifications.length > 0 && checkUserPermission('Notifications', 'delete') && (
             <button 
               onClick={clearAllNotifications}
               className="clear-all-btn"
@@ -70,7 +72,7 @@ export const Notifications = () => {
                   </div>
                   <p className="notification-message">{item.message}</p>
                 </div>
-                {!item.read && (
+                {!item.read && checkUserPermission('Notifications', 'edit') && (
                   <button
                     onClick={() => markNotificationAsRead(item.id)}
                     className="mark-read-btn"
