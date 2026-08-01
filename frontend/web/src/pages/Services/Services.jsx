@@ -151,30 +151,32 @@ export const Services = () => {
                             (d.phone && d.phone.includes(searchTerm));
       if (!matchesSearch) return false;
 
-      // Filter by dynamic category type slug
-      return d.type === activeTab;
+      // 'all' tab shows every approved user
+      if (activeTab === 'all') return true;
+
+      // Filter by dynamic category type slug (handle oil/oil change alias)
+      return d.type === activeTab || (activeTab === 'oil' && d.type === 'oil change');
     });
   };
   const filteredServices = getFilteredData();
 
-  const tabs = categories.map(c => {
-    const slug = c.slug;
-    let label = c.name + 's';
-    if (slug === 'oil') label = 'Oil Changes';
-    
-    // Map dynamic icon to lucide icons
-    let IconComponent = User;
-    if (slug === 'workshop') IconComponent = Wrench;
-    else if (slug === 'oil') IconComponent = Droplet;
-    else if (slug === 'visitor') IconComponent = Users;
-
-    return {
-      id: slug,
-      label: label,
-      icon: IconComponent,
-      prefix: slug === 'workshop' ? 'WS' : slug === 'oil' ? 'OC' : slug === 'driver' ? 'DRV' : 'USR'
-    };
-  });
+  // Build tabs: 'All' first, then one tab per dynamic category
+  const tabs = [
+    { id: 'all', label: 'All Users', icon: Users },
+    ...categories.map(c => {
+      const slug = c.slug;
+      let IconComponent = User;
+      if (slug === 'workshop') IconComponent = Wrench;
+      else if (slug === 'oil' || slug === 'oil-change') IconComponent = Droplet;
+      else if (slug === 'visitor') IconComponent = Users;
+      return {
+        id: slug,
+        label: c.name,
+        icon: IconComponent,
+        categoryName: c.name
+      };
+    })
+  ];
 
   const saveToStorage = (data) => {
     setAllServices(data);
@@ -239,9 +241,10 @@ export const Services = () => {
 
   const handleAddClick = () => {
     setModalMode('add');
-    setAddFormType(activeTab);
+    const defaultType = activeTab === 'all' ? (categories[0]?.slug || 'driver') : activeTab;
+    setAddFormType(defaultType);
     setFormData({ 
-      type: activeTab, 
+      type: defaultType, 
       firstName: '', 
       lastName: '', 
       phone: '', 
@@ -443,11 +446,11 @@ export const Services = () => {
       <div className="page-header d-flex justify-between align-center">
         <div>
           <h1>Registered User Services</h1>
-          <p>Manage workshop, oil change, and car location nodes visible on driver map telemetry.</p>
+          <p>View and manage all registered service entities across every category.</p>
         </div>
         {activeTab && (
           <button className="btn-primary d-flex align-center gap-sm" onClick={handleAddClick}>
-            <Plus size={18} /> Add {activeTab === 'driver' ? 'Driver' : activeTab === 'visitor' ? 'Visitor' : activeTab === 'oil change' ? 'Oil Change' : 'Workshop'}
+            <Plus size={18} /> Add Service
           </button>
         )}
       </div>
@@ -455,14 +458,13 @@ export const Services = () => {
       <div className="services-tabs">
         {tabs.map(tab => {
           const Icon = tab.icon;
-          const count = drivers.filter(d => {
-            if (d.status !== 'Approved') return false;
-            if (tab.id === 'driver') return d.type === 'driver';
-            if (tab.id === 'workshop') return d.type === 'workshop';
-            if (tab.id === 'oil change') return d.type === 'oil' || d.type === 'oil change';
-            if (tab.id === 'visitor') return d.type === 'visitor';
-            return false;
-          }).length;
+          const count = tab.id === 'all'
+            ? drivers.filter(d => d.status === 'Approved').length
+            : drivers.filter(d =>
+                d.status === 'Approved' && (
+                  d.type === tab.id || (tab.id === 'oil' && d.type === 'oil change')
+                )
+              ).length;
           return (
             <button
               key={tab.id}
@@ -471,9 +473,7 @@ export const Services = () => {
             >
               <Icon size={20} />
               {tab.label}
-              <span className="tab-count">
-                {count}
-              </span>
+              <span className="tab-count">{count}</span>
             </button>
           );
         })}
@@ -485,7 +485,7 @@ export const Services = () => {
             <Search size={18} color="var(--color-text-muted)" />
             <input
               type="text"
-              placeholder={`Search ${activeTab}s...`}
+              placeholder={activeTab === 'all' ? 'Search all services...' : `Search ${tabs.find(t => t.id === activeTab)?.label || activeTab}...`}
               className="search-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -496,24 +496,26 @@ export const Services = () => {
 
         <Table
           className="table-scrollable"
-          headers={(activeTab === 'driver' || activeTab === 'visitor')
-            ? (() => {
-                const list = [activeTab === 'driver' ? 'Driver ID' : 'Visitor ID', 'Name', 'Email', 'Mobile Number', 'Status'];
-                if (checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) {
-                  list.push('Actions');
-                }
-                return list;
-              })()
-            : (() => {
-                const list = ['Service ID', 'Name & Location', 'Email', 'GPS Coordinates', 'Mobile / Contact Number', 'Status'];
-                if (checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) {
-                  list.push('Actions');
-                }
-                return list;
-              })()}
+          headers={(() => {
+            const isPeopleTab = activeTab === 'driver' || activeTab === 'visitor';
+            const isAllTab = activeTab === 'all';
+            let list;
+            if (isAllTab) {
+              list = ['ID', 'Name', 'Category', 'Email', 'Mobile Number', 'Status'];
+            } else if (isPeopleTab) {
+              list = [activeTab === 'driver' ? 'Driver ID' : 'Visitor ID', 'Name', 'Email', 'Mobile Number', 'Status'];
+            } else {
+              list = ['Service ID', 'Name & Location', 'Email', 'GPS Coordinates', 'Mobile / Contact Number', 'Status'];
+            }
+            if (checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) {
+              list.push('Actions');
+            }
+            return list;
+          })()}
           data={filteredServices}
           renderRow={(row) => {
-            const isPeopleTab = activeTab === 'driver' || activeTab === 'visitor';
+            const isPeopleTab = activeTab === 'driver' || activeTab === 'visitor' || (activeTab === 'all' && (row.type === 'driver' || row.type === 'visitor'));
+            const isAllTab = activeTab === 'all';
             return (
               <tr key={row.id}>
                 <td>
@@ -522,12 +524,29 @@ export const Services = () => {
                 <td>
                   <div className="d-flex flex-column">
                     <strong>{row.name} {row.lastName || ''}</strong>
-                    {!isPeopleTab && <span className="text-muted text-sm">{row.location}</span>}
+                    {!isPeopleTab && !isAllTab && <span className="text-muted text-sm">{row.location}</span>}
                     {activeTab === 'driver' && row.city && <span className="text-muted text-sm">{row.city}</span>}
                   </div>
                 </td>
+                {isAllTab && (
+                  <td>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-muted)',
+                      textTransform: 'capitalize'
+                    }}>
+                      {categories.find(c => c.slug === row.type)?.name || row.type || '—'}
+                    </span>
+                  </td>
+                )}
                 <td>{row.email || '—'}</td>
-                {!isPeopleTab && (
+                {!isPeopleTab && !isAllTab && (
                   <td>
                     <code>
                       {row.latitude && row.longitude 

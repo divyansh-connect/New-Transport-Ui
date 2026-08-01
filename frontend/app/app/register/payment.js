@@ -18,6 +18,38 @@ export default function PaymentGatewayScreen() {
   const selectedPrice = registeredUser?.amountPaid || '$49.99';
   const selectedDuration = registeredUser?.subscriptionDuration || '1 Month';
 
+  React.useEffect(() => {
+    const checkBypass = async () => {
+      try {
+        const { apiFetch } = require('../../src/utils/api');
+        const data = await apiFetch('/settings');
+        if (data && data.freeTrialEnabled) {
+          if (registeredUser) {
+            const updated = { 
+              ...registeredUser, 
+              paymentMethod: 'Free Trial',
+              paymentStatus: 'Trial'
+            };
+            await saveUserProfile(updated);
+            try {
+              await apiFetch('/users/profile', {
+                method: 'PUT',
+                body: JSON.stringify({
+                  paymentStatus: 'Trial',
+                  paymentMethod: 'Free Trial'
+                })
+              });
+            } catch (e) {}
+          }
+          router.replace('/register/success');
+        }
+      } catch (err) {
+        console.log('Error checking payment bypass:', err);
+      }
+    };
+    checkBypass();
+  }, [registeredUser]);
+
   // Direct checkout handler without showing specific gateway integrations
   const handlePay = async () => {
     showAlert(

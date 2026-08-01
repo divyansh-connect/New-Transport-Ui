@@ -6,7 +6,7 @@ async function main() {
 
   // 1. Create Default Categories
   const defaultCategories = [
-    { name: 'User', slug: 'visitor', iconName: 'user', pinColor: '#3b82f6', displayOrder: 1 },
+    { name: 'Visitor', slug: 'visitor', iconName: 'user', pinColor: '#3b82f6', displayOrder: 1 },
     { name: 'Driver', slug: 'driver', iconName: 'truck', pinColor: '#2563eb', displayOrder: 2 },
     { name: 'Workshop', slug: 'workshop', iconName: 'wrench', pinColor: '#10b981', displayOrder: 3 },
     { name: 'Oil Change', slug: 'oil', iconName: 'droplet', pinColor: '#f59e0b', displayOrder: 4 }

@@ -46,6 +46,22 @@ export default function RegistrationFormScreen() {
   const [trackLocation, setTrackLocation] = useState(true);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [settings, setSettings] = useState(null);
+
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { apiFetch } = require('../../src/utils/api');
+        const data = await apiFetch('/settings');
+        if (data) {
+          setSettings(data);
+        }
+      } catch (err) {
+        console.log('Error fetching platform settings:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -92,7 +108,12 @@ export default function RegistrationFormScreen() {
         await AsyncStorage.setItem('auth_token', response.token);
         await saveUserProfile(response.user);
       }
-      router.replace('/register/payment');
+      
+      if (settings?.freeTrialEnabled) {
+        router.replace('/register/success');
+      } else {
+        router.replace('/register/payment');
+      }
     } catch (e) {
       showAlert(
         isArabic ? 'خطأ' : isUrdu ? 'غلطی' : 'Error',
@@ -207,34 +228,36 @@ export default function RegistrationFormScreen() {
               />
 
               {/* Dynamic Subscription Duration selection box */}
-              <View style={{ marginVertical: SPACING.md }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: theme.textPrimary, marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
-                  {isArabic ? 'اختر مدة الاشتراك' : isUrdu ? 'سبسکرپشن پلان منتخب کریں' : 'Select Subscription Plan'}
-                  <Text style={{ fontSize: 11, fontWeight: 'normal', color: theme.textSecondary }}>
-                    {isArabic ? ' (شامل ضريبة القيمة المضافة)' : isUrdu ? ' (ٹیکس اور ویٹ سمیت)' : ' (Incl. Tax & VAT)'}
+              {!settings?.freeTrialEnabled && (
+                <View style={{ marginVertical: SPACING.md }}>
+                  <Text style={{ fontSize: 14, fontWeight: '700', color: theme.textPrimary, marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                    {isArabic ? 'اختر مدة الاشتراك' : isUrdu ? 'سبسکرپشن پلان منتخب کریں' : 'Select Subscription Plan'}
+                    <Text style={{ fontSize: 11, fontWeight: 'normal', color: theme.textSecondary }}>
+                      {isArabic ? ' (شامل ضريبة القيمة المضافة)' : isUrdu ? ' (ٹیکس اور ویٹ سمیت)' : ' (Incl. Tax & VAT)'}
+                    </Text>
                   </Text>
-                </Text>
-                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
-                  {[
-                    { id: '1m', label: isArabic ? 'شهر واحد' : isUrdu ? '1 مہینہ' : '1 Month', price: '$49.99' },
-                    { id: '6m', label: isArabic ? '٦ أشهر' : isUrdu ? '6 مہینے' : '6 Months', price: '$199.99' },
-                    { id: '1y', label: isArabic ? 'سنة كاملة' : isUrdu ? '1 سال' : '1 Year', price: '$349.99' }
-                  ].map((plan) => (
-                    <TouchableOpacity
-                      key={plan.id}
-                      style={[
-                        styles.planButton,
-                        { borderColor: theme.border },
-                        selectedDuration === plan.id && { borderColor: theme.primary, backgroundColor: theme.surface }
-                      ]}
-                      onPress={() => setSelectedDuration(plan.id)}
-                    >
-                      <Text style={[styles.planLabel, { color: theme.textPrimary }]}>{plan.label}</Text>
-                      <Text style={[styles.planPrice, { color: theme.primary }]}>{plan.price}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
+                    {[
+                      { id: '1m', label: isArabic ? 'شهر واحد' : isUrdu ? '1 مہینہ' : '1 Month', price: '$49.99' },
+                      { id: '6m', label: isArabic ? '٦ أشهر' : isUrdu ? '6 مہینے' : '6 Months', price: '$199.99' },
+                      { id: '1y', label: isArabic ? 'سنة كاملة' : isUrdu ? '1 سال' : '1 Year', price: '$349.99' }
+                    ].map((plan) => (
+                      <TouchableOpacity
+                        key={plan.id}
+                        style={[
+                          styles.planButton,
+                          { borderColor: theme.border },
+                          selectedDuration === plan.id && { borderColor: theme.primary, backgroundColor: theme.surface }
+                        ]}
+                        onPress={() => setSelectedDuration(plan.id)}
+                      >
+                        <Text style={[styles.planLabel, { color: theme.textPrimary }]}>{plan.label}</Text>
+                        <Text style={[styles.planPrice, { color: theme.primary }]}>{plan.price}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
-              </View>
+              )}
 
               <View style={[styles.switchRow, isRTL && { flexDirection: 'row-reverse' }]}>
                 <Text style={[styles.switchTitle, { color: theme.textPrimary }]}>

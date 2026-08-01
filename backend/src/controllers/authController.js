@@ -114,6 +114,14 @@ const register = async (req, res) => {
 
     const customId = await generateCustomId(userRole);
 
+    // Fetch settings to check if free trial is enabled
+    const settings = await prisma.platformSettings.findFirst({ where: { id: 1 } });
+    const isFreeTrial = settings ? settings.freeTrialEnabled : false;
+
+    const finalPaymentStatus = isFreeTrial ? 'Trial' : (paymentStatus || 'Unpaid');
+    const finalAmountPaid = isFreeTrial ? '$0.00' : (amountPaid || '$49.99');
+    const finalPaymentMethod = isFreeTrial ? 'Free Trial' : (paymentMethod || 'None');
+
     // Create User record in MySQL database
     const newUser = await prisma.user.create({
       data: {
@@ -128,9 +136,9 @@ const register = async (req, res) => {
         serviceTypeId: finalServiceTypeId,
         status: userRole === 'admin' ? 'Approved' : 'Pending',
         subscriptionDuration: subscriptionDuration || '1 Month',
-        amountPaid: amountPaid || '$49.99',
-        paymentStatus: paymentStatus || 'Unpaid',
-        paymentMethod: paymentMethod || 'None',
+        amountPaid: finalAmountPaid,
+        paymentStatus: finalPaymentStatus,
+        paymentMethod: finalPaymentMethod,
         trackLocation: trackLocation !== undefined ? trackLocation : true,
         latitude: latitude ? parseFloat(latitude) : null,
         longitude: longitude ? parseFloat(longitude) : null,

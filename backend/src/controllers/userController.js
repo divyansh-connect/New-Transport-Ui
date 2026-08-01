@@ -5,7 +5,10 @@ const getAllUsers = async (req, res) => {
   try {
     const { role, status, search } = req.query;
 
-    const whereClause = {};
+    const whereClause = {
+      // Always exclude internal admin and sub-admin accounts
+      NOT: { role: { in: ['admin', 'coworker'] } }
+    };
 
     if (role) {
       const category = await prisma.serviceType.findFirst({ where: { slug: role.toLowerCase().trim() } });
