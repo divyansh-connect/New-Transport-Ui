@@ -227,13 +227,13 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
 
         {(!isCollapsed || isMobileOpen) && (
           <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div className="sidebar-footer-card">
+            {/* <div className="sidebar-footer-card">
               <HelpCircle size={18} className="help-icon" />
               <div className="footer-card-text">
                 <strong>Need Assistance?</strong>
                 <p>Check Developer API & Docs</p>
               </div>
-            </div>
+            </div> */}
             
             <button 
               onClick={() => { localStorage.clear(); sessionStorage.clear(); window.location.href = '/login'; }} 
