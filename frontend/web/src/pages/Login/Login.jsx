@@ -30,8 +30,8 @@ export const Login = () => {
       if (!response.ok) {
         throw new Error(data.error || 'Login failed. Please check credentials.');
       }
-      if (data.user?.role !== 'admin') {
-        throw new Error('Access Denied: This Web Panel is exclusively for System Administrators. Driver & Workshop partners must use the Mobile App.');
+      if (data.user?.role !== 'admin' && data.user?.role !== 'coworker') {
+        throw new Error('Access Denied: This Web Panel is exclusively for System Administrators & Sub-Admins. Driver & Workshop partners must use the Mobile App.');
       }
       sessionStorage.setItem('isAuthenticated', 'true');
       sessionStorage.setItem('admin_token', data.token);

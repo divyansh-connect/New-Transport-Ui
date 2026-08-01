@@ -19,6 +19,7 @@ import {
 import { useTheme } from '../../../../context/ThemeContext';
 import { useDrivers } from '../../../../context/DriverContext';
 import './Sidebar.css';
+import { API_BASE_URL } from '../../../../config';
 
 export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   const { activeSettingsTab, setActiveSettingsTab } = useTheme();
@@ -26,6 +27,9 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const [userRole, setUserRole] = useState('admin');
+  const [permissions, setPermissions] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -35,19 +39,48 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const fetchPerms = async () => {
+      try {
+        const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+        if (!token) return;
+        const res = await fetch(`${API_BASE_URL}/permissions/me`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserRole(data.role);
+          setPermissions(data.permissions || []);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch user permissions:', err);
+      }
+    };
+    fetchPerms();
+  }, []);
+
+  const hasPermission = (moduleName) => {
+    if (userRole === 'admin') return true;
+    const perm = permissions.find(p => p.moduleName === moduleName);
+    return perm ? perm.canView : false;
+  };
+
   const mainNavItems = [
-    { title: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { title: 'User Requests', path: '/users', icon: Users, badge: drivers.filter(d => d.status === 'Pending').length.toString() },
-    { title: 'Payments', path: '/payments', icon: CreditCard },
-    { title: 'User/Service', path: '/services', icon: User },
-  ];
+    { title: 'Dashboard', path: '/', icon: LayoutDashboard, moduleName: 'Dashboard' },
+    { title: 'User Requests', path: '/users', icon: Users, badge: drivers.filter(d => d.status === 'Pending').length.toString(), moduleName: 'Users' },
+    { title: 'Payments', path: '/payments', icon: CreditCard, moduleName: 'Payments' },
+    { title: 'User/Service', path: '/services', icon: User, moduleName: 'Settings' },
+  ].filter(item => hasPermission(item.moduleName));
 
   const secondaryNavItems = [
-    { title: 'Notifications', path: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount.toString() : null },
-    { title: 'Opportunity', path: '/opportunity', icon: Briefcase },
-    { title: 'Contact', path: '/contact', icon: PhoneCall },
-    { title: 'Settings', path: '/settings', icon: Settings },
-  ];
+    { title: 'Notifications', path: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount.toString() : null, moduleName: 'Notifications' },
+    { title: 'Opportunity', path: '/opportunity', icon: Briefcase, moduleName: 'Notices' },
+    { title: 'Contact', path: '/contact', icon: PhoneCall, moduleName: 'Inquiries' },
+    { title: 'Settings', path: '/settings', icon: Settings, moduleName: 'Settings' },
+  ].filter(item => hasPermission(item.moduleName));
 
   return (
     <>

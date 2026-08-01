@@ -93,6 +93,28 @@ export const Settings = () => {
   const API_BASE = API_BASE_URL;
   const adminToken = localStorage.getItem('admin_token');
   const [dbAdmins, setDbAdmins] = useState([]);
+  const [currentUserRole, setCurrentUserRole] = useState('admin');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('admin_token');
+        const res = await fetch(`${API_BASE}/users/profile`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUserRole(data.role || 'admin');
+        }
+      } catch (err) {
+        console.warn('Could not fetch user profile:', err);
+      }
+    };
+    fetchProfile();
+  }, [API_BASE]);
 
   // Fetch admin users from DB
   const fetchAdminsFromDb = async () => {
@@ -497,27 +519,31 @@ export const Settings = () => {
             <User size={18} />
             <span>My Profile</span>
           </button>
-          <button
-            className={`settings-tab-btn ${activeTab === 'admins' ? 'active' : ''}`}
-            onClick={() => setActiveTab('admins')}
-          >
-            <UserPlus size={18} />
-            <span>Manage Admins & Staff</span>
-          </button>
-          <button
-            className={`settings-tab-btn ${activeTab === 'subscriptions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('subscriptions')}
-          >
-            <DollarSign size={18} />
-            <span>Subscription Settings</span>
-          </button>
-          <button
-            className={`settings-tab-btn ${activeTab === 'config' ? 'active' : ''}`}
-            onClick={() => setActiveTab('config')}
-          >
-            <Settings2 size={18} />
-            <span>Access Configuration</span>
-          </button>
+          {currentUserRole === 'admin' && (
+            <>
+              <button
+                className={`settings-tab-btn ${activeTab === 'admins' ? 'active' : ''}`}
+                onClick={() => setActiveTab('admins')}
+              >
+                <UserPlus size={18} />
+                <span>Manage Admins & Staff</span>
+              </button>
+              <button
+                className={`settings-tab-btn ${activeTab === 'subscriptions' ? 'active' : ''}`}
+                onClick={() => setActiveTab('subscriptions')}
+              >
+                <DollarSign size={18} />
+                <span>Subscription Settings</span>
+              </button>
+              <button
+                className={`settings-tab-btn ${activeTab === 'config' ? 'active' : ''}`}
+                onClick={() => setActiveTab('config')}
+              >
+                <Settings2 size={18} />
+                <span>Access Configuration</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Settings Content Area */}
