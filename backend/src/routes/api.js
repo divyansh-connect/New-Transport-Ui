@@ -111,8 +111,8 @@ router.get('/permissions/me', authenticateJWT, getMyPermissions);
 
 // ── Dynamic Service Categories ───────────────────────────────────────────────
 router.get('/service-types', getAllServiceTypes);
-router.post('/service-types', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Settings', 'edit'), createServiceType);
-router.put('/service-types/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Settings', 'edit'), updateServiceType);
-router.delete('/service-types/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Settings', 'delete'), deleteServiceType);
+router.post('/service-types', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Categories', 'add'), createServiceType);
+router.put('/service-types/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Categories', 'edit'), updateServiceType);
+router.delete('/service-types/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Categories', 'delete'), deleteServiceType);
 
 module.exports = router;

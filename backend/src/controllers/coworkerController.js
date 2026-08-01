@@ -5,6 +5,7 @@ const prisma = require('../config/db');
 const modulesList = [
   'Dashboard',
   'Users',
+  'Categories',
   'Payments',
   'Notices',
   'Inquiries',

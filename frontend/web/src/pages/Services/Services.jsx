@@ -713,23 +713,25 @@ export const Services = () => {
           <div className="form-group" style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)', margin: 0 }}>Entity Category</label>
-              <button
-                type="button"
-                onClick={() => setShowQuickCategoryForm(!showQuickCategoryForm)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--color-primary, #2563eb)',
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <Plus size={14} /> {showQuickCategoryForm ? 'Cancel' : 'Add New Category'}
-              </button>
+              {checkUserPermission('Categories', 'add') && (
+                <button
+                  type="button"
+                  onClick={() => setShowQuickCategoryForm(!showQuickCategoryForm)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--color-primary, #2563eb)',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Plus size={14} /> {showQuickCategoryForm ? 'Cancel' : 'Add New Category'}
+                </button>
+              )}
             </div>
 
             {showQuickCategoryForm ? (

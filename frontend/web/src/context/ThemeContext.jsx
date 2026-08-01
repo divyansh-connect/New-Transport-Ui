@@ -33,14 +33,15 @@ export const ThemeProvider = ({ children }) => {
         });
         if (res.ok) {
           const data = await res.json();
+          const userObj = data.user || data;
           setProfile({
-            name: data.name || 'Admin User',
-            email: data.email || 'admin@userlife.com',
-            role: data.role === 'admin' ? 'System Administrator' : 'Sub-Admin / Staff',
-            phone: data.mobileNo || '—'
+            name: userObj.name || 'Admin User',
+            email: userObj.email || 'admin@userlife.com',
+            role: userObj.role === 'admin' ? 'System Administrator' : 'Sub-Admin / Staff',
+            phone: userObj.mobileNo || '—'
           });
-          setCurrentUserRole(data.role || 'admin');
-          setCurrentUserPermissions(data.permissions || []);
+          setCurrentUserRole(userObj.role || 'admin');
+          setCurrentUserPermissions(userObj.permissions || []);
         }
       } catch (err) {
         console.warn('ThemeContext: Failed to fetch profile:', err);

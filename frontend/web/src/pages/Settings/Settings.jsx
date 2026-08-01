@@ -253,6 +253,7 @@ export const Settings = () => {
   const MODULES_LIST = [
     'Dashboard',
     'Users',
+    'Categories',
     'Payments',
     'Notices',
     'Inquiries',
@@ -942,6 +943,7 @@ export const Settings = () => {
                                   const mapping = {
                                     'Dashboard': 'Dashboard',
                                     'Users': 'User Requests',
+                                    'Categories': 'Service Categories',
                                     'Payments': 'Payments',
                                     'Notices': 'Opportunity',
                                     'Inquiries': 'Contact',
