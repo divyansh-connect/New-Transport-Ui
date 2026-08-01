@@ -29,6 +29,10 @@ export const Services = () => {
     setSearchParams({ type: newTab });
   };
 
+  const getPermissionModule = () => {
+    return (activeTab === 'driver' || activeTab === 'visitor') ? 'Users' : 'Categories';
+  };
+
   const [categories, setCategories] = useState([]);
   
   useEffect(() => {
@@ -448,11 +452,20 @@ export const Services = () => {
           <h1>Registered User Services</h1>
           <p>View and manage all registered service entities across every category.</p>
         </div>
-        {activeTab && (
-          <button className="btn-primary d-flex align-center gap-sm" onClick={handleAddClick}>
-            <Plus size={18} /> Add Service
-          </button>
-        )}
+        {activeTab && (() => {
+          const targetModule = (activeTab === 'driver' || activeTab === 'visitor') ? 'Users' : 'Categories';
+          const canAdd = activeTab === 'all'
+            ? (checkUserPermission('Users', 'add') || checkUserPermission('Categories', 'add'))
+            : checkUserPermission(targetModule, 'add');
+          
+          if (!canAdd) return null;
+          
+          return (
+            <button className="btn-primary d-flex align-center gap-sm" onClick={handleAddClick}>
+              <Plus size={18} /> Add Service
+            </button>
+          );
+        })()}
       </div>
 
       <div className="services-tabs">
@@ -507,7 +520,15 @@ export const Services = () => {
             } else {
               list = ['Service ID', 'Name & Location', 'Email', 'GPS Coordinates', 'Mobile / Contact Number', 'Status'];
             }
-            if (checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) {
+            const targetModule = (activeTab === 'driver' || activeTab === 'visitor') ? 'Users' : 'Categories';
+            const canEdit = activeTab === 'all' 
+              ? (checkUserPermission('Users', 'edit') || checkUserPermission('Categories', 'edit'))
+              : checkUserPermission(targetModule, 'edit');
+            const canDelete = activeTab === 'all' 
+              ? (checkUserPermission('Users', 'delete') || checkUserPermission('Categories', 'delete'))
+              : checkUserPermission(targetModule, 'delete');
+
+            if (canEdit || canDelete) {
               list.push('Actions');
             }
             return list;
@@ -562,17 +583,17 @@ export const Services = () => {
                     {row.status}
                   </span>
                 </td>
-                {(checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) && (
+                {(checkUserPermission(isPeopleTab ? 'Users' : 'Categories', 'edit') || checkUserPermission(isPeopleTab ? 'Users' : 'Categories', 'delete')) && (
                   <td>
                     <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
                       <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleViewClick(row)}></Button>
                       <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)} title="Export Single Record"></Button>
                       {!isPeopleTab && (
                         <>
-                          {checkUserPermission('Settings', 'edit') && (
+                          {checkUserPermission('Categories', 'edit') && (
                             <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEditClick(row)}></Button>
                           )}
-                          {checkUserPermission('Settings', 'delete') && (
+                          {checkUserPermission('Categories', 'delete') && (
                             <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
                           )}
                         </>
@@ -590,7 +611,7 @@ export const Services = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={modalMode === 'view' ? `${activeTab === 'oil change' ? 'Oil Change' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Details` : modalMode === 'add' ? `Add New ${activeTab === 'oil change' ? 'Oil Change' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}` : `Edit Service`}
-        primaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? (checkUserPermission('Settings', 'edit') ? "Save" : null) : "Close")}
+        primaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? (checkUserPermission(getPermissionModule(), 'edit') ? "Save" : null) : "Close")}
         onPrimaryAction={modalMode === 'add' ? null : (modalMode !== 'view' ? handleSaveModal : () => setIsModalOpen(false))}
         secondaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? "Cancel" : null)}
       >
