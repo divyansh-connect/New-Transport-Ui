@@ -142,15 +142,32 @@ export const DriverProvider = ({ children }) => {
 
     if (!token) return;
     try {
-      // Parallel concurrent API calls for instant loading
-      const [usersData, paymentsData, notificationsData] = await Promise.all([
-        apiCall('/users'),
-        apiCall('/payments'),
-        apiCall('/notifications')
-      ]);
+      // Fetch users with grace handling for 403 Forbidden
+      let usersData = [];
+      try {
+        usersData = await apiCall('/users');
+      } catch (err) {
+        console.warn('Failed to load users data (likely no permission):', err.message);
+      }
 
-      const formattedUsers = usersData.map(formatUser);
-      const formattedPayments = paymentsData.map(p => ({
+      // Fetch payments with grace handling for 403 Forbidden
+      let paymentsData = [];
+      try {
+        paymentsData = await apiCall('/payments');
+      } catch (err) {
+        console.warn('Failed to load payments data (likely no permission):', err.message);
+      }
+
+      // Fetch notifications with grace handling for 403 Forbidden
+      let notificationsData = [];
+      try {
+        notificationsData = await apiCall('/notifications');
+      } catch (err) {
+        console.warn('Failed to load notifications data (likely no permission):', err.message);
+      }
+
+      const formattedUsers = Array.isArray(usersData) ? usersData.map(formatUser) : [];
+      const formattedPayments = Array.isArray(paymentsData) ? paymentsData.map(p => ({
         id: p.customId || p.id,
         realId: p.id,
         driverId: p.driverId,
@@ -161,15 +178,15 @@ export const DriverProvider = ({ children }) => {
         date: new Date(p.date).toISOString().split('T')[0],
         mobileNo: p.user?.mobileNo || p.mobileNo || '',
         email: p.user?.email || p.email || ''
-      }));
-      const formattedNotifs = notificationsData.map(n => ({
+      })) : [];
+      const formattedNotifs = Array.isArray(notificationsData) ? notificationsData.map(n => ({
         id: n.id,
         type: n.type,
         title: n.title,
         message: n.message,
         time: 'Just now',
         read: n.read
-      }));
+      })) : [];
 
       setDrivers(formattedUsers);
       setPayments(formattedPayments);
