@@ -91,7 +91,8 @@ const getProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
+      include: { permissions: true }
     });
 
     if (!user) {
