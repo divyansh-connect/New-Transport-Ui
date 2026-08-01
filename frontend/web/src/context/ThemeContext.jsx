@@ -17,6 +17,9 @@ export const ThemeProvider = ({ children }) => {
     phone: '+1 (555) 234-5678',
   });
 
+  const [currentUserRole, setCurrentUserRole] = useState('admin');
+  const [currentUserPermissions, setCurrentUserPermissions] = useState([]);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -36,6 +39,8 @@ export const ThemeProvider = ({ children }) => {
             role: data.role === 'admin' ? 'System Administrator' : 'Sub-Admin / Staff',
             phone: data.mobileNo || '—'
           });
+          setCurrentUserRole(data.role || 'admin');
+          setCurrentUserPermissions(data.permissions || []);
         }
       } catch (err) {
         console.warn('ThemeContext: Failed to fetch profile:', err);
@@ -43,6 +48,17 @@ export const ThemeProvider = ({ children }) => {
     };
     fetchProfile();
   }, []);
+
+  const checkUserPermission = (moduleName, action) => {
+    if (currentUserRole === 'admin') return true;
+    const perm = currentUserPermissions.find(p => p.moduleName === moduleName);
+    if (!perm) return false;
+    if (action === 'view') return perm.canView;
+    if (action === 'add') return perm.canAdd;
+    if (action === 'edit') return perm.canEdit;
+    if (action === 'delete') return perm.canDelete;
+    return false;
+  };
 
   // Admin Management state loaded from localStorage or default
   const [adminsList, setAdminsList] = useState(() => {
@@ -174,7 +190,10 @@ export const ThemeProvider = ({ children }) => {
       subscriptionConfig,
       updateSubscriptionConfig,
       activeSettingsTab,
-      setActiveSettingsTab
+      setActiveSettingsTab,
+      currentUserRole,
+      currentUserPermissions,
+      checkUserPermission
     }}>
       {children}
     </ThemeContext.Provider>

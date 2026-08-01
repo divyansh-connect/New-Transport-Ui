@@ -27,8 +27,10 @@ import {
 } from 'lucide-react';
 import { downloadExcel } from '../../utils/excelExport';
 import './Drivers.css';
+import { useTheme } from '../../context/ThemeContext';
 
 export const Drivers = () => {
+  const { checkUserPermission } = useTheme();
   const {
     drivers,
     payments,
@@ -379,7 +381,13 @@ export const Drivers = () => {
 
             {/* Drivers Table */}
             <Table
-              headers={['User', 'Contact & Region', 'Details', 'Payment Info', 'Status', 'Registration Date', 'Actions']}
+              headers={(() => {
+                const list = ['User', 'Contact & Region', 'Details', 'Payment Info', 'Status', 'Registration Date'];
+                if (checkUserPermission('Users', 'edit') || checkUserPermission('Users', 'delete')) {
+                  list.push('Actions');
+                }
+                return list;
+              })()}
               data={paginatedList}
               renderRow={(row) => (
                 <tr key={row.id}>
@@ -421,101 +429,105 @@ export const Drivers = () => {
                     </span>
                   </td>
                   <td>{row.registrationDate}</td>
-                  <td>
-                    <div className="action-buttons-flex">
-                      <button
-                        className="btn-table-action"
-                        title="View Details"
-                        onClick={() => handleOpenDetails(row)}
-                      >
-                        <Eye size={16} />
-                      </button>
-                      {row.status === 'Pending' && (
-                        <>
-                          <button
-                            className="btn-table-action approve"
-                            title="Approve Driver"
-                            onClick={() => handleApproveAction(row.id)}
-                          >
-                            <Check size={16} />
-                          </button>
+                  {(checkUserPermission('Users', 'edit') || checkUserPermission('Users', 'delete')) && (
+                    <td>
+                      <div className="action-buttons-flex">
+                        <button
+                          className="btn-table-action"
+                          title="View Details"
+                          onClick={() => handleOpenDetails(row)}
+                        >
+                          <Eye size={16} />
+                        </button>
+                        {row.status === 'Pending' && checkUserPermission('Users', 'edit') && (
+                          <>
+                            <button
+                              className="btn-table-action approve"
+                              title="Approve Driver"
+                              onClick={() => handleApproveAction(row.id)}
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              className="btn-table-action reject"
+                              title="Reject Driver"
+                              onClick={() => handleRejectClick(row)}
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        )}
+                        {row.status === 'Rejected' && checkUserPermission('Users', 'edit') && (
+                          <>
+                            <button
+                              className="btn-table-action approve"
+                              title="Re-Approve Account"
+                              onClick={() => {
+                                setDriverStatus(row.id, 'Approved');
+                                if (selectedDriver && selectedDriver.id === row.id) {
+                                  setSelectedDriver(prev => ({ ...prev, status: 'Approved' }));
+                                }
+                              }}
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              className="btn-table-action"
+                              style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+                              title="Set to Pending"
+                              onClick={() => {
+                                setDriverStatus(row.id, 'Pending');
+                                if (selectedDriver && selectedDriver.id === row.id) {
+                                  setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
+                                }
+                              }}
+                            >
+                              <Clock size={16} />
+                            </button>
+                          </>
+                        )}
+                        {row.status === 'Approved' && checkUserPermission('Users', 'edit') && (
+                          <>
+                            <button
+                              className="btn-table-action reject"
+                              title="Reject / Block"
+                              onClick={() => {
+                                setDriverStatus(row.id, 'Rejected');
+                                if (selectedDriver && selectedDriver.id === row.id) {
+                                  setSelectedDriver(prev => ({ ...prev, status: 'Rejected' }));
+                                }
+                              }}
+                            >
+                              <X size={16} />
+                            </button>
+                            <button
+                              className="btn-table-action"
+                              style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+                              title="Move to Pending"
+                              onClick={() => {
+                                setDriverStatus(row.id, 'Pending');
+                                if (selectedDriver && selectedDriver.id === row.id) {
+                                  setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
+                                }
+                              }}
+                            >
+                              <Clock size={16} />
+                            </button>
+                          </>
+                        )}
+                        {checkUserPermission('Users', 'delete') && (
                           <button
                             className="btn-table-action reject"
-                            title="Reject Driver"
-                            onClick={() => handleRejectClick(row)}
+                            title="Delete User Permanently"
+                            onClick={() => setDeleteConfirmId(row.id)}
+                            style={{ color: '#ef4444', borderColor: '#ef4444' }}
                           >
-                            <X size={16} />
+                            <Trash2 size={16} />
                           </button>
-                        </>
-                      )}
-                      {row.status === 'Rejected' && (
-                        <>
-                          <button
-                            className="btn-table-action approve"
-                            title="Re-Approve Account"
-                            onClick={() => {
-                              setDriverStatus(row.id, 'Approved');
-                              if (selectedDriver && selectedDriver.id === row.id) {
-                                setSelectedDriver(prev => ({ ...prev, status: 'Approved' }));
-                              }
-                            }}
-                          >
-                            <Check size={16} />
-                          </button>
-                          <button
-                            className="btn-table-action"
-                            style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
-                            title="Set to Pending"
-                            onClick={() => {
-                              setDriverStatus(row.id, 'Pending');
-                              if (selectedDriver && selectedDriver.id === row.id) {
-                                setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
-                              }
-                            }}
-                          >
-                            <Clock size={16} />
-                          </button>
-                        </>
-                      )}
-                      {row.status === 'Approved' && (
-                        <>
-                          <button
-                            className="btn-table-action reject"
-                            title="Reject / Block"
-                            onClick={() => {
-                              setDriverStatus(row.id, 'Rejected');
-                              if (selectedDriver && selectedDriver.id === row.id) {
-                                setSelectedDriver(prev => ({ ...prev, status: 'Rejected' }));
-                              }
-                            }}
-                          >
-                            <X size={16} />
-                          </button>
-                          <button
-                            className="btn-table-action"
-                            style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
-                            title="Move to Pending"
-                            onClick={() => {
-                              setDriverStatus(row.id, 'Pending');
-                              if (selectedDriver && selectedDriver.id === row.id) {
-                                setSelectedDriver(prev => ({ ...prev, status: 'Pending' }));
-                              }
-                            }}
-                          >
-                            <Clock size={16} />
-                          </button>
-                        </>
-                      )}
-                      <button
-                        className="btn-table-action reject"
-                        title="Delete User Permanently"
-                        onClick={() => setDeleteConfirmId(row.id)}
-                        style={{ color: '#ef4444', borderColor: '#ef4444' }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               )}
             />
@@ -862,7 +874,7 @@ export const Drivers = () => {
                   )}
 
                   {/* Driver Approval Action Panel for Pending */}
-                  {selectedDriver.status === 'Pending' && (
+                  {selectedDriver.status === 'Pending' && checkUserPermission('Users', 'edit') && (
                     <div
                       style={{
                         padding: '16px',
@@ -908,7 +920,7 @@ export const Drivers = () => {
                   )}
 
                   {/* Driver Action Panel for Rejected Drivers */}
-                  {selectedDriver.status === 'Rejected' && (
+                  {selectedDriver.status === 'Rejected' && checkUserPermission('Users', 'edit') && (
                     <div
                       style={{
                         padding: '16px',
@@ -957,7 +969,7 @@ export const Drivers = () => {
                   )}
 
                   {/* Driver Action Panel for Approved Drivers (Optional status change helper) */}
-                  {selectedDriver.status === 'Approved' && (
+                  {selectedDriver.status === 'Approved' && checkUserPermission('Users', 'edit') && (
                     <div
                       style={{
                         padding: '16px',

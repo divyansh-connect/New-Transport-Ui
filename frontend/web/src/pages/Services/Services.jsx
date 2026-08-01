@@ -18,7 +18,7 @@ import './Services.css';
 
 export const Services = () => {
   const { drivers, registerDriver, deleteDriver, updateDriverProfile } = useDrivers();
-  const { subscriptionPlans, subscriptionConfig } = useTheme();
+  const { subscriptionPlans, subscriptionConfig, checkUserPermission } = useTheme();
   const [activeTab, setActiveTab] = useState('workshop');
 
   const config = subscriptionConfig?.paymentRequiredFor || { driver: true, workshop: false, visitor: false, oilchange: false };
@@ -423,8 +423,20 @@ export const Services = () => {
         <Table
           className="table-scrollable"
           headers={(activeTab === 'driver' || activeTab === 'visitor')
-            ? [activeTab === 'driver' ? 'Driver ID' : 'Visitor ID', 'Name', 'Email', 'Mobile Number', 'Status', 'Actions']
-            : ['Service ID', 'Name & Location', 'Email', 'GPS Coordinates', 'Mobile / Contact Number', 'Status', 'Actions']}
+            ? (() => {
+                const list = [activeTab === 'driver' ? 'Driver ID' : 'Visitor ID', 'Name', 'Email', 'Mobile Number', 'Status'];
+                if (checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) {
+                  list.push('Actions');
+                }
+                return list;
+              })()
+            : (() => {
+                const list = ['Service ID', 'Name & Location', 'Email', 'GPS Coordinates', 'Mobile / Contact Number', 'Status'];
+                if (checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) {
+                  list.push('Actions');
+                }
+                return list;
+              })()}
           data={filteredServices}
           renderRow={(row) => {
             const isPeopleTab = activeTab === 'driver' || activeTab === 'visitor';
@@ -457,18 +469,24 @@ export const Services = () => {
                     {row.status}
                   </span>
                 </td>
-                <td>
-                  <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
-                    <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleViewClick(row)}></Button>
-                    <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)} title="Export Single Record"></Button>
-                    {!isPeopleTab && (
-                      <>
-                        <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEditClick(row)}></Button>
-                        <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
-                      </>
-                    )}
-                  </div>
-                </td>
+                {(checkUserPermission('Settings', 'edit') || checkUserPermission('Settings', 'delete')) && (
+                  <td>
+                    <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
+                      <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleViewClick(row)}></Button>
+                      <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)} title="Export Single Record"></Button>
+                      {!isPeopleTab && (
+                        <>
+                          {checkUserPermission('Settings', 'edit') && (
+                            <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEditClick(row)}></Button>
+                          )}
+                          {checkUserPermission('Settings', 'delete') && (
+                            <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             );
           }}
@@ -479,7 +497,7 @@ export const Services = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={modalMode === 'view' ? `${activeTab === 'oil change' ? 'Oil Change' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Details` : modalMode === 'add' ? `Add New ${activeTab === 'oil change' ? 'Oil Change' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}` : `Edit Service`}
-        primaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? "Save" : "Close")}
+        primaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? (checkUserPermission('Settings', 'edit') ? "Save" : null) : "Close")}
         onPrimaryAction={modalMode === 'add' ? null : (modalMode !== 'view' ? handleSaveModal : () => setIsModalOpen(false))}
         secondaryActionLabel={modalMode === 'add' ? null : (modalMode !== 'view' ? "Cancel" : null)}
       >

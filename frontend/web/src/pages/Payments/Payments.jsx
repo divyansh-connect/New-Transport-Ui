@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '../../components/common/Cards/Card';
 import { Table } from '../../components/common/Tables/Table';
 import { useDrivers } from '../../context/DriverContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../../components/common/Button/Button';
 import { Modal } from '../../components/common/Modal/Modal';
 import { Input } from '../../components/common/Input/Input';
@@ -9,6 +10,7 @@ import { Download, Eye, Edit2, Trash2 } from 'lucide-react';
 import { downloadExcel } from '../../utils/excelExport';
 
 export const Payments = () => {
+  const { checkUserPermission } = useTheme();
   const { payments, drivers, deletePayment, updatePayment, updateDriverProfile } = useDrivers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -152,7 +154,13 @@ export const Payments = () => {
       <Card title="Payment List">
         <Table
           className="table-scrollable"
-          headers={['Transaction ID', 'User ID', 'Payer Name', 'Mobile Number', 'Email', 'Amount', 'Payment Gateway', 'Status', 'Date', 'Actions']}
+          headers={(() => {
+            const list = ['Transaction ID', 'User ID', 'Payer Name', 'Mobile Number', 'Email', 'Amount', 'Payment Gateway', 'Status', 'Date'];
+            if (checkUserPermission('Payments', 'edit') || checkUserPermission('Payments', 'delete')) {
+              list.push('Actions');
+            }
+            return list;
+          })()}
           data={payments}
           renderRow={(row) => {
             const driverObj = drivers.find(d => d.id === row.driverId || d.realId === row.driverId);
@@ -169,14 +177,20 @@ export const Payments = () => {
                 <td>{row.gateway}</td>
                 <td><span className="status-badge approved">{row.status}</span></td>
                 <td>{row.date}</td>
-                <td>
-                  <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
-                    <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleView(row)}></Button>
-                    <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)}></Button>
-                    <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEdit(row)}></Button>
-                    <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
-                  </div>
-                </td>
+                {(checkUserPermission('Payments', 'edit') || checkUserPermission('Payments', 'delete')) && (
+                  <td>
+                    <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
+                      <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleView(row)}></Button>
+                      <Button variant="ghost" size="sm" leftIcon={Download} onClick={() => handleExportSingle(row)}></Button>
+                      {checkUserPermission('Payments', 'edit') && (
+                        <Button variant="ghost" size="sm" leftIcon={Edit2} onClick={() => handleEdit(row)}></Button>
+                      )}
+                      {checkUserPermission('Payments', 'delete') && (
+                        <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)}></Button>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             );
           }}
@@ -188,7 +202,7 @@ export const Payments = () => {
         onClose={() => setIsModalOpen(false)}
         title={isEditMode ? `Edit Payment: ${selectedRecord?.id || ''}` : `Payment Details: ${selectedRecord?.id || ''}`}
         subtitle={isEditMode ? "Update the details of this payment." : "Review payment transaction details."}
-        primaryActionLabel={isEditMode ? "Save Changes" : "Close"}
+        primaryActionLabel={isEditMode ? (checkUserPermission('Payments', 'edit') ? "Save Changes" : null) : "Close"}
         onPrimaryAction={isEditMode ? handleSaveEdit : () => setIsModalOpen(false)}
         secondaryActionLabel={isEditMode ? "Cancel" : null}
       >

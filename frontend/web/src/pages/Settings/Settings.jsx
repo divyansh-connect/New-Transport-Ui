@@ -836,7 +836,20 @@ export const Settings = () => {
                           const perm = coworkerPerms.find(p => p.moduleName === mod) || {};
                           return (
                             <tr key={mod} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                              <td style={{ padding: '12px', fontSize: '14px', fontWeight: '600', color: 'var(--color-text-main)' }}>{mod}</td>
+                              <td style={{ padding: '12px', fontSize: '14px', fontWeight: '600', color: 'var(--color-text-main)' }}>
+                                {(() => {
+                                  const mapping = {
+                                    'Dashboard': 'Dashboard',
+                                    'Users': 'User Requests',
+                                    'Payments': 'Payments',
+                                    'Notices': 'Opportunity',
+                                    'Inquiries': 'Contact',
+                                    'Settings': 'User/Service & Settings',
+                                    'Notifications': 'Notifications'
+                                  };
+                                  return mapping[mod] || mod;
+                                })()}
+                              </td>
                               <td style={{ padding: '12px', textAlign: 'center' }}>
                                 <input
                                   type="checkbox"

@@ -10,10 +10,12 @@ import { Users, CreditCard, Clock, Wrench, RefreshCw, Plus, Download, Eye, Check
 import { useNavigate } from 'react-router-dom';
 import { downloadExcel } from '../../utils/excelExport';
 import { useDrivers } from '../../context/DriverContext';
+import { useTheme } from '../../context/ThemeContext';
 import './Dashboard.css';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
+  const { checkUserPermission } = useTheme();
   const { drivers, payments, approveDriver, deleteDriver, updateDriverProfile } = useDrivers();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -108,7 +110,9 @@ export const Dashboard = () => {
         </div>
         <div className="header-actions">
           <Button variant="secondary" leftIcon={Download} onClick={handleExport}>Export Report</Button>
-          <Button variant="primary" leftIcon={Plus} onClick={handleNewRegistration}>New Registration</Button>
+          {checkUserPermission('Users', 'add') && (
+            <Button variant="primary" leftIcon={Plus} onClick={handleNewRegistration}>New Registration</Button>
+          )}
         </div>
       </div>
 
@@ -179,7 +183,13 @@ export const Dashboard = () => {
       >
         <Table
           className="table-scrollable"
-          headers={['Registration ID', 'Name / Entity', 'Category', 'Mobile No', 'Status', 'Date', 'Amount', 'Actions']}
+          headers={(() => {
+            const list = ['Registration ID', 'Name / Entity', 'Category', 'Mobile No', 'Status', 'Date', 'Amount'];
+            if (checkUserPermission('Users', 'edit') || checkUserPermission('Users', 'delete')) {
+              list.push('Actions');
+            }
+            return list;
+          })()}
           data={filteredRegistrations}
           emptyTitle="No Registrations Found"
           emptyDescription="No registration records match your current search or filter criteria."
@@ -209,15 +219,19 @@ export const Dashboard = () => {
               </td>
               <td><span className="row-date">{row.date}</span></td>
               <td><strong className="row-amount">{row.amount}</strong></td>
-              <td>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleOpenModal(row)} />
-                  {row.status === 'Pending' && (
-                    <Button variant="ghost" size="sm" leftIcon={Check} onClick={() => handleApproveRegistration(row)} />
-                  )}
-                  <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)} />
-                </div>
-              </td>
+              {(checkUserPermission('Users', 'edit') || checkUserPermission('Users', 'delete')) && (
+                <td>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Button variant="ghost" size="sm" leftIcon={Eye} onClick={() => handleOpenModal(row)} />
+                    {row.status === 'Pending' && checkUserPermission('Users', 'edit') && (
+                      <Button variant="ghost" size="sm" leftIcon={Check} onClick={() => handleApproveRegistration(row)} />
+                    )}
+                    {checkUserPermission('Users', 'delete') && (
+                      <Button variant="ghost" size="sm" leftIcon={Trash2} onClick={() => handleDelete(row.id)} />
+                    )}
+                  </div>
+                </td>
+              )}
             </tr>
           )}
         />
@@ -229,7 +243,7 @@ export const Dashboard = () => {
         onClose={() => setIsModalOpen(false)}
         title={isEditMode ? `Edit Registration: ${selectedRecord?.id || ''}` : `Registration Details: ${selectedRecord?.id || ''}`}
         subtitle={isEditMode ? "Update the details of this registration." : "Review registration details and approve or reject request."}
-        primaryActionLabel={isEditMode ? "Save Changes" : (selectedRecord?.status === 'Pending' ? "Approve Registration" : null)}
+        primaryActionLabel={isEditMode ? (checkUserPermission('Users', 'edit') ? "Save Changes" : null) : (selectedRecord?.status === 'Pending' && checkUserPermission('Users', 'edit') ? "Approve Registration" : null)}
         onPrimaryAction={isEditMode ? handleSaveEdit : () => handleApproveRegistration(selectedRecord)}
         secondaryActionLabel="Close"
       >
