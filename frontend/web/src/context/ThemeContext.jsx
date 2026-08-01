@@ -47,6 +47,8 @@ export const ThemeProvider = ({ children }) => {
       }
     };
     fetchProfile();
+    const interval = setInterval(fetchProfile, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const checkUserPermission = (moduleName, action) => {

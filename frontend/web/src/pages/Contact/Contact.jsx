@@ -5,10 +5,12 @@ import { Modal } from '../../components/common/Modal/Modal';
 import { Badge } from '../../components/common/Badge/Badge';
 import { EmptyState } from '../../components/common/EmptyState/EmptyState';
 import { Phone, MessageSquare, Mail, ExternalLink, Clock, User, CheckCircle2, Send, Inbox } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import './Contact.css';
 import { API_BASE_URL } from '../../config';
 
 export const Contact = () => {
+  const { checkUserPermission } = useTheme();
   const [inquiries, setInquiries] = React.useState([]);
 
   const defaultContactInfo = {
@@ -123,27 +125,29 @@ export const Contact = () => {
           <h1>Support & Contact Hub</h1>
           <p>Manage driver and partner support channels and incoming inquiries.</p>
         </div>
-        <button
-          onClick={() => {
-            if (isEditing) {
-              handleSaveContactInfo();
-            } else {
-              setIsEditing(true);
-            }
-          }}
-          className="btn-primary"
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-md)',
-            cursor: 'pointer',
-            fontWeight: '600',
-            border: 'none',
-            backgroundColor: isEditing ? 'var(--color-success, #10b981)' : 'var(--color-primary, #2563eb)',
-            color: '#fff'
-          }}
-        >
-          {isEditing ? 'Save Changes' : 'Edit Contact Info'}
-        </button>
+        {checkUserPermission('Settings', 'edit') && (
+          <button
+            onClick={() => {
+              if (isEditing) {
+                handleSaveContactInfo();
+              } else {
+                setIsEditing(true);
+              }
+            }}
+            className="btn-primary"
+            style={{
+              padding: '8px 16px',
+              borderRadius: 'var(--radius-md)',
+              cursor: 'pointer',
+              fontWeight: '600',
+              border: 'none',
+              backgroundColor: isEditing ? 'var(--color-success, #10b981)' : 'var(--color-primary, #2563eb)',
+              color: '#fff'
+            }}
+          >
+            {isEditing ? 'Save Changes' : 'Edit Contact Info'}
+          </button>
+        )}
       </div>
 
       <div className="contact-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
@@ -331,9 +335,9 @@ export const Contact = () => {
         onClose={() => setIsModalOpen(false)}
         title={`Support Ticket Details (${selectedTicket?.id || ''})`}
         subtitle="Review inquiry details and dispatch admin resolution response."
-        primaryActionLabel="Send Reply & Update Ticket"
-        onPrimaryAction={handleUpdateTicket}
-        secondaryActionLabel="Close"
+        primaryActionLabel={checkUserPermission('Inquiries', 'edit') ? "Send Reply & Update Ticket" : "Close"}
+        onPrimaryAction={checkUserPermission('Inquiries', 'edit') ? handleUpdateTicket : () => setIsModalOpen(false)}
+        secondaryActionLabel={checkUserPermission('Inquiries', 'edit') ? "Cancel" : null}
       >
         {selectedTicket && (
           <div className="ticket-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -374,6 +378,7 @@ export const Contact = () => {
                   <select
                     value={ticketStatus}
                     onChange={(e) => setTicketStatus(e.target.value)}
+                    disabled={!checkUserPermission('Inquiries', 'edit')}
                     style={{
                       padding: '4px 8px',
                       borderRadius: 'var(--radius-sm)',
@@ -381,7 +386,7 @@ export const Contact = () => {
                       backgroundColor: 'var(--color-card-bg)',
                       color: 'var(--color-text-main)',
                       fontWeight: '600',
-                      cursor: 'pointer'
+                      cursor: !checkUserPermission('Inquiries', 'edit') ? 'not-allowed' : 'pointer'
                     }}
                   >
                     <option value="Open">Open</option>
@@ -417,13 +422,14 @@ export const Contact = () => {
                 rows="3"
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
-                placeholder="Type resolution response to be sent to user mobile app..."
+                placeholder={checkUserPermission('Inquiries', 'edit') ? "Type resolution response to be sent to user mobile app..." : "No response dispatch note added."}
+                disabled={!checkUserPermission('Inquiries', 'edit')}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-input-bg)',
+                  backgroundColor: !checkUserPermission('Inquiries', 'edit') ? 'var(--color-bg-elevated)' : 'var(--color-input-bg)',
                   color: 'var(--color-text-main)',
                   fontFamily: 'inherit',
                   fontSize: '14px'

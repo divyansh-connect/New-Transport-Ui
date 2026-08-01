@@ -3,6 +3,7 @@ import { Card } from '../../components/common/Cards/Card';
 import { Briefcase, Clock, Map, Send, Edit2, Trash2, ShieldAlert, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { Modal } from '../../components/common/Modal/Modal';
 import { useDrivers } from '../../context/DriverContext';
+import { useTheme } from '../../context/ThemeContext';
 import { API_BASE_URL } from '../../config';
 import './Opportunity.css';
 
@@ -40,6 +41,7 @@ const DEFAULT_NOTICES = [
 ];
 
 export const Opportunity = () => {
+  const { checkUserPermission } = useTheme();
   const { broadcastNotification } = useDrivers();
   const [validationAlert, setValidationAlert] = useState('');
   const [opportunities, setOpportunities] = useState(DEFAULT_NOTICES);
@@ -234,111 +236,113 @@ export const Opportunity = () => {
         <p>Post announcements & notices displayed directly in the Driver Mobile App.</p>
       </div>
 
-      <div className="opportunity-grid">
-        <div className="form-column">
-          <Card 
-            title={editingId ? "Edit Notice" : "Publish New Notice"} 
-            subtitle={editingId ? "Modify notice details for broadcasting." : "Broadcast information to all registered drivers."}
-          >
-            <form className="opportunity-form" onSubmit={handlePublish}>
-              <div className="form-group">
-                <label>Notice Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="e.g. New Route Available..."
-                  className="form-control"
-                  required
-                />
-              </div>
-
-              <div className="form-row">
+      <div className="opportunity-grid" style={{ gridTemplateColumns: (checkUserPermission('Notices', 'add') || checkUserPermission('Notices', 'edit')) ? '1fr 1.2fr' : '1fr' }}>
+        {(checkUserPermission('Notices', 'add') || checkUserPermission('Notices', 'edit')) && (
+          <div className="form-column">
+            <Card 
+              title={editingId ? "Edit Notice" : "Publish New Notice"} 
+              subtitle={editingId ? "Modify notice details for broadcasting." : "Broadcast information to all registered drivers."}
+            >
+              <form className="opportunity-form" onSubmit={handlePublish}>
                 <div className="form-group">
-                  <label>Type</label>
-                  <select name="type" value={formData.type} onChange={handleChange} className="form-control">
-                    <option value="Freight">Freight</option>
-                    <option value="Safety">Safety</option>
-                    <option value="Partnership">Partnership</option>
-                    <option value="General">General</option>
-                  </select>
+                  <label>Notice Title</label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="e.g. New Route Available..."
+                    className="form-control"
+                    required
+                  />
                 </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Type</label>
+                    <select name="type" value={formData.type} onChange={handleChange} className="form-control">
+                      <option value="Freight">Freight</option>
+                      <option value="Safety">Safety</option>
+                      <option value="Partnership">Partnership</option>
+                      <option value="General">General</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Priority</label>
+                    <select name="priority" value={formData.priority} onChange={handleChange} className="form-control">
+                      <option value="Normal">Normal</option>
+                      <option value="High">High</option>
+                      <option value="Critical">Critical</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="form-group">
-                  <label>Priority</label>
-                  <select name="priority" value={formData.priority} onChange={handleChange} className="form-control">
-                    <option value="Normal">Normal</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
-                  </select>
+                  <label>Target Location / Zone</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="e.g. All Zones"
+                    className="form-control"
+                  />
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label>Target Location / Zone</label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g. All Zones"
-                  className="form-control"
-                />
-              </div>
+                <div className="form-group">
+                  <label>Detailed Description</label>
+                  <textarea
+                    name="description"
+                    rows="6"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Write the full notice content here..."
+                    className="form-control"
+                    required
+                  ></textarea>
+                </div>
 
-              <div className="form-group">
-                <label>Detailed Description</label>
-                <textarea
-                  name="description"
-                  rows="6"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Write the full notice content here..."
-                  className="form-control"
-                  required
-                ></textarea>
-              </div>
-
-              <div className="d-flex gap-sm">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-sm"
-                  style={{
-                    padding: '9px 12px',
-                    backgroundColor: 'var(--color-primary)',
-                    color: 'white',
-                    borderRadius: 'var(--radius-md)',
-                    fontWeight: '600',
-                    border: 'none',
-                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                    opacity: isSubmitting ? 0.7 : 1
-                  }}
-                >
-                  <Send size={18} /> {isSubmitting ? (editingId ? 'Updating...' : 'Publishing...') : (editingId ? 'Update Notice' : 'Publish Notice')}
-                </button>
-                {editingId && (
+                <div className="d-flex gap-sm">
                   <button
-                    type="button"
-                    onClick={handleCancelEdit}
-                    className="btn-secondary w-100 d-flex justify-center align-center mt-sm"
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn-primary w-100 d-flex justify-center align-center gap-sm mt-sm"
                     style={{
                       padding: '9px 12px',
+                      backgroundColor: 'var(--color-primary)',
+                      color: 'white',
                       borderRadius: 'var(--radius-md)',
                       fontWeight: '600',
-                      border: '1px solid var(--color-border)',
-                      cursor: 'pointer',
-                      backgroundColor: 'transparent',
-                      color: 'var(--color-text-main)'
+                      border: 'none',
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      opacity: isSubmitting ? 0.7 : 1
                     }}
                   >
-                    Cancel
+                    <Send size={18} /> {isSubmitting ? (editingId ? 'Updating...' : 'Publishing...') : (editingId ? 'Update Notice' : 'Publish Notice')}
                   </button>
-                )}
-              </div>
-            </form>
-          </Card>
-        </div>
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="btn-secondary w-100 d-flex justify-center align-center mt-sm"
+                      style={{
+                        padding: '9px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        fontWeight: '600',
+                        border: '1px solid var(--color-border)',
+                        cursor: 'pointer',
+                        backgroundColor: 'transparent',
+                        color: 'var(--color-text-main)'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </Card>
+          </div>
+        )}
 
         <div className="list-column">
           <div className="d-flex justify-between align-center mb-md">
@@ -385,22 +389,30 @@ export const Opportunity = () => {
                       <span className="meta-item"><Clock size={14} /> {opp.date}</span>
                       <span className="meta-item"><Map size={14} /> {opp.location}</span>
                     </div>
-                    <div className="action-buttons" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <button
-                        className="btn-icon primary"
-                        onClick={() => handleToggleVisibility(opp.id)}
-                        title={opp.isVisible !== false ? "Hide Notice from Startup Popup" : "Show Notice on Startup Popup"}
-                        style={{ color: opp.isVisible !== false ? 'var(--color-primary)' : 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
-                      >
-                        {opp.isVisible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
-                      </button>
-                      <button className="btn-icon primary" onClick={() => handleEdit(opp)} title="Edit Broadcast" style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <Edit2 size={16} />
-                      </button>
-                      <button className="btn-icon danger" onClick={() => handleDelete(opp.id)} title="Delete Broadcast" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <Trash2 size={16} color="var(--color-danger)" />
-                      </button>
-                    </div>
+                    {(checkUserPermission('Notices', 'edit') || checkUserPermission('Notices', 'delete')) && (
+                      <div className="action-buttons" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {checkUserPermission('Notices', 'edit') && (
+                          <>
+                            <button
+                              className="btn-icon primary"
+                              onClick={() => handleToggleVisibility(opp.id)}
+                              title={opp.isVisible !== false ? "Hide Notice from Startup Popup" : "Show Notice on Startup Popup"}
+                              style={{ color: opp.isVisible !== false ? 'var(--color-primary)' : 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+                            >
+                              {opp.isVisible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
+                            </button>
+                            <button className="btn-icon primary" onClick={() => handleEdit(opp)} title="Edit Broadcast" style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                              <Edit2 size={16} />
+                            </button>
+                          </>
+                        )}
+                        {checkUserPermission('Notices', 'delete') && (
+                          <button className="btn-icon danger" onClick={() => handleDelete(opp.id)} title="Delete Broadcast" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <Trash2 size={16} color="var(--color-danger)" />
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
