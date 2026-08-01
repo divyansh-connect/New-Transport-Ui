@@ -211,7 +211,7 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
             </div>
             
             <button 
-              onClick={() => { localStorage.removeItem('isAuthenticated'); localStorage.removeItem('admin_token'); window.location.href = '/login'; }} 
+              onClick={() => { localStorage.clear(); sessionStorage.clear(); window.location.href = '/login'; }} 
               style={{
                 display: 'flex', 
                 alignItems: 'center', 

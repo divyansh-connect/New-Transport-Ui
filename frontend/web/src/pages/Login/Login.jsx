@@ -33,6 +33,8 @@ export const Login = () => {
       if (data.user?.role !== 'admin' && data.user?.role !== 'coworker') {
         throw new Error('Access Denied: This Web Panel is exclusively for System Administrators & Sub-Admins. Driver & Workshop partners must use the Mobile App.');
       }
+      sessionStorage.clear();
+      localStorage.clear();
       sessionStorage.setItem('isAuthenticated', 'true');
       sessionStorage.setItem('admin_token', data.token);
       localStorage.setItem('isAuthenticated', 'true');
