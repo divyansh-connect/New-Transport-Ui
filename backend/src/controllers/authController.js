@@ -227,7 +227,8 @@ const login = async (req, res) => {
           { mobileNo: searchTerm },
           ...(cleanDigits && cleanDigits.length >= 4 ? [{ mobileNo: { contains: cleanDigits } }] : [])
         ]
-      }
+      },
+      include: { permissions: true }
     });
 
     // Dynamic seeding of admin if not exists
