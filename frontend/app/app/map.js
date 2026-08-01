@@ -82,11 +82,14 @@ export default function MapScreen() {
         const nodes = pins.map((p, idx) => ({
           id: p.id || idx,
           title: p.name,
-          description: p.role === 'driver' ? `Active Driver (${p.carPlateNumber || 'N/A'})` : p.role === 'workshop' ? 'Repair Workshop' : 'Oil Change Station',
+          description: p.role === 'driver' 
+            ? `Active Driver (${p.carPlateNumber || 'N/A'})` 
+            : `${p.name} (${p.categoryName || 'Service Station'})`,
           lat: parseFloat(p.latitude),
           lng: parseFloat(p.longitude),
           type: p.role === 'driver' ? 'location' : p.role,
-          icon: p.role === 'driver' ? 'car' : p.role === 'workshop' ? 'wrench' : 'fuel',
+          icon: p.iconName || (p.role === 'driver' ? 'car' : p.role === 'workshop' ? 'wrench' : 'fuel'),
+          color: p.pinColor || '#2563EB',
           contact: 'Active Node',
           address: 'Synchronized live GPS coordinates'
         }));
@@ -252,23 +255,14 @@ export default function MapScreen() {
         var isApprovedDriver = ${isApprovedDriver ? 'true' : 'false'};
         var currentUserRole = '${currentUserRole}';
         var services = ${JSON.stringify(activePins.length > 0 ? activePins : serviceNodes)};
-        var pinConfig = {
-          workshop:  { icon: wrenchSvg, isPOI: true },
-          oil:       { icon: oilSvg,    isPOI: true },
-          location:  { icon: carSvg,    isPOI: false }
-        };
         var usedCoords = {};
         services.forEach(function(s) {
           // Strictly require approved user account to view pins
           if (!isApprovedDriver) return;
 
-          // Workshop role sees ONLY workshop pins
-          if (currentUserRole === 'workshop' && s.type !== 'workshop') return;
+          // Non-driver service roles should only see pins matching their own category type
+          if (currentUserRole !== 'driver' && currentUserRole !== 'admin' && currentUserRole !== s.type) return;
 
-          // Oil changer role sees ONLY oil changer pins
-          if (currentUserRole === 'oil' && s.type !== 'oil') return;
-
-          // Driver role sees BOTH workshop and oil changer pins (plus driver location pins)
             var lat = parseFloat(s.lat);
             var lng = parseFloat(s.lng);
             if (isNaN(lat) || isNaN(lng)) return;
@@ -286,17 +280,35 @@ export default function MapScreen() {
               usedCoords[coordKey] = 1;
             }
 
-            var cfg = pinConfig[s.type] || { icon: wrenchSvg, isPOI: true };
             var htmlContent = '';
             var anchor = [11, 11];
             var size = [22, 22];
             
-            if (cfg.isPOI) {
-              htmlContent = '<div class="poi-circle">' + cfg.icon + '</div>';
-            } else {
-              htmlContent = '<div class="driver-car-marker" style="font-size: 24px; line-height: 32px; text-align: center;">' + cfg.icon + '</div>';
+            if (s.type === 'location') {
+              htmlContent = '<div class="driver-car-marker" style="font-size: 24px; line-height: 32px; text-align: center;">🚗</div>';
               anchor = [16, 16];
               size = [32, 32];
+            } else {
+              // Parse SVG icon template matching the dynamic icon name
+              var pinIconSvg = wrenchSvg;
+              if (s.icon === 'droplet' || s.icon === 'fuel' || s.icon === 'oil') {
+                pinIconSvg = oilSvg;
+              } else if (s.icon === 'shopping-cart') {
+                pinIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>';
+              } else if (s.icon === 'activity' || s.icon === 'hospital') {
+                pinIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
+              } else if (s.icon === 'user') {
+                pinIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+              } else if (s.icon === 'truck') {
+                pinIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
+              } else if (s.icon === 'database') {
+                pinIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>';
+              }
+
+              var pinColor = s.color || '#2563EB';
+              htmlContent = '<div class="poi-circle" style="background-color: ' + pinColor + '; border-color: #ffffff;">' + pinIconSvg + '</div>';
+              anchor = [11, 11];
+              size = [22, 22];
             }
             
             var sIcon = L.divIcon({

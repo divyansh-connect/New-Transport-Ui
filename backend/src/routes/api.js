@@ -45,6 +45,12 @@ const {
   deleteCoworker,
   getMyPermissions
 } = require('../controllers/coworkerController');
+const {
+  getAllServiceTypes,
+  createServiceType,
+  updateServiceType,
+  deleteServiceType
+} = require('../controllers/serviceTypeController');
 
 const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
 const { checkPermission } = require('../middlewares/permission');
@@ -102,5 +108,11 @@ router.post('/coworkers', authenticateJWT, authorizeRoles('admin'), createCowork
 router.put('/coworkers/:id', authenticateJWT, authorizeRoles('admin'), updateCoworker);
 router.delete('/coworkers/:id', authenticateJWT, authorizeRoles('admin'), deleteCoworker);
 router.get('/permissions/me', authenticateJWT, getMyPermissions);
+
+// ── Dynamic Service Categories ───────────────────────────────────────────────
+router.get('/service-types', getAllServiceTypes);
+router.post('/service-types', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Settings', 'edit'), createServiceType);
+router.put('/service-types/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Settings', 'edit'), updateServiceType);
+router.delete('/service-types/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Settings', 'delete'), deleteServiceType);
 
 module.exports = router;

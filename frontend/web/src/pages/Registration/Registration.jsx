@@ -13,6 +13,7 @@ import {
   OilChangeRegistrationForm, 
   VisitorRegistrationForm 
 } from '../../components/common/RegistrationForms';
+import { API_BASE_URL } from '../../config';
 import './Registration.css';
 
 export const Registration = () => {
@@ -20,6 +21,18 @@ export const Registration = () => {
   const { subscriptionPlans, subscriptionConfig } = useTheme();
   const { registerDriver } = useDrivers();
   const [alertMessage, setAlertMessage] = useState('');
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/service-types`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCategories(data.filter(c => c.isActive));
+        }
+      })
+      .catch(err => console.log('Error fetching categories in registration:', err));
+  }, []);
   const [formData, setFormData] = useState({
     type: 'driver',
     firstName: '',
@@ -260,12 +273,14 @@ export const Registration = () => {
             <Select
               value={formData.type}
               onChange={(e) => setFormData({...formData, type: e.target.value})}
-              options={[
-                { label: 'Commercial Driver', value: 'driver' },
-                { label: 'Repair Workshop', value: 'workshop' },
-                { label: 'Oil Change Center', value: 'oil' },
-                { label: 'Visitor', value: 'visitor' }
-              ]}
+              options={categories.length > 0 
+                ? categories.map(c => ({ label: c.name, value: c.slug })) 
+                : [
+                    { label: 'Commercial Driver', value: 'driver' },
+                    { label: 'Repair Workshop', value: 'workshop' },
+                    { label: 'Oil Change Center', value: 'oil' },
+                    { label: 'Visitor', value: 'visitor' }
+                  ]}
             />
           </div>
 
@@ -279,7 +294,7 @@ export const Registration = () => {
               payRequired={payRequired}
             />
           )}
-          {formData.type === 'workshop' && (
+          {(formData.type === 'workshop' || (!['driver', 'oil', 'oil change', 'visitor'].includes(formData.type))) && (
             <WorkshopRegistrationForm
               formData={formData}
               onChange={setFormData}

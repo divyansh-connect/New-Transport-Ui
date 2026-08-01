@@ -420,3 +420,9 @@
     right: 0;
   }
 }
+
+/* Services Dropdown Custom Styles */
+.services-dropdown-item:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-main) !important;
+}

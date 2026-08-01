@@ -366,7 +366,6 @@ export const DriverProvider = ({ children }) => {
     setPayments(prev => prev.filter(p => p.id !== id && p.realId !== id && p.id !== targetId));
     try {
       await apiCall(`/payments/${targetId}`, { method: 'DELETE' });
-      loadData();
     } catch (err) {
       console.error('Delete payment failed:', err);
       loadData();
@@ -380,7 +379,6 @@ export const DriverProvider = ({ children }) => {
     setDrivers(prev => prev.filter(d => d.id !== id && d.realId !== id && d.id !== targetId));
     try {
       await apiCall(`/users/${targetId}`, { method: 'DELETE' });
-      loadData();
     } catch (err) {
       console.error('Delete driver/user failed:', err);
       loadData();

@@ -19,6 +19,7 @@ import {
   Smartphone,
   Plus,
   Trash2,
+  Edit2,
   DollarSign,
   Layers,
   Settings2,
@@ -94,6 +95,99 @@ export const Settings = () => {
   const adminToken = localStorage.getItem('admin_token');
   const [dbAdmins, setDbAdmins] = useState([]);
   const [currentUserRole, setCurrentUserRole] = useState('admin');
+
+  // Dynamic Categories states & handlers
+  const [settingsCategories, setSettingsCategories] = useState([]);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    iconName: 'map-pin',
+    pinColor: '#2563EB',
+    isActive: true,
+    displayOrder: 0
+  });
+
+  const fetchSettingsCategories = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE_URL}/service-types`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSettingsCategories(data);
+      }
+    } catch (err) {
+      console.log('Error loading categories:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettingsCategories();
+  }, []);
+
+  const handleSaveCategory = async (e) => {
+    e.preventDefault();
+    if (!categoryForm.name) return;
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const isEdit = !!editingCategory;
+      const url = isEdit ? `${API_BASE}/service-types/${editingCategory.id}` : `${API_BASE}/service-types`;
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(categoryForm)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to save category.');
+      }
+      setCategoryForm({ name: '', iconName: 'map-pin', pinColor: '#2563EB', isActive: true, displayOrder: 0 });
+      setEditingCategory(null);
+      setSuccessBanner(isEdit ? '✅ Category updated successfully!' : '✅ New Category created successfully!');
+      fetchSettingsCategories();
+    } catch (err) {
+      setSuccessBanner(`❌ ${err.message}`);
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSuccessBanner(''), 5000);
+    }
+  };
+
+  const handleDeleteCategory = async (catId) => {
+    if (!window.confirm('Are you sure you want to permanently delete this service category?')) return;
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE}/service-types/${catId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete category.');
+      }
+      setSuccessBanner('✅ Category deleted successfully.');
+      fetchSettingsCategories();
+    } catch (err) {
+      setSuccessBanner(`❌ ${err.message}`);
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSuccessBanner(''), 5000);
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -542,6 +636,13 @@ export const Settings = () => {
                 <Settings2 size={18} />
                 <span>Access Configuration</span>
               </button>
+              <button
+                className={`settings-tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
+                onClick={() => setActiveTab('categories')}
+              >
+                <Layers size={18} />
+                <span>Manage Categories</span>
+              </button>
             </>
           )}
         </div>
@@ -844,7 +945,7 @@ export const Settings = () => {
                                     'Payments': 'Payments',
                                     'Notices': 'Opportunity',
                                     'Inquiries': 'Contact',
-                                    'Settings': 'User/Service & Settings',
+                                    'Settings': 'User & Settings',
                                     'Notifications': 'Notifications'
                                   };
                                   return mapping[mod] || mod;
@@ -1196,6 +1297,153 @@ export const Settings = () => {
                 <div style={{ marginTop: '20px' }}>
                   <Button variant="primary" leftIcon={Save} isLoading={isSaving} disabled={isSaving} onClick={handleSaveAccessConfig}>Save Access Config</Button>
                 </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'categories' && (
+            <div className="settings-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <Card
+                title={editingCategory ? "Edit Service Category" : "Add Dynamic Service Category"}
+                subtitle="Create a new service category (e.g. Supermarket, Gym) with specific icon, map pin color, status, and display ordering."
+              >
+                <form onSubmit={handleSaveCategory} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <Input
+                      label="Category Name"
+                      placeholder="e.g. Hospital"
+                      value={categoryForm.name}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                      required
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Lucide Icon Name</label>
+                      <select
+                        value={categoryForm.iconName}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, iconName: e.target.value })}
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'var(--color-surface)',
+                          border: '1px solid var(--color-card-border)',
+                          color: 'var(--color-text-main)',
+                          height: '42px'
+                        }}
+                      >
+                        <option value="map-pin">📍 Default Pin (map-pin)</option>
+                        <option value="user">👤 User / Person (user)</option>
+                        <option value="truck">🚚 Truck / Driver (truck)</option>
+                        <option value="wrench">🔧 Workshop / Repair (wrench)</option>
+                        <option value="droplet">💧 Oil Change / Drop (droplet)</option>
+                        <option value="shopping-cart">🛒 Supermarket / Shop (shopping-cart)</option>
+                        <option value="activity">🏥 Hospital / Health (activity)</option>
+                        <option value="database">📦 Warehouse / Storage (database)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Map Pin Color</label>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="color"
+                          value={categoryForm.pinColor}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, pinColor: e.target.value })}
+                          style={{ width: '42px', height: '42px', border: '1px solid var(--color-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }}
+                        />
+                        <Input
+                          value={categoryForm.pinColor}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, pinColor: e.target.value })}
+                          style={{ flex: 1 }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '20px' }}>
+                      <input
+                        type="checkbox"
+                        id="cat-active"
+                        checked={categoryForm.isActive}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, isActive: e.target.checked })}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="cat-active" style={{ fontSize: '14px', color: 'var(--color-text-main)', cursor: 'pointer', fontWeight: '600' }}>
+                        Category is Active
+                      </label>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <Button type="submit" variant="primary">{editingCategory ? "Save Changes" : "Create Category"}</Button>
+                    {editingCategory && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          setEditingCategory(null);
+                          setCategoryForm({ name: '', iconName: 'map-pin', pinColor: '#2563EB', isActive: true, displayOrder: 0 });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </Card>
+
+              <Card
+                title="Active Categories Registry"
+                subtitle="All generic services configured in the system. Note: Default categories cannot be deleted if users are registered under them."
+              >
+                <Table
+                  headers={['Category Name', 'Slug', 'Icon name', 'Color Theme', 'Status', 'Actions']}
+                  data={settingsCategories}
+                  renderRow={(cat) => (
+                    <tr key={cat.id}>
+                      <td><strong>{cat.name}</strong></td>
+                      <td><code>{cat.slug}</code></td>
+                      <td><code>{cat.iconName}</code></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', backgroundColor: cat.pinColor }} />
+                          <code>{cat.pinColor}</code>
+                        </div>
+                      </td>
+                      <td>
+                        <Badge variant={cat.isActive ? 'success' : 'neutral'}>
+                          {cat.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={Edit2}
+                            onClick={() => {
+                              setEditingCategory(cat);
+                              setCategoryForm({
+                                name: cat.name,
+                                iconName: cat.iconName,
+                                pinColor: cat.pinColor,
+                                isActive: cat.isActive,
+                                displayOrder: cat.displayOrder
+                              });
+                            }}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={Trash2}
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            style={{ color: '#ef4444' }}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                />
               </Card>
             </div>
           )}

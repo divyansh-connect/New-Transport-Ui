@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -7,6 +7,7 @@ import { Header } from '../../src/components/common/headers/Header';
 import { Card } from '../../src/components/common/cards/Card';
 import { SPACING, RADIUS } from '../../src/constants/theme';
 import { translations } from '../../src/constants/translations';
+import { API_BASE_URL } from '../../src/utils/api';
 
 export default function RegisterIndexScreen() {
   const { theme, language, registeredUser } = useTheme();
@@ -15,6 +16,25 @@ export default function RegisterIndexScreen() {
   const isArabic = language === 'Arabic';
   const isUrdu = language === 'Urdu';
   const isRTL = isArabic || isUrdu;
+
+  const [dynamicServices, setDynamicServices] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/service-types`)
+      .then(r => r.json())
+      .then(data => {
+        const filtered = data.filter(c => c.isActive && c.slug !== 'visitor');
+        setDynamicServices(filtered);
+      })
+      .catch(err => {
+        console.warn('Failed to load categories in app:', err);
+        setDynamicServices([
+          { name: 'Driver', slug: 'driver' },
+          { name: 'Workshop', slug: 'workshop' },
+          { name: 'Oil Change', slug: 'oil' }
+        ]);
+      });
+  }, []);
 
   React.useEffect(() => {
     if (registeredUser) {
@@ -26,12 +46,6 @@ export default function RegisterIndexScreen() {
       }
     }
   }, [registeredUser]);
-
-  const services = [
-    { title: t.driverLifeTracking, type: 'Driver' },
-    { title: t.workshopLocation, type: 'Workshop' },
-    { title: t.oilChangeLocation, type: 'Oil Change' },
-  ];
 
   const handleSelectType = (type) => {
     router.push({
@@ -48,13 +62,13 @@ export default function RegisterIndexScreen() {
         <Text style={[styles.heading, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{t.selectServiceRole}</Text>
 
         <Card style={styles.cardContainer}>
-          {services.map((item, idx) => (
+          {dynamicServices.map((item) => (
             <TouchableOpacity
-              key={idx}
+              key={item.id || item.slug}
               style={[styles.serviceRow, isRTL && { flexDirection: 'row-reverse' }]}
-              onPress={() => handleSelectType(item.type)}
+              onPress={() => handleSelectType(item.slug)}
             >
-              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</Text>
+              <Text style={[styles.serviceTitle, { color: theme.textPrimary, textAlign: isRTL ? 'right' : 'left' }]}>{item.name}</Text>
               <View style={[styles.checkbox, { borderColor: theme.primary }]} />
             </TouchableOpacity>
           ))}

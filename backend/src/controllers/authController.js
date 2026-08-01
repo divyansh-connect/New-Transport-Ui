@@ -101,6 +101,17 @@ const register = async (req, res) => {
       }
     }
 
+    let finalServiceTypeId = req.body.serviceTypeId || null;
+    if (!finalServiceTypeId && role) {
+      const slugVal = String(role).toLowerCase().trim();
+      const matchedCategory = await prisma.serviceType.findFirst({
+        where: { slug: slugVal }
+      });
+      if (matchedCategory) {
+        finalServiceTypeId = matchedCategory.id;
+      }
+    }
+
     const customId = await generateCustomId(userRole);
 
     // Create User record in MySQL database
@@ -114,6 +125,7 @@ const register = async (req, res) => {
         carPlateNumber: carPlateNumber || null,
         email: finalEmail,
         role: userRole,
+        serviceTypeId: finalServiceTypeId,
         status: userRole === 'admin' ? 'Approved' : 'Pending',
         subscriptionDuration: subscriptionDuration || '1 Month',
         amountPaid: amountPaid || '$49.99',

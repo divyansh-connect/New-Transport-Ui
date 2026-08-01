@@ -144,7 +144,7 @@ export default function RegistrationFormScreen() {
                 style={{ textAlign: isRTL ? 'right' : 'left' }}
               />
 
-              {registrationType === 'Driver' && (
+              {String(registrationType).toLowerCase() === 'driver' && (
                 <CustomInput
                   label={isArabic ? 'رقم لوحة السيارة' : isUrdu ? 'ڈرائیور گاڑی کی نمبر پلیٹ کے لیے' : 'For driver Car plate number'}
                   placeholder={isArabic ? 'أدخل رقم لوحة السيارة' : isUrdu ? 'نمبر پلیٹ درج کریں' : 'Enter Car Plate Number'}

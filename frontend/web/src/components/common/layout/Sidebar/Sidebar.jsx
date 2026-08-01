@@ -26,10 +26,35 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   const { drivers, notifications } = useDrivers();
   const unreadCount = notifications.filter(n => !n.read).length;
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
+  const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const [userRole, setUserRole] = useState('admin');
   const [permissions, setPermissions] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/service-types`);
+        if (res.ok) {
+          const data = await res.json();
+          // Sort categories by displayOrder
+          const activeCats = data
+            .filter(c => c.isActive)
+            .sort((a, b) => a.displayOrder - b.displayOrder);
+          setCategories(activeCats);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch service categories in sidebar:', err);
+      }
+    };
+    fetchCategories();
+    
+    // Refresh categories list every 12 seconds in case new ones are created by admin
+    const interval = setInterval(fetchCategories, 12000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,8 +96,8 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }) => {
   const mainNavItems = [
     { title: 'Dashboard', path: '/', icon: LayoutDashboard, moduleName: 'Dashboard' },
     { title: 'User Requests', path: '/users', icon: Users, badge: drivers.filter(d => d.status === 'Pending').length.toString(), moduleName: 'Users' },
+    { title: 'User', path: '/services', icon: User, moduleName: 'Settings' },
     { title: 'Payments', path: '/payments', icon: CreditCard, moduleName: 'Payments' },
-    { title: 'User/Service', path: '/services', icon: User, moduleName: 'Settings' },
   ].filter(item => hasPermission(item.moduleName));
 
   const secondaryNavItems = [

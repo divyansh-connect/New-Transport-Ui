@@ -8,7 +8,15 @@ const getAllUsers = async (req, res) => {
     const whereClause = {};
 
     if (role) {
-      whereClause.role = role.toLowerCase();
+      const category = await prisma.serviceType.findFirst({ where: { slug: role.toLowerCase().trim() } });
+      if (category) {
+        whereClause.OR = [
+          { role: role.toLowerCase() },
+          { serviceTypeId: category.id }
+        ];
+      } else {
+        whereClause.role = role.toLowerCase();
+      }
     }
     if (status) {
       whereClause.status = status;
@@ -34,6 +42,16 @@ const getAllUsers = async (req, res) => {
         carPlateNumber: true,
         email: true,
         role: true,
+        serviceTypeId: true,
+        serviceType: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            iconName: true,
+            pinColor: true
+          }
+        },
         status: true,
         registrationDate: true,
         subscriptionDuration: true,
@@ -207,11 +225,31 @@ const getActivePins = async (req, res) => {
         role: true,
         latitude: true,
         longitude: true,
-        carPlateNumber: true
+        carPlateNumber: true,
+        serviceType: {
+          select: {
+            name: true,
+            slug: true,
+            iconName: true,
+            pinColor: true
+          }
+        }
       }
     });
 
-    return res.json(pins);
+    const formatted = pins.map(p => ({
+      id: p.id,
+      customId: p.customId,
+      name: p.name,
+      role: p.serviceType?.slug || p.role,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      carPlateNumber: p.carPlateNumber,
+      iconName: p.serviceType?.iconName || 'map-pin',
+      pinColor: p.serviceType?.pinColor || '#2563EB'
+    }));
+
+    return res.json(formatted);
   } catch (error) {
     console.error('Get Active Pins Error:', error);
     return res.status(500).json({ error: 'Failed to fetch telemetry markers.' });
@@ -362,7 +400,8 @@ const updateUserProfileAdmin = async (req, res) => {
       trackLocation,
       latitude,
       longitude,
-      status
+      status,
+      serviceTypeId
     } = req.body;
 
     const user = await prisma.user.findFirst({
@@ -406,6 +445,21 @@ const updateUserProfileAdmin = async (req, res) => {
     if (latitude !== undefined) dataToUpdate.latitude = parseFloat(latitude);
     if (longitude !== undefined) dataToUpdate.longitude = parseFloat(longitude);
     if (status !== undefined) dataToUpdate.status = status;
+    if (serviceTypeId !== undefined) {
+      dataToUpdate.serviceTypeId = serviceTypeId;
+      if (serviceTypeId) {
+        const cat = await prisma.serviceType.findUnique({ where: { id: serviceTypeId } });
+        if (cat) {
+          const lower = cat.slug.toLowerCase();
+          if (lower === 'driver') dataToUpdate.role = 'driver';
+          else if (lower === 'workshop') dataToUpdate.role = 'workshop';
+          else if (lower === 'oil') dataToUpdate.role = 'oil';
+          else dataToUpdate.role = 'visitor';
+        }
+      } else {
+        dataToUpdate.serviceTypeId = null;
+      }
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },

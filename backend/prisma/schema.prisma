@@ -71,6 +71,10 @@ model User {
   payments      Payment[]
   notifications Notification[]
   permissions   Permission[]
+  
+  // Dynamic category relation
+  serviceTypeId String?      @map("service_type_id")
+  serviceType   ServiceType? @relation(fields: [serviceTypeId], references: [id], onDelete: SetNull)
 
   @@index([role])
   @@index([status])
@@ -181,6 +185,21 @@ model Notice {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("notices")
+}
+
+model ServiceType {
+  id           String   @id @default(uuid()) @map("id")
+  name         String   @unique @db.VarChar(100) @map("name")
+  slug         String   @unique @db.VarChar(100) @map("slug")
+  iconName     String   @default("map-pin") @db.VarChar(50) @map("icon_name")
+  pinColor     String   @default("#2563EB") @db.VarChar(20) @map("pin_color")
+  isActive     Boolean  @default(true) @map("is_active")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  users        User[]
+
+  @@map("service_types")
 }
 
 

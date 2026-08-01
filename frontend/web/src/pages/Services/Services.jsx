@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card } from '../../components/common/Cards/Card';
 import { Table } from '../../components/common/Tables/Table';
 import { Modal } from '../../components/common/Modal/Modal';
@@ -14,12 +15,36 @@ import {
   OilChangeRegistrationForm, 
   VisitorRegistrationForm 
 } from '../../components/common/RegistrationForms';
+import { API_BASE_URL } from '../../config';
 import './Services.css';
 
 export const Services = () => {
   const { drivers, registerDriver, deleteDriver, updateDriverProfile } = useDrivers();
   const { subscriptionPlans, subscriptionConfig, checkUserPermission } = useTheme();
-  const [activeTab, setActiveTab] = useState('workshop');
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('type') || 'driver';
+  
+  const setActiveTab = (newTab) => {
+    setSearchParams({ type: newTab });
+  };
+
+  const [categories, setCategories] = useState([]);
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/service-types`);
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data.filter(c => c.isActive).sort((a, b) => a.displayOrder - b.displayOrder));
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const config = subscriptionConfig?.paymentRequiredFor || { driver: true, workshop: false, visitor: false, oilchange: false };
   const payRequiredForTab = 
@@ -36,6 +61,46 @@ export const Services = () => {
   const [modalMode, setModalMode] = useState('add'); // 'add', 'edit', 'view'
   const [addFormType, setAddFormType] = useState('driver');
   const [selectedRecord, setSelectedRecord] = useState(null);
+
+  // Quick Add Category State inside Add User Modal
+  const [showQuickCategoryForm, setShowQuickCategoryForm] = useState(false);
+  const [quickCategory, setQuickCategory] = useState({ name: '', iconName: 'map-pin', pinColor: '#2563EB' });
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+
+  const handleQuickAddCategory = async () => {
+    if (!quickCategory.name.trim()) return;
+    setIsSavingCategory(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE_URL}/service-types`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          name: quickCategory.name.trim(),
+          iconName: quickCategory.iconName,
+          pinColor: quickCategory.pinColor,
+          isActive: true,
+          displayOrder: categories.length + 1
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add category');
+      
+      setCategories(prev => [...prev, data]);
+      setAddFormType(data.slug);
+      setFormData(prev => ({ ...prev, type: data.slug }));
+      setQuickCategory({ name: '', iconName: 'map-pin', pinColor: '#2563EB' });
+      setShowQuickCategoryForm(false);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsSavingCategory(false);
+    }
+  };
+
   const [formData, setFormData] = useState({ 
     name: '', 
     location: '', 
@@ -86,21 +151,30 @@ export const Services = () => {
                             (d.phone && d.phone.includes(searchTerm));
       if (!matchesSearch) return false;
 
-      if (activeTab === 'driver') return d.type === 'driver';
-      if (activeTab === 'workshop') return d.type === 'workshop';
-      if (activeTab === 'oil change') return d.type === 'oil' || d.type === 'oil change';
-      if (activeTab === 'visitor') return d.type === 'visitor';
-      return false;
+      // Filter by dynamic category type slug
+      return d.type === activeTab;
     });
   };
   const filteredServices = getFilteredData();
 
-  const tabs = [
-    { id: 'workshop', label: 'Workshops', icon: Wrench, prefix: 'WS' },
-    { id: 'oil change', label: 'Oil Changes', icon: Droplet, prefix: 'OC' },
-    { id: 'visitor', label: 'Visitors', icon: User, prefix: 'VIS' },
-    { id: 'driver', label: 'Drivers', icon: Users, prefix: 'DRV' },
-  ];
+  const tabs = categories.map(c => {
+    const slug = c.slug;
+    let label = c.name + 's';
+    if (slug === 'oil') label = 'Oil Changes';
+    
+    // Map dynamic icon to lucide icons
+    let IconComponent = User;
+    if (slug === 'workshop') IconComponent = Wrench;
+    else if (slug === 'oil') IconComponent = Droplet;
+    else if (slug === 'visitor') IconComponent = Users;
+
+    return {
+      id: slug,
+      label: label,
+      icon: IconComponent,
+      prefix: slug === 'workshop' ? 'WS' : slug === 'oil' ? 'OC' : slug === 'driver' ? 'DRV' : 'USR'
+    };
+  });
 
   const saveToStorage = (data) => {
     setAllServices(data);
@@ -637,33 +711,110 @@ export const Services = () => {
         )}
         {modalMode === 'add' && (
           <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '8px', color: 'var(--color-text-main)' }}>Entity Category</label>
-            <Select
-              value={addFormType}
-              onChange={(e) => {
-                setAddFormType(e.target.value);
-                setFormData({
-                  type: e.target.value,
-                  firstName: '',
-                  lastName: '',
-                  phone: '',
-                  email: '',
-                  plateNumber: '',
-                  location: '',
-                  latitude: '28.6250',
-                  longitude: '77.2180',
-                  termsAccepted: false,
-                  paymentStatus: 'Paid',
-                  selectedPlanId: subscriptionPlans?.[0]?.id || ''
-                });
-              }}
-              options={[
-                { label: 'Commercial Driver', value: 'driver' },
-                { label: 'Repair Workshop', value: 'workshop' },
-                { label: 'Oil Change Center', value: 'oil change' },
-                { label: 'Visitor', value: 'visitor' }
-              ]}
-            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)', margin: 0 }}>Entity Category</label>
+              <button
+                type="button"
+                onClick={() => setShowQuickCategoryForm(!showQuickCategoryForm)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-primary, #2563eb)',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <Plus size={14} /> {showQuickCategoryForm ? 'Cancel' : 'Add New Category'}
+              </button>
+            </div>
+
+            {showQuickCategoryForm ? (
+              <div style={{
+                backgroundColor: 'var(--color-surface, rgba(255,255,255,0.03))',
+                border: '1px solid var(--color-card-border, rgba(255,255,255,0.1))',
+                borderRadius: '8px',
+                padding: '14px',
+                marginBottom: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-main)' }}>Create New Service Category</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 60px', gap: '10px', alignItems: 'center' }}>
+                  <Input
+                    placeholder="Category Name (e.g. Hospital)"
+                    value={quickCategory.name}
+                    onChange={(e) => setQuickCategory({ ...quickCategory, name: e.target.value })}
+                  />
+                  <select
+                    value={quickCategory.iconName}
+                    onChange={(e) => setQuickCategory({ ...quickCategory, iconName: e.target.value })}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--color-bg-elevated, #1e293b)',
+                      border: '1px solid var(--color-border, #334155)',
+                      color: 'var(--color-text-main, #f8fafc)',
+                      height: '38px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    <option value="map-pin">📍 Default Pin</option>
+                    <option value="user">👤 User</option>
+                    <option value="truck">🚚 Driver</option>
+                    <option value="wrench">🔧 Workshop</option>
+                    <option value="droplet">💧 Oil Change</option>
+                    <option value="shopping-cart">🛒 Supermarket</option>
+                    <option value="activity">🏥 Hospital</option>
+                    <option value="database">📦 Warehouse</option>
+                  </select>
+                  <input
+                    type="color"
+                    value={quickCategory.pinColor}
+                    onChange={(e) => setQuickCategory({ ...quickCategory, pinColor: e.target.value })}
+                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: 'pointer', padding: '2px' }}
+                    title="Pick Map Pin Color"
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setShowQuickCategoryForm(false)}>Cancel</Button>
+                  <Button type="button" variant="primary" size="sm" isLoading={isSavingCategory} onClick={handleQuickAddCategory}>Save & Select</Button>
+                </div>
+              </div>
+            ) : (
+              <Select
+                value={addFormType}
+                onChange={(e) => {
+                  setAddFormType(e.target.value);
+                  setFormData({
+                    type: e.target.value,
+                    firstName: '',
+                    lastName: '',
+                    phone: '',
+                    email: '',
+                    plateNumber: '',
+                    location: '',
+                    latitude: '28.6250',
+                    longitude: '77.2180',
+                    termsAccepted: false,
+                    paymentStatus: 'Paid',
+                    selectedPlanId: subscriptionPlans?.[0]?.id || ''
+                  });
+                }}
+                options={categories.length > 0 
+                  ? categories.map(c => ({ label: c.name, value: c.slug })) 
+                  : [
+                      { label: 'Commercial Driver', value: 'driver' },
+                      { label: 'Repair Workshop', value: 'workshop' },
+                      { label: 'Oil Change Center', value: 'oil' },
+                      { label: 'Visitor', value: 'visitor' }
+                    ]}
+              />
+            )}
           </div>
         )}
         {modalMode === 'add' && addFormType === 'driver' && (
@@ -676,7 +827,7 @@ export const Services = () => {
             payRequired={payRequiredForType}
           />
         )}
-        {modalMode === 'add' && addFormType === 'workshop' && (
+        {modalMode === 'add' && (addFormType === 'workshop' || (!['driver', 'oil', 'oil change', 'visitor'].includes(addFormType))) && (
           <WorkshopRegistrationForm
             formData={formData}
             onChange={setFormData}
@@ -686,7 +837,7 @@ export const Services = () => {
             payRequired={payRequiredForType}
           />
         )}
-        {modalMode === 'add' && addFormType === 'oil change' && (
+        {modalMode === 'add' && (addFormType === 'oil' || addFormType === 'oil change') && (
           <OilChangeRegistrationForm
             formData={formData}
             onChange={setFormData}

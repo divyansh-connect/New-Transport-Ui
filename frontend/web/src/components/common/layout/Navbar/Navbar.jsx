@@ -17,6 +17,7 @@ import {
 import { useTheme } from '../../../../context/ThemeContext';
 import { useDrivers } from '../../../../context/DriverContext';
 
+import { API_BASE_URL } from '../../../../config';
 import './Navbar.css';
 
 export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
@@ -25,6 +26,8 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showServicesDropdown, setShowServicesDropdown] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -32,6 +35,7 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
   const searchWrapperRef = useRef(null);
   const notificationsWrapperRef = useRef(null);
   const userMenuWrapperRef = useRef(null);
+  const servicesWrapperRef = useRef(null);
 
   const searchableItems = [
     { title: 'Dashboard Overview', category: 'Page Navigation', path: '/' },
@@ -53,6 +57,28 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
   );
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/service-types`);
+        if (res.ok) {
+          const data = await res.json();
+          const activeCats = data
+            .filter(c => c.isActive)
+            .sort((a, b) => a.displayOrder - b.displayOrder);
+          setCategories(activeCats);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch categories in navbar:', err);
+      }
+    };
+    fetchCategories();
+    
+    // Refresh list every 12 seconds in case admin updates categories in dashboard
+    const interval = setInterval(fetchCategories, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e) => {
       // Ctrl + K or Cmd + K toggles search focus
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -65,11 +91,12 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
         });
       }
 
-      // Escape key closes search pop-up
+      // Escape key closes search/dropdowns pop-ups
       if (e.key === 'Escape') {
         setIsSearchOpen(false);
         setShowNotifications(false);
         setShowUserMenu(false);
+        setShowServicesDropdown(false);
       }
     };
 
@@ -82,6 +109,9 @@ export const Navbar = ({ onToggleSidebar, onMobileToggle }) => {
       }
       if (userMenuWrapperRef.current && !userMenuWrapperRef.current.contains(e.target)) {
         setShowUserMenu(false);
+      }
+      if (servicesWrapperRef.current && !servicesWrapperRef.current.contains(e.target)) {
+        setShowServicesDropdown(false);
       }
     };
 
