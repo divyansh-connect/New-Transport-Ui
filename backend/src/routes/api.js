@@ -58,14 +58,14 @@ router.get('/users/pins', getActivePins);
 
 // ── Opportunity & Broadcast Notices ──────────────────────────────────────────
 router.get('/notices', getActiveNotices);
-router.get('/notices/all', getAllNotices);
+router.get('/notices/all', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'view'), getAllNotices);
 router.post('/notices', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'add'), createNotice);
 router.put('/notices/:id/toggle-visibility', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'edit'), toggleNoticeVisibility);
 router.put('/notices/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'edit'), updateNotice);
 router.delete('/notices/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notices', 'delete'), deleteNotice);
 
 // ── Support Inquiries / Tickets ───────────────────────────────────────────────
-router.get('/inquiries', getAllTickets);
+router.get('/inquiries', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Inquiries', 'view'), getAllTickets);
 router.post('/inquiries', createTicket);
 router.put('/inquiries/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Inquiries', 'edit'), updateTicketStatus);
 
@@ -87,7 +87,7 @@ router.post('/payments', authenticateJWT, authorizeRoles('admin', 'coworker'), c
 router.delete('/payments/:id', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Payments', 'delete'), deletePaymentRecord);
 
 // ── System Notifications ──────────────────────────────────────────────────────
-router.get('/notifications', authenticateJWT, getAllNotifications);
+router.get('/notifications', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notifications', 'view'), getAllNotifications);
 router.post('/notifications', authenticateJWT, authorizeRoles('admin', 'coworker'), checkPermission('Notifications', 'add'), createNotification);
 router.put('/notifications/:id/read', authenticateJWT, markAsRead);
 router.delete('/notifications', authenticateJWT, clearAll);
