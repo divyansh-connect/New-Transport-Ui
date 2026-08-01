@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 const ThemeContext = createContext();
 
@@ -9,16 +10,39 @@ export const ThemeProvider = ({ children }) => {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   });
 
-  const [profile, setProfile] = useState(() => {
-    const savedName = localStorage.getItem('admin_name');
-    const savedEmail = localStorage.getItem('admin_email');
-    return {
-      name: savedName || 'Admin User',
-      email: savedEmail || 'admin@userlife.com',
-      role: 'System Administrator',
-      phone: '+1 (555) 234-5678',
-    };
+  const [profile, setProfile] = useState({
+    name: 'Admin User',
+    email: 'admin@userlife.com',
+    role: 'System Administrator',
+    phone: '+1 (555) 234-5678',
   });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+        if (!token) return;
+        const res = await fetch(`${API_BASE_URL}/users/profile`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile({
+            name: data.name || 'Admin User',
+            email: data.email || 'admin@userlife.com',
+            role: data.role === 'admin' ? 'System Administrator' : 'Sub-Admin / Staff',
+            phone: data.mobileNo || '—'
+          });
+        }
+      } catch (err) {
+        console.warn('ThemeContext: Failed to fetch profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   // Admin Management state loaded from localStorage or default
   const [adminsList, setAdminsList] = useState(() => {
