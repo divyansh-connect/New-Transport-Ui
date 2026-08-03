@@ -48,10 +48,10 @@ export default function MapScreen() {
   // For Leaflet JS injection we still need a string role
   const userRole = isApprovedDriver ? 'Driver' : 'Visitor';
   
-  // Real GPS Device Location State (Default Riyadh Center fallback until permission granted)
+  // Real GPS Device Location State
   const [userLocation, setUserLocation] = useState({
-    latitude: 24.7136,
-    longitude: 46.6753,
+    latitude: 22.7196,
+    longitude: 75.8577,
   });
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [activePins, setActivePins] = useState([]);
@@ -62,6 +62,15 @@ export default function MapScreen() {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
         setHasLocationPermission(true);
+        try {
+          let lastKnown = await Location.getLastKnownPositionAsync({});
+          if (lastKnown && lastKnown.coords) {
+            setUserLocation({
+              latitude: lastKnown.coords.latitude,
+              longitude: lastKnown.coords.longitude,
+            });
+          }
+        } catch (e) {}
         let currentLocation = await Location.getCurrentPositionAsync({});
         if (currentLocation && currentLocation.coords) {
           setUserLocation({
@@ -220,10 +229,11 @@ export default function MapScreen() {
 
         var map = L.map('map', { zoomControl: true }).setView([userLat, userLng], 13);
         
-        // English-Only Map Labels - OpenStreetMap English Tile Server
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // English-Only Map Labels - CartoDB Voyager International Tile Server
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
           maxZoom: 19,
-          attribution: '© OpenStreetMap contributors'
+          subdomains: 'abcd',
+          attribution: '© OpenStreetMap contributors © CARTO'
         }).addTo(map);
 
         // 1. Own Live GPS Pin - Google Maps style Tilted Arrow with blue border and Pulse

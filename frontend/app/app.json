@@ -35,9 +35,8 @@
       "EXPO_PUBLIC_API_BASE_URL": "https://user-logistic-production.up.railway.app/api",
       "router": {},
       "eas": {
-        "projectId": "d96b6da1-36f0-425d-910e-81017d3532a0"
+        "projectId": "5c7d4cdd-26fc-4c8a-bff3-5d07b594dcc1"
       }
-    },
-    "owner": "yash_ji"
+    }
   }
 }

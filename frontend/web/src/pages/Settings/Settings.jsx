@@ -4,6 +4,7 @@ import { Button } from '../../components/common/Button/Button';
 import { Input } from '../../components/common/Input/Input';
 import { Badge } from '../../components/common/Badge/Badge';
 import { Table } from '../../components/common/Tables/Table';
+import { Modal } from '../../components/common/Modal/Modal';
 import { useTheme } from '../../context/ThemeContext';
 import {
   Sun,
@@ -46,7 +47,8 @@ export const Settings = () => {
     subscriptionConfig,
     updateSubscriptionConfig,
     activeSettingsTab: activeTab,
-    setActiveSettingsTab: setActiveTab
+    setActiveSettingsTab: setActiveTab,
+    currentUserRole: globalUserRole
   } = useTheme();
 
   const [isSaving, setIsSaving] = useState(false);
@@ -94,11 +96,29 @@ export const Settings = () => {
   const API_BASE = API_BASE_URL;
   const adminToken = localStorage.getItem('admin_token');
   const [dbAdmins, setDbAdmins] = useState([]);
-  const [currentUserRole, setCurrentUserRole] = useState('admin');
+  const [currentUserRole, setCurrentUserRole] = useState(() => {
+    const cached = sessionStorage.getItem('admin_user_profile') || localStorage.getItem('admin_user_profile');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed.rawRole) return parsed.rawRole;
+        if (parsed.role === 'System Administrator') return 'admin';
+        return 'coworker';
+      } catch (e) {}
+    }
+    return globalUserRole || 'coworker';
+  });
+
+  useEffect(() => {
+    if (globalUserRole) {
+      setCurrentUserRole(globalUserRole);
+    }
+  }, [globalUserRole]);
 
   // Dynamic Categories states & handlers
   const [settingsCategories, setSettingsCategories] = useState([]);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     iconName: 'map-pin',
@@ -153,6 +173,7 @@ export const Settings = () => {
       }
       setCategoryForm({ name: '', iconName: 'map-pin', pinColor: '#2563EB', isActive: true, displayOrder: 0 });
       setEditingCategory(null);
+      setIsCategoryModalOpen(false);
       setSuccessBanner(isEdit ? '✅ Category updated successfully!' : '✅ New Category created successfully!');
       fetchSettingsCategories();
     } catch (err) {
@@ -201,7 +222,8 @@ export const Settings = () => {
         });
         if (res.ok) {
           const data = await res.json();
-          setCurrentUserRole(data.role || 'admin');
+          const userObj = data.user || data;
+          setCurrentUserRole(userObj.role || 'coworker');
         }
       } catch (err) {
         console.warn('Could not fetch user profile:', err);
@@ -209,6 +231,13 @@ export const Settings = () => {
     };
     fetchProfile();
   }, [API_BASE]);
+
+  useEffect(() => {
+    const isSuperAdmin = currentUserRole === 'admin';
+    if (!isSuperAdmin && ['admins', 'subscriptions', 'config', 'categories'].includes(activeTab)) {
+      setActiveTab('profile');
+    }
+  }, [currentUserRole, activeTab, setActiveTab]);
 
   // Fetch admin users from DB
   const fetchAdminsFromDb = async () => {
@@ -1397,6 +1426,20 @@ export const Settings = () => {
               <Card
                 title="Active Categories Registry"
                 subtitle="All generic services configured in the system. Note: Default categories cannot be deleted if users are registered under them."
+                action={
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={Plus}
+                    onClick={() => {
+                      setEditingCategory(null);
+                      setCategoryForm({ name: '', iconName: 'map-pin', pinColor: '#2563EB', isActive: true, displayOrder: 0 });
+                      setIsCategoryModalOpen(true);
+                    }}
+                  >
+                    Add New Category
+                  </Button>
+                }
               >
                 <Table
                   headers={['Category Name', 'Slug', 'Icon name', 'Color Theme', 'Status', 'Actions']}
@@ -1432,6 +1475,7 @@ export const Settings = () => {
                                 isActive: cat.isActive,
                                 displayOrder: cat.displayOrder
                               });
+                              setIsCategoryModalOpen(true);
                             }}
                           />
                           <Button
@@ -1447,6 +1491,97 @@ export const Settings = () => {
                   )}
                 />
               </Card>
+
+              <Modal
+                isOpen={isCategoryModalOpen}
+                onClose={() => {
+                  setIsCategoryModalOpen(false);
+                  setEditingCategory(null);
+                }}
+                title={editingCategory ? `Edit Category: ${editingCategory.name}` : "Add Dynamic Service Category"}
+                subtitle="Configure service category details, icon, map pin color, and active status."
+                size="md"
+              >
+                <form onSubmit={handleSaveCategory} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <Input
+                    label="Category Name"
+                    placeholder="e.g. Hospital"
+                    value={categoryForm.name}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                    required
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Lucide Icon Name</label>
+                    <select
+                      value={categoryForm.iconName}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, iconName: e.target.value })}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'var(--color-surface)',
+                        border: '1px solid var(--color-card-border)',
+                        color: 'var(--color-text-main)',
+                        height: '42px'
+                      }}
+                    >
+                      <option value="map-pin">📍 Default Pin (map-pin)</option>
+                      <option value="user">👤 User / Person (user)</option>
+                      <option value="truck">🚚 Truck / Driver (truck)</option>
+                      <option value="wrench">🔧 Workshop / Repair (wrench)</option>
+                      <option value="droplet">💧 Oil Change / Drop (droplet)</option>
+                      <option value="shopping-cart">🛒 Supermarket / Shop (shopping-cart)</option>
+                      <option value="activity">🏥 Hospital / Health (activity)</option>
+                      <option value="database">📦 Warehouse / Storage (database)</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-main)' }}>Map Pin Color</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={categoryForm.pinColor}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, pinColor: e.target.value })}
+                        style={{ width: '42px', height: '42px', border: '1px solid var(--color-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }}
+                      />
+                      <Input
+                        value={categoryForm.pinColor}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, pinColor: e.target.value })}
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                    <input
+                      type="checkbox"
+                      id="cat-active-modal"
+                      checked={categoryForm.isActive}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, isActive: e.target.checked })}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="cat-active-modal" style={{ fontSize: '14px', color: 'var(--color-text-main)', cursor: 'pointer', fontWeight: '600' }}>
+                      Category is Active
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'flex-end' }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setIsCategoryModalOpen(false);
+                        setEditingCategory(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="primary" isLoading={isSaving}>
+                      {editingCategory ? "Save Changes" : "Create Category"}
+                    </Button>
+                  </div>
+                </form>
+              </Modal>
             </div>
           )}
 
