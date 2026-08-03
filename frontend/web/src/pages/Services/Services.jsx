@@ -798,27 +798,27 @@ export const Services = () => {
                     style={{
                       padding: '8px 10px',
                       borderRadius: '6px',
-                      backgroundColor: 'var(--color-bg-elevated, #1e293b)',
-                      border: '1px solid var(--color-border, #334155)',
-                      color: 'var(--color-text-main, #f8fafc)',
+                      backgroundColor: 'var(--color-input-bg)',
+                      border: '1px solid var(--color-input-border)',
+                      color: 'var(--color-text-main)',
                       height: '38px',
                       fontSize: '12px'
                     }}
                   >
-                    <option value="map-pin">📍 Default Pin</option>
-                    <option value="user">👤 User</option>
-                    <option value="truck">🚚 Driver</option>
-                    <option value="wrench">🔧 Workshop</option>
-                    <option value="droplet">💧 Oil Change</option>
-                    <option value="shopping-cart">🛒 Supermarket</option>
-                    <option value="activity">🏥 Hospital</option>
-                    <option value="database">📦 Warehouse</option>
+                    <option value="map-pin" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>📍 Default Pin</option>
+                    <option value="user" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>👤 User</option>
+                    <option value="truck" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>🚚 Driver</option>
+                    <option value="wrench" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>🔧 Workshop</option>
+                    <option value="droplet" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>💧 Oil Change</option>
+                    <option value="shopping-cart" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>🛒 Supermarket</option>
+                    <option value="activity" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>🏥 Hospital</option>
+                    <option value="database" style={{ backgroundColor: 'var(--color-card-bg)', color: 'var(--color-text-main)' }}>📦 Warehouse</option>
                   </select>
                   <input
                     type="color"
                     value={quickCategory.pinColor}
                     onChange={(e) => setQuickCategory({ ...quickCategory, pinColor: e.target.value })}
-                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: 'pointer', padding: '2px' }}
+                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid var(--color-input-border)', backgroundColor: 'var(--color-input-bg)', cursor: 'pointer', padding: '2px' }}
                     title="Pick Map Pin Color"
                   />
                 </div>
