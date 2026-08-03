@@ -88,6 +88,8 @@ const register = async (req, res) => {
 
     // Map role type string to Prisma Enum Role safely
     let userRole = 'visitor';
+    let finalServiceTypeId = req.body.serviceTypeId || null;
+
     if (role) {
       const lower = String(role).toLowerCase().replace(/\s+/g, '');
       if (lower.includes('driver')) userRole = 'driver';
@@ -97,11 +99,25 @@ const register = async (req, res) => {
       else if (lower.includes('admin')) userRole = 'admin';
       else if (lower.includes('coworker') || lower.includes('staff')) userRole = 'coworker';
       else {
-        return res.status(400).json({ error: 'Invalid user role specified.' });
+        // Dynamic category lookup (e.g., charge-station, hospital, etc.)
+        const slugVal = String(role).toLowerCase().trim();
+        const matchedCategory = await prisma.serviceType.findFirst({
+          where: {
+            OR: [
+              { slug: slugVal },
+              { name: { equals: String(role).trim() } }
+            ]
+          }
+        });
+        if (matchedCategory) {
+          userRole = 'visitor';
+          finalServiceTypeId = matchedCategory.id;
+        } else {
+          return res.status(400).json({ error: 'Invalid user role specified.' });
+        }
       }
     }
 
-    let finalServiceTypeId = req.body.serviceTypeId || null;
     if (!finalServiceTypeId && role) {
       const slugVal = String(role).toLowerCase().trim();
       const matchedCategory = await prisma.serviceType.findFirst({
