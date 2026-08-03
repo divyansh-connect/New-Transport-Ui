@@ -26,7 +26,13 @@ export const Contact = () => {
   const fetchInquiries = async () => {
     let apiData = [];
     try {
-      const res = await fetch(`${API_BASE_URL}/inquiries`);
+      const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE_URL}/inquiries`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       if (res.ok) {
         apiData = await res.json();
       }
@@ -95,9 +101,13 @@ export const Contact = () => {
     // Send update to backend API
     try {
       const targetId = selectedTicket.realId || selectedTicket.id;
+      const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
       await fetch(`${API_BASE_URL}/inquiries/${targetId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ status: ticketStatus, replyMessage })
       });
     } catch (e) {

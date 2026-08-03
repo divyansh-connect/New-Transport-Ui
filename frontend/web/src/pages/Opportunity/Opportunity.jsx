@@ -60,7 +60,13 @@ export const Opportunity = () => {
 
   const fetchNotices = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/notices/all`);
+      const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+      const response = await fetch(`${API_BASE_URL}/notices/all`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -113,11 +119,17 @@ export const Opportunity = () => {
     setIsSubmitting(true);
 
     try {
+      const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
+
       if (editingId) {
         // Call backend API to update
         await fetch(`${API_BASE_URL}/notices/${editingId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             title: formData.title.trim(),
             type: formData.type,
@@ -136,7 +148,7 @@ export const Opportunity = () => {
         // Call backend API to create notice
         await fetch(`${API_BASE_URL}/notices`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             title: formData.title.trim(),
             type: formData.type,
@@ -181,7 +193,14 @@ export const Opportunity = () => {
       handleCancelEdit();
     }
     try {
-      await fetch(`${API_BASE_URL}/notices/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+      await fetch(`${API_BASE_URL}/notices/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
     } catch (err) {
       console.log('Error deleting notice:', err);
     }
@@ -190,7 +209,14 @@ export const Opportunity = () => {
 
   const handleToggleVisibility = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/notices/${id}/toggle-visibility`, { method: 'PUT' });
+      const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+      const response = await fetch(`${API_BASE_URL}/notices/${id}/toggle-visibility`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       if (response.ok) {
         await fetchNotices();
       } else {
